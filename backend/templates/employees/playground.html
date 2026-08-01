@@ -1,0 +1,66 @@
+{% extends 'base_app.html' %}
+{% block title %}Playground — {{ employee.name }}{% endblock %}
+{% block page_title %}Playground{% endblock %}
+{% block page_subtitle %}Test {{ employee.name }} with your live knowledge and personality.{% endblock %}
+{% block content %}
+<div class="lb-card" style="max-width:480px;overflow:hidden;padding:0;">
+  <div style="padding:14px 16px;color:#fff;background:{{ employee.brand_color|default:workspace.brand_color|default:'#7C3AED' }};">
+    <strong>{{ employee.name }}</strong>
+    <div style="font-size:12px;opacity:.9;">{{ employee.get_role_display }} · We're online</div>
+  </div>
+  <div id="playground" data-token="{{ employee.widget_token }}" data-greeting="{{ employee.greeting_message }}" data-api="/api/widget/"
+       style="height:420px;display:flex;flex-direction:column;">
+    <div id="pg-messages" style="flex:1;overflow:auto;padding:14px;background:#F9FAFB;display:flex;flex-direction:column;gap:8px;"></div>
+    <form id="pg-form" style="display:flex;gap:8px;padding:10px;border-top:1px solid #E5E7EB;background:#fff;">
+      <input id="pg-input" style="flex:1;border:1px solid #E5E7EB;border-radius:999px;padding:10px 14px;" placeholder="Ask {{ employee.name }}..." autocomplete="off" />
+      <button id="pg-send" class="lb-btn lb-btn-primary" type="submit">Send</button>
+    </form>
+  </div>
+</div>
+<script>
+(() => {
+  const root = document.getElementById('playground');
+  const token = root.dataset.token;
+  const api = root.dataset.api;
+  const box = document.getElementById('pg-messages');
+  const input = document.getElementById('pg-input');
+  const sendBtn = document.getElementById('pg-send');
+  let sessionId = null, busy = false;
+  function add(who, text) {
+    const el = document.createElement('div');
+    el.style.cssText = 'max-width:85%;padding:8px 12px;border-radius:14px;font-size:13px;line-height:1.4;' +
+      (who === 'you'
+        ? 'align-self:flex-end;background:#7C3AED;color:#fff;'
+        : 'align-self:flex-start;background:#fff;border:1px solid #E5E7EB;');
+    el.textContent = text;
+    box.appendChild(el);
+    box.scrollTop = box.scrollHeight;
+    return el;
+  }
+  add('them', root.dataset.greeting || 'Hi!');
+  document.getElementById('pg-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (busy) return;
+    const msg = input.value.trim();
+    if (!msg) return;
+    busy = true; sendBtn.disabled = true;
+    add('you', msg); input.value = '';
+    const thinking = add('them', 'Thinking…');
+    try {
+      const res = await fetch(api + 'message/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ token, message: msg, session_id: sessionId, stream: false }),
+      });
+      const data = await res.json().catch(() => ({}));
+      thinking.textContent = res.ok ? (data.reply || 'No reply.') : (data.error || 'Could not reply.');
+      if (data.session_id) sessionId = data.session_id;
+    } catch (_) {
+      thinking.textContent = 'Network error.';
+    } finally {
+      busy = false; sendBtn.disabled = false; input.focus();
+    }
+  });
+})();
+</script>
+{% endblock %}

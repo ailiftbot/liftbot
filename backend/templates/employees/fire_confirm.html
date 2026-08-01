@@ -1,0 +1,13 @@
+{% extends 'base_app.html' %}
+{% block title %}Fire {{ employee.name }}{% endblock %}
+{% block page_title %}Fire {{ employee.name }}?{% endblock %}
+{% block page_subtitle %}This removes the AI Employee and their training materials.{% endblock %}
+{% block content %}
+<div class="lb-card" style="max-width:420px;padding:24px;">
+  <form method="post">
+    {% csrf_token %}
+    <button class="lb-btn lb-btn-primary" style="background:#DC2626;" type="submit">Confirm</button>
+    <a class="lb-btn lb-btn-ghost" href="{% url 'employee_detail' employee.pk %}">Cancel</a>
+  </form>
+</div>
+{% endblock %}

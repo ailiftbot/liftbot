@@ -1,0 +1,26 @@
+{% extends 'base_app.html' %}
+{% block title %}Conversations — LiftBot{% endblock %}
+{% block page_title %}Conversations{% endblock %}
+{% block page_subtitle %}Full history of visitor chats with your AI Employees.{% endblock %}
+{% block content %}
+<div style="display:flex;flex-direction:column;gap:12px;">
+  {% for s in sessions %}
+  <div class="lb-card" style="padding:16px 18px;">
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:10px;">
+      <strong>{{ s.employee.name }}</strong>
+      <span style="color:var(--lb-muted);">{{ s.last_message_at }}</span>
+    </div>
+    <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;">
+      {% for m in s.messages.all|slice:':8' %}
+      <li style="font-size:13px;color:#374151;">
+        <span style="color:var(--lb-muted);">{{ m.get_role_display }}:</span>
+        {{ m.content|truncatechars:140 }}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% empty %}
+  <div class="lb-card" style="padding:28px;color:var(--lb-muted);">No conversations yet.</div>
+  {% endfor %}
+</div>
+{% endblock %}

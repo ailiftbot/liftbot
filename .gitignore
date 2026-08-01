@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+*.egg
+
+# Env & secrets
+.env
+.env.local
+*.pem
+
+# Django
+db.sqlite3
+staticfiles/
+media/
+*.log
+
+# RAG / FAISS
+rag/indexes/
+rag/uploads/
+*.faiss
+*.pkl
+
+# Node / IDE
+node_modules/
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Docker volumes (local)
+mysql_data/
+redis_data/

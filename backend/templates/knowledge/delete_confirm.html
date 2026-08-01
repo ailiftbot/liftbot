@@ -1,0 +1,12 @@
+{% extends 'base_app.html' %}
+{% block title %}Remove material{% endblock %}
+{% block page_title %}Remove training material?{% endblock %}
+{% block content %}
+<div class="lb-card" style="max-width:420px;padding:24px;">
+  <p>{{ source.title }}</p>
+  <form method="post">{% csrf_token %}
+    <button class="lb-btn lb-btn-primary" style="background:#DC2626;" type="submit">Delete</button>
+    <a class="lb-btn lb-btn-ghost" href="{% url 'knowledge_list' employee.pk %}">Cancel</a>
+  </form>
+</div>
+{% endblock %}

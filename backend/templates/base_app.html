@@ -1,0 +1,96 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}LiftBot{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'app.css' %}" />
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="lb-app">
+  <div class="lb-shell">
+    <aside class="lb-sidebar">
+      <a class="lb-brand" href="{% url 'dashboard' %}">
+        <div class="lb-brand-mark">L</div>
+        <div>
+          <strong>LiftBot</strong>
+          <span>by Brandinglift</span>
+        </div>
+      </a>
+
+      <nav class="lb-nav">
+        <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><span class="ico">■</span> Dashboard</a>
+        <a href="{% url 'employee_list' %}" class="{% if 'employee' in request.resolver_match.url_name %}active{% endif %}"><span class="ico">◉</span> AI Employees</a>
+        {% if primary_employee %}
+        <a href="{% url 'knowledge_list' primary_employee.pk %}" class="{% if 'knowledge' in request.resolver_match.url_name %}active{% endif %}"><span class="ico">☰</span> Knowledge Base</a>
+        <a href="{% url 'employee_edit' primary_employee.pk %}" class="{% if request.resolver_match.url_name == 'employee_edit' %}active{% endif %}"><span class="ico">✦</span> Personality</a>
+        <a href="{% url 'employee_detail' primary_employee.pk %}" class="{% if request.resolver_match.url_name == 'employee_detail' %}active{% endif %}"><span class="ico">⧉</span> Website Widget</a>
+        <a href="{% url 'employee_playground' primary_employee.pk %}" class="{% if request.resolver_match.url_name == 'employee_playground' %}active{% endif %}"><span class="ico">▶</span> Playground</a>
+        {% else %}
+        <a href="{% url 'employee_hire' %}"><span class="ico">☰</span> Knowledge Base</a>
+        <a href="{% url 'employee_hire' %}"><span class="ico">✦</span> Personality</a>
+        <a href="{% url 'employee_hire' %}"><span class="ico">⧉</span> Website Widget</a>
+        {% endif %}
+        <a href="{% url 'leads' %}" class="{% if request.resolver_match.url_name == 'leads' %}active{% endif %}"><span class="ico">◎</span> Leads</a>
+        <a href="{% url 'conversations' %}" class="{% if request.resolver_match.url_name == 'conversations' %}active{% endif %}"><span class="ico">▤</span> Conversations</a>
+        <a href="{% url 'billing' %}" class="{% if request.resolver_match.url_name == 'billing' %}active{% endif %}"><span class="ico">◈</span> Analytics & Billing</a>
+        <a href="/admin/" target="_blank"><span class="ico">⚙</span> Settings</a>
+      </nav>
+
+      <div class="lb-sidebar-foot">
+        {% if current_workspace %}
+        <div class="lb-plan-card">
+          <p>Your Plan</p>
+          <strong>{{ current_workspace.plan.name|default:'Unassigned' }}</strong>
+          <div class="usage" title="Usage {{ current_workspace.usage_percent|floatformat:0 }}%">
+            <span style="width: {{ current_workspace.usage_percent|floatformat:0 }}%"></span>
+          </div>
+          <a class="lb-btn-upgrade" href="{% url 'billing' %}">Upgrade Plan</a>
+        </div>
+        {% endif %}
+        <a href="{% url 'billing' %}" style="display:block;color:#9CA3AF;font-size:12px;padding:6px 8px;text-decoration:none;">Documentation</a>
+        <form method="post" action="{% url 'logout' %}" style="margin:0;">
+          {% csrf_token %}
+          <button type="submit" style="background:none;border:0;color:#9CA3AF;font-size:12px;padding:6px 8px;cursor:pointer;">Log out</button>
+        </form>
+      </div>
+    </aside>
+
+    <div class="lb-main">
+      <header class="lb-topbar">
+        <div>
+          <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+          <p class="sub">{% block page_subtitle %}Welcome back!{% endblock %}</p>
+        </div>
+        <div class="lb-top-actions">
+          {% block top_actions %}{% endblock %}
+          <div class="lb-userchip">
+            <div class="lb-avatar">{{ user.first_name|default:user.email|slice:":2"|upper }}</div>
+            <div class="meta">
+              <strong>{{ user.first_name|default:user.email }}</strong>
+              <span>{{ current_workspace.name|default:'Workspace' }}</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {% if messages %}
+      <div class="lb-messages">
+        {% for message in messages %}
+          <div class="lb-flash">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="lb-content">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,19 @@
+{% extends 'base_app.html' %}
+{% block title %}Add training — {{ employee.name }}{% endblock %}
+{% block page_title %}Add training material{% endblock %}
+{% block page_subtitle %}For {{ employee.name }}{% endblock %}
+{% block content %}
+<div class="lb-card" style="max-width:560px;padding:24px;">
+  <form method="post" enctype="multipart/form-data" class="lb-form">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="field">
+      <label>{{ field.label }}</label>
+      {{ field }}
+      {{ field.errors }}
+    </div>
+    {% endfor %}
+    <button class="lb-btn lb-btn-primary" type="submit">Queue training</button>
+  </form>
+</div>
+{% endblock %}

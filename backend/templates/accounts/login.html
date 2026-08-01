@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Log in — LiftBot{% endblock %}
+{% block content %}
+<div style="max-width:420px;margin:20px auto;background:#fff;border:1px solid #E5E7EB;border-radius:16px;padding:28px;box-shadow:0 8px 24px rgba(16,24,40,.06);">
+  <h1 style="margin:0 0 18px;font-size:24px;font-weight:800;">Welcome back</h1>
+  <form method="post" style="display:flex;flex-direction:column;gap:12px;">
+    {% csrf_token %}
+    {% for field in form %}
+    <div>
+      <label style="display:block;font-size:13px;font-weight:600;margin-bottom:5px;">{{ field.label }}</label>
+      {{ field }}
+      {% if field.errors %}<div style="color:#DC2626;font-size:12px;">{{ field.errors|striptags }}</div>{% endif %}
+    </div>
+    {% endfor %}
+    <button style="margin-top:6px;background:#7C3AED;color:#fff;border:0;border-radius:999px;padding:12px;font-weight:700;cursor:pointer;">Log in</button>
+  </form>
+  <p style="font-size:13px;margin:14px 0 0;"><a href="{% url 'password_reset' %}" style="color:#7C3AED;font-weight:600;">Forgot password?</a></p>
+</div>
+<style>input{width:100%;border:1px solid #E5E7EB;border-radius:10px;padding:10px 12px;font:inherit}</style>
+{% endblock %}

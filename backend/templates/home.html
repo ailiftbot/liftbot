@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}LiftBot — Hire AI Employees{% endblock %}
+{% block content %}
+<section style="border-radius:24px;overflow:hidden;background:linear-gradient(135deg,#0B1220 0%,#4C1D95 55%,#7C3AED 100%);color:#fff;padding:56px 40px;position:relative;">
+  <div style="position:absolute;inset:0;opacity:.25;background:radial-gradient(circle at 20% 20%,#fff 0,transparent 35%),radial-gradient(circle at 80% 70%,#C4B5FD 0,transparent 30%);"></div>
+  <div style="position:relative;max-width:560px;">
+    <div style="font-size:42px;font-weight:800;letter-spacing:-.03em;margin-bottom:10px;">LiftBot</div>
+    <h1 style="margin:0 0 12px;font-size:22px;font-weight:650;">Hire, train, and deploy AI Employees on your website.</h1>
+    <p style="margin:0 0 22px;color:#E9D5FF;line-height:1.55;">Named specialists with personality, trained on your business data — not a generic chat box.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <a href="{% url 'signup' %}" style="background:#fff;color:#4C1D95;padding:12px 18px;border-radius:999px;font-weight:700;text-decoration:none;">Hire your first AI Employee</a>
+      <a href="{% url 'login' %}" style="border:1px solid rgba(255,255,255,.4);color:#fff;padding:12px 18px;border-radius:999px;font-weight:600;text-decoration:none;">Log in</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

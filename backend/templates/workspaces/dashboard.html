@@ -1,0 +1,296 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}Dashboard — LiftBot{% endblock %}
+{% block page_title %}Dashboard 👋{% endblock %}
+{% block page_subtitle %}Welcome back{% if user.first_name %}, {{ user.first_name }}{% endif %}! Manage your AI Employees from one place.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'dashboard.css' %}" />
+{% endblock %}
+
+{% block top_actions %}
+  {% if primary_employee %}
+  <a class="lb-btn lb-btn-ghost" href="{% url 'employee_playground' primary_employee.pk %}">Preview Employee</a>
+  <a class="lb-btn lb-btn-primary" href="{% url 'employee_edit' primary_employee.pk %}">Save Changes</a>
+  {% else %}
+  <a class="lb-btn lb-btn-primary" href="{% url 'employee_hire' %}">Hire AI Employee</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+{% if not workspace %}
+  <div class="lb-card" style="padding:24px;">
+    <h2 style="margin-top:0;">Create your workspace</h2>
+    <p style="color:var(--lb-muted);">Sign up again or contact support — no workspace is linked to this account.</p>
+  </div>
+{% else %}
+
+{% if employees|length > 1 %}
+<form class="employee-switch" method="get">
+  <label for="employee" style="font-size:13px;font-weight:600;color:var(--lb-muted);">Active AI Employee</label>
+  <select id="employee" name="employee" onchange="this.form.submit()">
+    {% for e in employees %}
+      <option value="{{ e.id }}" {% if primary_employee and e.id == primary_employee.id %}selected{% endif %}>
+        {{ e.name }} — {{ e.get_role_display }}
+      </option>
+    {% endfor %}
+  </select>
+</form>
+{% endif %}
+
+{% if workspace.is_near_quota %}
+<div class="lb-flash" style="margin:0 0 14px;border-color:#FDE68A;color:#92400E;background:#FFFBEB;">
+  Usage is at {{ usage_percent|floatformat:0 }}%.
+  {% if workspace.is_over_quota %}New conversations are blocked until you upgrade.{% else %}You're approaching your plan limit.{% endif %}
+  <a href="{% url 'billing' %}" style="color:var(--lb-purple);font-weight:700;">View billing</a>
+</div>
+{% endif %}
+
+<div class="dash-grid">
+  <div class="dash-left">
+    <!-- Setup Progress -->
+    <section class="stepper">
+      <div class="stepper-head">
+        <h2>Setup Progress</h2>
+        <span>{{ completed_steps }}/{{ setup_steps|length }} completed</span>
+      </div>
+      <div class="stepper-track">
+        {% for step in setup_steps %}
+        <div class="step {% if step.done %}done{% endif %}">
+          <div class="bubble">{% if step.done %}✓{% else %}{{ forloop.counter }}{% endif %}</div>
+          <div class="label">{{ step.label }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Management cards + overview -->
+    <section class="mgmt-grid">
+      {% for card in cards %}
+      <article class="mgmt-card">
+        <div class="icon">{{ card.icon }}</div>
+        <h3>{{ card.title }}</h3>
+        <p>{{ card.desc }}</p>
+        <div class="row">
+          {% if card.done %}
+            <span class="lb-badge lb-badge-green"><span class="lb-dot"></span> Completed</span>
+          {% else %}
+            <span class="lb-badge lb-badge-orange"><span class="lb-dot"></span> In Progress</span>
+          {% endif %}
+          {% if card.url == 'knowledge' and primary_employee %}
+            <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'knowledge_list' primary_employee.pk %}">{{ card.cta }}</a>
+          {% elif card.url == 'edit' and primary_employee %}
+            <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'employee_edit' primary_employee.pk %}">{{ card.cta }}</a>
+          {% elif card.url == 'hire' %}
+            <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'employee_hire' %}">{{ card.cta }}</a>
+          {% else %}
+            <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'billing' %}">{{ card.cta }}</a>
+          {% endif %}
+        </div>
+      </article>
+      {% endfor %}
+
+      <aside class="overview">
+        <h3>Employee Overview</h3>
+        {% if primary_employee %}
+        <div class="overview-row"><span>Status</span><strong style="color:var(--lb-green);">{% if primary_employee.is_active %}● Active{% else %}Inactive{% endif %}</strong></div>
+        <div class="overview-row"><span>Employee</span><strong>{{ primary_employee.name }}</strong></div>
+        <div class="overview-row"><span>Role</span><strong>{{ primary_employee.get_role_display }}</strong></div>
+        <div class="overview-row"><span>Conversations</span><strong>{{ conversation_count }}</strong></div>
+        <div class="overview-row"><span>Leads Captured</span><strong>{{ lead_count }}</strong></div>
+        <div class="overview-row"><span>Knowledge items</span><strong>{{ knowledge_count }}</strong></div>
+        <div class="overview-row"><span>FAQs</span><strong>{{ faq_count }}</strong></div>
+        <div class="overview-row"><span>Language</span><strong>{{ primary_employee.language|upper }}</strong></div>
+        <div class="usage-ring">
+          <label><span>Token / plan usage</span><span>{{ usage_percent|floatformat:0 }}%</span></label>
+          <div class="usage-bar"><i style="width:{{ usage_percent|floatformat:0 }}%"></i></div>
+        </div>
+        {% else %}
+        <p style="font-size:13px;color:var(--lb-muted);margin:0;">Hire an AI Employee to see live stats.</p>
+        <a class="lb-btn lb-btn-primary lb-btn-sm" style="margin-top:12px;" href="{% url 'employee_hire' %}">Hire now</a>
+        {% endif %}
+      </aside>
+    </section>
+
+    <!-- Quick setup + recent conversations -->
+    <section class="bottom-grid">
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Quick Setup</h3>
+        </div>
+        {% for item in quick_setup %}
+        <div class="quick-item {% if item.done %}done{% endif %}">
+          <div class="quick-num">{% if item.done %}✓{% else %}{{ item.n }}{% endif %}</div>
+          <div>
+            <h4>{{ item.title }}</h4>
+            <p>{{ item.desc }}</p>
+          </div>
+          {% if item.done %}
+            <span class="lb-badge lb-badge-green">Completed</span>
+          {% elif item.pk %}
+            <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url item.href_name item.pk %}">{{ item.cta }}</a>
+          {% else %}
+            <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url item.href_name %}">{{ item.cta }}</a>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Recent Conversations</h3>
+          <a href="{% url 'conversations' %}">View All Conversations</a>
+        </div>
+        {% for s in sessions %}
+        <div class="conv-item">
+          <div class="conv-av" style="background:{% cycle '#7C3AED' '#2563EB' '#059669' '#D97706' '#DB2777' %}">{{ s.initials }}</div>
+          <div>
+            <h4>Visitor {{ s.visitor }}</h4>
+            <p>{{ s.snippet }}</p>
+          </div>
+          <time>{{ s.when }}</time>
+        </div>
+        {% empty %}
+        <p style="font-size:13px;color:var(--lb-muted);margin:8px 0;">No conversations yet. Install the widget or use Playground.</p>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+
+  <!-- Right: live preview + install -->
+  <aside class="dash-right">
+    <div class="preview-card">
+      <h3>AI Employee Preview</h3>
+      <div class="widget-frame" id="dash-preview"
+           {% if primary_employee %}
+           data-token="{{ primary_employee.widget_token }}"
+           data-api="/api/widget/"
+           data-name="{{ primary_employee.name }}"
+           data-role="{{ primary_employee.get_role_display }}"
+           data-greeting="{{ primary_employee.greeting_message }}"
+           data-color="{{ primary_employee.brand_color|default:workspace.brand_color }}"
+           {% endif %}>
+        {% if primary_employee %}
+        <div class="widget-head" style="background:{{ primary_employee.brand_color|default:workspace.brand_color|default:'#7C3AED' }}">
+          <div class="bot-av">{{ primary_employee.name|slice:":1" }}</div>
+          <div>
+            <strong>{{ primary_employee.name }}</strong>
+            <span>{{ primary_employee.get_role_display }} · We're online</span>
+          </div>
+        </div>
+        <div class="widget-messages" id="dash-msgs">
+          <div class="bubble-bot" id="dash-greeting"></div>
+          <div class="quick-replies" id="dash-quick">
+            <button type="button" data-q="What services do you offer?">About our services</button>
+            <button type="button" data-q="What are your prices?">Pricing information</button>
+            <button type="button" data-q="How can I contact you?">Contact support</button>
+          </div>
+        </div>
+        <form class="widget-form" id="dash-form">
+          <input id="dash-input" type="text" placeholder="Type your message..." autocomplete="off" />
+          <button type="submit" aria-label="Send">➤</button>
+        </form>
+        {% else %}
+        <div style="padding:24px;text-align:center;color:var(--lb-muted);font-size:13px;">
+          Hire an AI Employee to preview the live widget here.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="install-card">
+      <h3>Install on Your Website</h3>
+      <p>Paste this snippet before <code>&lt;/body&gt;</code>. Visitors meet your named AI Employee — never a generic assistant.</p>
+      {% if embed_snippet %}
+      <div class="codebox" id="embed-code">{{ embed_snippet }}<button type="button" id="copy-embed">Copy</button></div>
+      <p style="margin-top:10px;"><a href="{% url 'employee_detail' primary_employee.pk %}" style="color:var(--lb-purple);font-size:12px;font-weight:600;text-decoration:none;">View installation guide →</a></p>
+      {% else %}
+      <div class="codebox">Hire an AI Employee to get your embed code.</div>
+      {% endif %}
+    </div>
+  </aside>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if primary_employee %}
+<script>
+(() => {
+  const root = document.getElementById('dash-preview');
+  if (!root || !root.dataset.token) return;
+  const token = root.dataset.token;
+  const api = root.dataset.api;
+  const msgs = document.getElementById('dash-msgs');
+  const greeting = document.getElementById('dash-greeting');
+  const form = document.getElementById('dash-form');
+  const input = document.getElementById('dash-input');
+  let sessionId = null;
+  let busy = false;
+
+  greeting.textContent = root.dataset.greeting || ('Hi! I am ' + root.dataset.name + '.');
+
+  function add(who, text) {
+    const el = document.createElement('div');
+    el.className = who === 'you' ? 'bubble-user' : 'bubble-bot';
+    el.textContent = text;
+    const quick = document.getElementById('dash-quick');
+    if (quick) quick.remove();
+    msgs.appendChild(el);
+    msgs.scrollTop = msgs.scrollHeight;
+    return el;
+  }
+
+  async function send(msg) {
+    if (!msg || busy) return;
+    busy = true;
+    add('you', msg);
+    const thinking = add('them', 'Thinking…');
+    try {
+      const res = await fetch(api + 'message/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ token, message: msg, session_id: sessionId, stream: false }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        thinking.textContent = data.error || 'Could not reply right now.';
+      } else {
+        if (data.session_id) sessionId = data.session_id;
+        thinking.textContent = data.reply || 'No reply.';
+      }
+    } catch (e) {
+      thinking.textContent = 'Network error.';
+    } finally {
+      busy = false;
+    }
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const msg = input.value.trim();
+    input.value = '';
+    send(msg);
+  });
+
+  document.getElementById('dash-quick')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-q]');
+    if (!btn) return;
+    send(btn.dataset.q);
+  });
+
+  document.getElementById('copy-embed')?.addEventListener('click', async () => {
+    const box = document.getElementById('embed-code');
+    const text = box.childNodes[0].textContent.trim();
+    try {
+      await navigator.clipboard.writeText(text);
+      const btn = document.getElementById('copy-embed');
+      btn.textContent = 'Copied';
+      setTimeout(() => btn.textContent = 'Copy', 1500);
+    } catch (_) {}
+  });
+})();
+</script>
+{% endif %}
+{% endblock %}

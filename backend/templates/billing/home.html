@@ -1,0 +1,46 @@
+{% extends 'base_app.html' %}
+{% block title %}Billing — LiftBot{% endblock %}
+{% block page_title %}Analytics & Billing{% endblock %}
+{% block page_subtitle %}Usage, plan limits, and invoices. Plans are assigned manually for MVP.{% endblock %}
+{% block content %}
+{% if workspace %}
+<div class="lb-card" style="padding:20px;margin-bottom:16px;">
+  <div style="font-size:12px;color:var(--lb-muted);">Current plan</div>
+  <div style="font-size:22px;font-weight:750;margin:4px 0 8px;">{{ workspace.plan.name|default:'None' }}</div>
+  <div style="font-size:13px;color:var(--lb-muted);margin-bottom:10px;">
+    Usage {{ workspace.usage_percent|floatformat:0 }}% ·
+    {{ workspace.conversations_used }}/{{ workspace.conversation_limit }} conversations ·
+    {{ workspace.tokens_used }}/{{ workspace.token_limit }} tokens
+  </div>
+  <div class="usage-bar" style="height:8px;border-radius:999px;background:#F3F4F6;overflow:hidden;">
+    <i style="display:block;height:100%;width:{{ workspace.usage_percent|floatformat:0 }}%;background:linear-gradient(90deg,#A78BFA,#7C3AED);"></i>
+  </div>
+</div>
+{% endif %}
+
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px;">
+  {% for plan in plans %}
+  <div class="lb-card" style="padding:18px;{% if workspace.plan_id == plan.id %}outline:2px solid #7C3AED;{% endif %}">
+    <div style="font-weight:750;font-size:18px;">{{ plan.name }}</div>
+    <div style="font-size:28px;font-weight:800;margin:8px 0;">${{ plan.price_monthly }}<span style="font-size:14px;color:var(--lb-muted);font-weight:500;">/mo</span></div>
+    <ul style="margin:0;padding-left:18px;font-size:13px;color:#4B5563;line-height:1.7;">
+      <li>{{ plan.employee_limit }} AI Employee{{ plan.employee_limit|pluralize }}</li>
+      <li>{{ plan.conversation_limit }} conversations</li>
+      <li>{{ plan.token_limit }} tokens</li>
+    </ul>
+  </div>
+  {% endfor %}
+</div>
+
+<h3 style="font-size:15px;margin:0 0 10px;">Invoices</h3>
+<div class="lb-card" style="overflow:hidden;">
+  {% for inv in invoices %}
+  <div style="display:flex;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #F3F4F6;font-size:13px;">
+    <span>#{{ inv.id }} · {{ inv.plan.name }} · ${{ inv.amount }}</span>
+    <span class="lb-badge lb-badge-purple">{{ inv.get_status_display }}</span>
+  </div>
+  {% empty %}
+  <div style="padding:22px 16px;color:var(--lb-muted);font-size:13px;">No invoices yet.</div>
+  {% endfor %}
+</div>
+{% endblock %}

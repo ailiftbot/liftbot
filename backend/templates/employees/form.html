@@ -1,0 +1,19 @@
+{% extends 'base_app.html' %}
+{% block title %}{{ title }} — LiftBot{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_subtitle %}Name, role, personality, and brand — never a generic assistant.{% endblock %}
+{% block content %}
+<div class="lb-card" style="max-width:560px;padding:24px;">
+  <form method="post" enctype="multipart/form-data" class="lb-form">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="field">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {{ field.errors }}
+    </div>
+    {% endfor %}
+    <button class="lb-btn lb-btn-primary" type="submit">Save</button>
+  </form>
+</div>
+{% endblock %}

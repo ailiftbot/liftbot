@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.utils import timezone
@@ -88,9 +87,7 @@ def dashboard(request):
     steps = _setup_steps(workspace, primary, knowledge_count)
     completed_steps = sum(1 for s in steps if s['done'])
 
-    embed_snippet = ''
-    if primary:
-        embed_snippet = primary.embed_snippet(settings.PUBLIC_WIDGET_URL)
+    embed_snippet = primary.embed_snippet() if primary else ''
 
     cards = [
         {

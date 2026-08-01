@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
@@ -57,7 +56,7 @@ def employee_hire(request):
 def employee_detail(request, pk):
     workspace = _workspace_or_redirect(request)
     employee = get_object_or_404(AIEmployee, pk=pk, workspace=workspace)
-    snippet = employee.embed_snippet(settings.PUBLIC_WIDGET_URL)
+    snippet = employee.embed_snippet()
     return render(request, 'employees/detail.html', {
         'employee': employee,
         'embed_snippet': snippet,

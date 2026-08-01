@@ -35,6 +35,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'apps.chat.cors.WidgetCorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -125,8 +126,17 @@ CELERY_RESULT_SERIALIZER = 'json'
 
 RAG_SERVICE_URL = env('RAG_SERVICE_URL', default='http://127.0.0.1:8100')
 RAG_INTERNAL_TOKEN = env('RAG_INTERNAL_TOKEN', default='liftbot-rag-internal-token')
-PUBLIC_APP_URL = env('PUBLIC_APP_URL', default='http://localhost:8000')
-PUBLIC_WIDGET_URL = env('PUBLIC_WIDGET_URL', default='http://localhost:8000/static/widget.js')
+
+# Public URLs for website widget embed (from .env)
+PUBLIC_APP_URL = env('PUBLIC_APP_URL', default='http://localhost:8001').rstrip('/')
+PUBLIC_WIDGET_URL = env(
+    'PUBLIC_WIDGET_URL',
+    default=f'{PUBLIC_APP_URL}/static/widget.js',
+)
+PUBLIC_WIDGET_API_URL = env(
+    'PUBLIC_WIDGET_API_URL',
+    default=f'{PUBLIC_APP_URL}/api/widget',
+).rstrip('/')
 
 # Product copy rule: never say "chatbot" in UI.
 PRODUCT_NAME = 'LiftBot'

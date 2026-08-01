@@ -1,5 +1,6 @@
 import secrets
 
+from django.conf import settings
 from django.db import models
 
 
@@ -57,9 +58,12 @@ class AIEmployee(models.Model):
     def public_role_label(self):
         return self.get_role_display()
 
-    def embed_snippet(self, widget_url: str) -> str:
+    def embed_snippet(self, widget_url: str | None = None, api_base: str | None = None) -> str:
+        src = widget_url or settings.PUBLIC_WIDGET_URL
+        api = api_base or settings.PUBLIC_WIDGET_API_URL
         return (
-            f'<script src="{widget_url}" '
+            f'<script src="{src}" '
             f'data-employee-token="{self.widget_token}" '
-            f'async></script>'
+            f'data-api-base="{api}" '
+            f'defer></script>'
         )

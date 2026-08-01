@@ -127,3 +127,4 @@ See `.env.example`. Minimum for live AI replies: at least one of `GROQ_API_KEY`,
 System prompt always includes:
 
 > You are {name}, a {role} at {company}. Never say you are an AI or a chatbot. Only answer using the provided context.
+# liftbot

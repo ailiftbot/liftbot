@@ -5,7 +5,7 @@ from apps.billing.models import BillingPlan
 
 PLANS = [
     {
-        'name': 'Starter',
+        'name': '1 AI Employee',
         'slug': 'starter',
         'price_monthly': 19,
         'conversation_limit': 500,
@@ -13,26 +13,26 @@ PLANS = [
         'employee_limit': 1,
     },
     {
-        'name': 'Pro',
+        'name': '3 AI Employees',
         'slug': 'pro',
         'price_monthly': 49,
         'conversation_limit': 2_500,
         'token_limit': 1_000_000,
-        'employee_limit': 5,
+        'employee_limit': 3,
     },
     {
-        'name': 'Business',
+        'name': 'Unlimited AI Employees',
         'slug': 'business',
         'price_monthly': 99,
         'conversation_limit': 10_000,
         'token_limit': 5_000_000,
-        'employee_limit': 20,
+        'employee_limit': 999,
     },
 ]
 
 
 class Command(BaseCommand):
-    help = 'Seed Starter / Pro / Business billing plans'
+    help = 'Seed 1 / 3 / Unlimited AI Employee billing plans'
 
     def handle(self, *args, **options):
         for data in PLANS:

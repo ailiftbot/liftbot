@@ -1,7 +1,13 @@
 {% extends 'base_app.html' %}
 {% block title %}Billing — LiftBot{% endblock %}
-{% block page_title %}Analytics & Billing{% endblock %}
-{% block page_subtitle %}Usage, plan limits, and invoices. Plans are assigned manually for MVP.{% endblock %}
+{% block page_title %}Billing{% endblock %}
+{% block page_subtitle %}Seat plans (1 / 3 / Unlimited AI Employees). Stripe checkout when keys are set; otherwise assign manually.{% endblock %}
+
+{% block top_actions %}
+<a class="lb-btn lb-btn-ghost" href="{% url 'analytics' %}">Analytics</a>
+<a class="lb-btn lb-btn-ghost" href="{% url 'settings' %}">Settings</a>
+{% endblock %}
+
 {% block content %}
 {% if workspace %}
 <div class="lb-card" style="padding:20px;margin-bottom:16px;">
@@ -12,9 +18,10 @@
     {{ workspace.conversations_used }}/{{ workspace.conversation_limit }} conversations ·
     {{ workspace.tokens_used }}/{{ workspace.token_limit }} tokens
   </div>
-  <div class="usage-bar" style="height:8px;border-radius:999px;background:#F3F4F6;overflow:hidden;">
+  <div style="height:8px;border-radius:999px;background:#F3F4F6;overflow:hidden;">
     <i style="display:block;height:100%;width:{{ workspace.usage_percent|floatformat:0 }}%;background:linear-gradient(90deg,#A78BFA,#7C3AED);"></i>
   </div>
+  <p style="margin:12px 0 0;font-size:12px;"><a href="{% url 'analytics' %}" style="color:var(--lb-purple);font-weight:600;text-decoration:none;">View full analytics →</a></p>
 </div>
 {% endif %}
 
@@ -23,11 +30,18 @@
   <div class="lb-card" style="padding:18px;{% if workspace.plan_id == plan.id %}outline:2px solid #7C3AED;{% endif %}">
     <div style="font-weight:750;font-size:18px;">{{ plan.name }}</div>
     <div style="font-size:28px;font-weight:800;margin:8px 0;">${{ plan.price_monthly }}<span style="font-size:14px;color:var(--lb-muted);font-weight:500;">/mo</span></div>
-    <ul style="margin:0;padding-left:18px;font-size:13px;color:#4B5563;line-height:1.7;">
-      <li>{{ plan.employee_limit }} AI Employee{{ plan.employee_limit|pluralize }}</li>
+    <ul style="margin:0 0 14px;padding-left:18px;font-size:13px;color:#4B5563;line-height:1.7;">
+      <li>{% if plan.employee_limit >= 999 %}Unlimited{% else %}{{ plan.employee_limit }}{% endif %} AI Employee{{ plan.employee_limit|pluralize }}</li>
       <li>{{ plan.conversation_limit }} conversations</li>
       <li>{{ plan.token_limit }} tokens</li>
     </ul>
+    {% if workspace.plan_id != plan.id %}
+    <form method="post" action="{% url 'billing_checkout' plan.slug %}">{% csrf_token %}
+      <button class="lb-btn lb-btn-primary lb-btn-sm" type="submit">{% if stripe_enabled %}Subscribe{% else %}Select plan{% endif %}</button>
+    </form>
+    {% else %}
+    <span class="lb-badge lb-badge-purple">Current</span>
+    {% endif %}
   </div>
   {% endfor %}
 </div>

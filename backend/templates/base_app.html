@@ -36,9 +36,11 @@
         <a href="{% url 'employee_hire' %}"><span class="ico">⧉</span> Website Widget</a>
         {% endif %}
         <a href="{% url 'leads' %}" class="{% if request.resolver_match.url_name == 'leads' %}active{% endif %}"><span class="ico">◎</span> Leads</a>
+        <a href="{% url 'employee_tasks' %}" class="{% if request.resolver_match.url_name == 'employee_tasks' %}active{% endif %}"><span class="ico">✓</span> Employee Tasks</a>
         <a href="{% url 'conversations' %}" class="{% if request.resolver_match.url_name == 'conversations' %}active{% endif %}"><span class="ico">▤</span> Conversations</a>
-        <a href="{% url 'billing' %}" class="{% if request.resolver_match.url_name == 'billing' %}active{% endif %}"><span class="ico">◈</span> Analytics & Billing</a>
-        <a href="/admin/" target="_blank"><span class="ico">⚙</span> Settings</a>
+        <a href="{% url 'analytics' %}" class="{% if request.resolver_match.url_name == 'analytics' %}active{% endif %}"><span class="ico">◈</span> Analytics</a>
+        <a href="{% url 'billing' %}" class="{% if request.resolver_match.url_name == 'billing' %}active{% endif %}"><span class="ico">$</span> Billing</a>
+        <a href="{% url 'settings' %}" class="{% if request.resolver_match.url_name == 'settings' %}active{% endif %}"><span class="ico">⚙</span> Settings</a>
       </nav>
 
       <div class="lb-sidebar-foot">
@@ -52,7 +54,7 @@
           <a class="lb-btn-upgrade" href="{% url 'billing' %}">Upgrade Plan</a>
         </div>
         {% endif %}
-        <a href="{% url 'billing' %}" style="display:block;color:#9CA3AF;font-size:12px;padding:6px 8px;text-decoration:none;">Documentation</a>
+        <a href="{% url 'settings' %}" style="display:block;color:#9CA3AF;font-size:12px;padding:6px 8px;text-decoration:none;">Settings</a>
         <form method="post" action="{% url 'logout' %}" style="margin:0;">
           {% csrf_token %}
           <button type="submit" style="background:none;border:0;color:#9CA3AF;font-size:12px;padding:6px 8px;cursor:pointer;">Log out</button>
@@ -83,6 +85,17 @@
         {% for message in messages %}
           <div class="lb-flash">{{ message }}</div>
         {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if user.is_authenticated and user.profile and not user.profile.email_verified %}
+      <div class="lb-messages">
+        <div class="lb-flash" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+          <span>Verify your email to secure this workspace.</span>
+          <form method="post" action="{% url 'resend_verification' %}" style="margin:0;">{% csrf_token %}
+            <button class="lb-btn lb-btn-primary lb-btn-sm" type="submit">Resend email</button>
+          </form>
+        </div>
       </div>
       {% endif %}
 

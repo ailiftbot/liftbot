@@ -101,20 +101,25 @@ npx create-next-app@latest liftbot-marketing
 
 Connect the Vercel landing “Get started” button to your Docker-hosted LiftBot URL.
 
-### Deploy this repo with Docker (production)
-
-On a VPS:
+## Production deploy (VPS)
 
 ```bash
-git clone <your-repo> liftbot && cd liftbot
 cp .env.example .env
-# set DJANGO_DEBUG=0, strong DJANGO_SECRET_KEY, real ALLOWED_HOSTS, API keys
+# set DJANGO_DEBUG=0, strong DJANGO_SECRET_KEY, real ALLOWED_HOSTS / CSRF,
+# PUBLIC_APP_URL=https://app.yourdomain.com, LLM keys, optional Stripe
 
-docker compose up --build -d
-docker compose exec backend python manage.py createsuperuser
+docker compose -f docker-compose.prod.yml up --build -d
+docker compose -f docker-compose.prod.yml exec backend python manage.py createsuperuser
 ```
 
-Point DNS `app.yourdomain.com` at the server (port 8000 or put Nginx/Caddy in front).
+Nginx listens on port 80 and proxies to Django. Put TLS (Caddy/Certbot) in front for HTTPS.
+
+### Stripe
+
+1. Add `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET` to `.env`
+2. Point Stripe webhook to `https://yourdomain/billing/webhook/stripe/`
+3. Optional: set `stripe_price_id` on each BillingPlan in Admin
+4. Without keys, **Select plan** on Billing still works manually
 
 ---
 

@@ -38,6 +38,7 @@ class ChatRequest(BaseModel):
     message: str
     history: List[ChatMessage] = Field(default_factory=list)
     top_k: int = 4
+    capabilities: List[str] = Field(default_factory=list)
 
 
 def chunk_text(text: str, size: int = 800, overlap: int = 120) -> List[str]:
@@ -75,7 +76,8 @@ def chat(body: ChatRequest):
     system = (
         f'{body.system_prompt}\n\n'
         f'Context from training materials:\n{context}\n\n'
-        'If the context does not contain the answer, say you do not have that information yet.'
+        'Answer as a proactive AI Employee. Take action when appropriate — qualify, collect details, offer scheduling, confirm team handoff.\n'
+        'If the context does not contain the answer, say you will note it and follow up — do not invent facts.'
     )
     history = [m.model_dump() for m in body.history]
     if not history or history[-1].get('content') != body.message:

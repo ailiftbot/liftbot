@@ -1,0 +1,144 @@
+{% extends 'base_app.html' %}
+{% block title %}Analytics — LiftBot{% endblock %}
+{% block page_title %}Analytics{% endblock %}
+{% block page_subtitle %}Conversations, leads, tasks, and plan usage for {{ workspace.name }}.{% endblock %}
+
+{% block top_actions %}
+<a class="lb-btn lb-btn-ghost" href="{% url 'billing' %}">Billing</a>
+<a class="lb-btn lb-btn-primary" href="{% url 'conversations' %}">Conversations</a>
+{% endblock %}
+
+{% block content %}
+<div class="lb-stat-grid">
+  <div class="lb-card lb-stat">
+    <span class="lb-stat-label">Conversations</span>
+    <strong class="lb-stat-value">{{ stats.conv_total }}</strong>
+    <span class="lb-stat-meta">{{ stats.conv_today }} today · {{ stats.conv_7d }} this week</span>
+  </div>
+  <div class="lb-card lb-stat">
+    <span class="lb-stat-label">Leads</span>
+    <strong class="lb-stat-value">{{ stats.lead_total }}</strong>
+    <span class="lb-stat-meta">{{ stats.lead_7d }} this week · {{ stats.lead_30d }} this month</span>
+  </div>
+  <div class="lb-card lb-stat">
+    <span class="lb-stat-label">Open tasks</span>
+    <strong class="lb-stat-value">{{ stats.task_open }}</strong>
+    <span class="lb-stat-meta">{{ stats.task_done }} done · {{ stats.task_handoff }} handoffs</span>
+  </div>
+  <div class="lb-card lb-stat">
+    <span class="lb-stat-label">Messages</span>
+    <strong class="lb-stat-value">{{ stats.msg_total }}</strong>
+    <span class="lb-stat-meta">{{ stats.msg_human }} human · {{ stats.human_sessions }} live takeovers</span>
+  </div>
+</div>
+
+<div class="lb-analytics-grid">
+  <section class="lb-card lb-analytics-panel">
+    <div class="lb-panel-head">
+      <h2>Last 14 days</h2>
+      <div class="lb-legend">
+        <span><i class="dot conv"></i> Conversations</span>
+        <span><i class="dot lead"></i> Leads</span>
+      </div>
+    </div>
+    <div class="lb-chart">
+      {% for day in chart_days %}
+      <div class="lb-chart-col" title="{{ day.date }}: {{ day.conversations }} conv, {{ day.leads }} leads">
+        <div class="bars">
+          <span class="bar conv" style="height:{{ day.conv_pct }}%"></span>
+          <span class="bar lead" style="height:{{ day.lead_pct }}%"></span>
+        </div>
+        <span class="lbl">{{ day.label }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="lb-card lb-analytics-panel">
+    <div class="lb-panel-head">
+      <h2>Plan usage</h2>
+      <a href="{% url 'billing' %}" style="font-size:12px;font-weight:600;color:var(--lb-purple);text-decoration:none;">Upgrade</a>
+    </div>
+    <div class="lb-usage-block">
+      <div class="row">
+        <span>Conversations</span>
+        <strong>{{ usage.conversations }} / {{ usage.conversation_limit }}</strong>
+      </div>
+      <div class="meter"><i style="width:{{ usage.conv_pct }}%"></i></div>
+      <div class="row" style="margin-top:14px;">
+        <span>Tokens</span>
+        <strong>{{ usage.tokens }} / {{ usage.token_limit }}</strong>
+      </div>
+      <div class="meter"><i style="width:{{ usage.tok_pct }}%"></i></div>
+      <p class="hint">Overall usage {{ usage.overall_pct|floatformat:0 }}% · {{ stats.tokens_period }} tokens in the last 30 days · {{ stats.visitors }} remembered visitors · {{ stats.employees }} active AI Employees</p>
+    </div>
+  </section>
+</div>
+
+<section class="lb-card" style="padding:0;overflow:hidden;margin-bottom:16px;">
+  <div class="lb-panel-head" style="padding:16px 18px 0;">
+    <h2>By AI Employee</h2>
+  </div>
+  <div class="lb-table">
+    <div class="lb-table-head">
+      <span>Employee</span>
+      <span>Conversations</span>
+      <span>Leads</span>
+      <span>Open tasks</span>
+    </div>
+    {% for row in employee_rows %}
+    <div class="lb-table-row">
+      <span>
+        <strong>{{ row.employee.name }}</strong>
+        <small>{{ row.employee.get_role_display }}</small>
+      </span>
+      <span>{{ row.conversations }}</span>
+      <span>{{ row.leads }}</span>
+      <span>{{ row.open_tasks }}</span>
+    </div>
+    {% empty %}
+    <div class="lb-empty">Hire an AI Employee to start collecting analytics.</div>
+    {% endfor %}
+  </div>
+</section>
+
+<div class="lb-analytics-grid">
+  <section class="lb-card lb-analytics-panel">
+    <div class="lb-panel-head">
+      <h2>Recent leads</h2>
+      <a href="{% url 'leads' %}" style="font-size:12px;font-weight:600;color:var(--lb-purple);text-decoration:none;">View all</a>
+    </div>
+    <ul class="lb-feed">
+      {% for lead in recent_leads %}
+      <li>
+        <div>
+          <strong>{{ lead.name|default:lead.email|default:'Visitor' }}</strong>
+          <span>{{ lead.employee.name|default:'—' }} · {{ lead.created_at|timesince }} ago</span>
+        </div>
+      </li>
+      {% empty %}
+      <li class="muted">No leads yet.</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="lb-card lb-analytics-panel">
+    <div class="lb-panel-head">
+      <h2>Recent tasks</h2>
+      <a href="{% url 'employee_tasks' %}" style="font-size:12px;font-weight:600;color:var(--lb-purple);text-decoration:none;">View all</a>
+    </div>
+    <ul class="lb-feed">
+      {% for task in recent_tasks %}
+      <li>
+        <div>
+          <strong>{{ task.title }}</strong>
+          <span>{{ task.employee.name }} · {{ task.get_status_display }} · {{ task.created_at|timesince }} ago</span>
+        </div>
+      </li>
+      {% empty %}
+      <li class="muted">No tasks yet.</li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+{% endblock %}

@@ -84,8 +84,10 @@
             <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'employee_edit' primary_employee.pk %}">{{ card.cta }}</a>
           {% elif card.url == 'hire' %}
             <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'employee_hire' %}">{{ card.cta }}</a>
+          {% elif card.url == 'settings' %}
+            <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'settings' %}">{{ card.cta }}</a>
           {% else %}
-            <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'billing' %}">{{ card.cta }}</a>
+            <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'dashboard' %}">{{ card.cta }}</a>
           {% endif %}
         </div>
       </article>
@@ -99,6 +101,7 @@
         <div class="overview-row"><span>Role</span><strong>{{ primary_employee.get_role_display }}</strong></div>
         <div class="overview-row"><span>Conversations</span><strong>{{ conversation_count }}</strong></div>
         <div class="overview-row"><span>Leads Captured</span><strong>{{ lead_count }}</strong></div>
+        <div class="overview-row"><span>Open Tasks</span><strong>{{ task_count }}</strong></div>
         <div class="overview-row"><span>Knowledge items</span><strong>{{ knowledge_count }}</strong></div>
         <div class="overview-row"><span>FAQs</span><strong>{{ faq_count }}</strong></div>
         <div class="overview-row"><span>Language</span><strong>{{ primary_employee.language|upper }}</strong></div>
@@ -201,9 +204,11 @@
 
     <div class="install-card">
       <h3>Install on Your Website</h3>
-      <p>Paste this snippet before <code>&lt;/body&gt;</code>. Visitors meet your named AI Employee — never a generic assistant.</p>
+      <p><strong>Single employee</strong> — one teammate on the page:</p>
       {% if embed_snippet %}
-      <div class="codebox" id="embed-code">{{ embed_snippet }}<button type="button" id="copy-embed">Copy</button></div>
+      <div class="codebox" id="embed-code" style="margin-bottom:12px;">{{ embed_snippet }}<button type="button" id="copy-embed">Copy</button></div>
+      <p style="margin:0 0 8px;font-size:12px;color:var(--lb-muted);"><strong>Whole team</strong> — visitor picks department:</p>
+      <div class="codebox" id="team-embed-code">{{ team_embed_snippet }}<button type="button" id="copy-team-embed">Copy</button></div>
       <p style="margin-top:10px;"><a href="{% url 'employee_detail' primary_employee.pk %}" style="color:var(--lb-purple);font-size:12px;font-weight:600;text-decoration:none;">View installation guide →</a></p>
       {% else %}
       <div class="codebox">Hire an AI Employee to get your embed code.</div>
@@ -278,6 +283,16 @@
     const btn = e.target.closest('button[data-q]');
     if (!btn) return;
     send(btn.dataset.q);
+  });
+
+  document.getElementById('copy-team-embed')?.addEventListener('click', async () => {
+    const box = document.getElementById('team-embed-code');
+    const text = box.childNodes[0].textContent.trim();
+    try {
+      await navigator.clipboard.writeText(text);
+      document.getElementById('copy-team-embed').textContent = 'Copied';
+      setTimeout(() => document.getElementById('copy-team-embed').textContent = 'Copy', 1500);
+    } catch (_) {}
   });
 
   document.getElementById('copy-embed')?.addEventListener('click', async () => {

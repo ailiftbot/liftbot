@@ -1,24 +1,31 @@
 {% extends 'base_app.html' %}
 {% block title %}Conversations — LiftBot{% endblock %}
 {% block page_title %}Conversations{% endblock %}
-{% block page_subtitle %}Full history of visitor chats with your AI Employees.{% endblock %}
+{% block page_subtitle %}Live chats with visitors. Take over anytime to reply as a teammate.{% endblock %}
 {% block content %}
 <div style="display:flex;flex-direction:column;gap:12px;">
   {% for s in sessions %}
-  <div class="lb-card" style="padding:16px 18px;">
-    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:10px;">
+  <a href="{% url 'conversation_detail' s.pk %}" class="lb-card" style="padding:16px 18px;text-decoration:none;color:inherit;display:block;">
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:10px;gap:12px;flex-wrap:wrap;">
       <strong>{{ s.employee.name }}</strong>
-      <span style="color:var(--lb-muted);">{{ s.last_message_at }}</span>
+      <span>
+        {% if s.status == 'human' %}
+          <span class="lb-badge lb-badge-orange">Human takeover</span>
+        {% else %}
+          <span class="lb-badge lb-badge-green">AI Employee</span>
+        {% endif %}
+        <span style="color:var(--lb-muted);margin-left:8px;">{{ s.last_message_at }}</span>
+      </span>
     </div>
     <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;">
-      {% for m in s.messages.all|slice:':8' %}
+      {% for m in s.messages.all|slice:':4' %}
       <li style="font-size:13px;color:#374151;">
         <span style="color:var(--lb-muted);">{{ m.get_role_display }}:</span>
-        {{ m.content|truncatechars:140 }}
+        {{ m.content|truncatechars:120 }}
       </li>
       {% endfor %}
     </ul>
-  </div>
+  </a>
   {% empty %}
   <div class="lb-card" style="padding:28px;color:var(--lb-muted);">No conversations yet.</div>
   {% endfor %}

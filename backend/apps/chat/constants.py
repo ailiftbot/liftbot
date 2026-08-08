@@ -1,0 +1,30 @@
+# AI Employee capabilities — task-doing features beyond Q&A
+
+CAPABILITY_QUALIFY = 'qualify_visitors'
+CAPABILITY_COLLECT = 'collect_contact'
+CAPABILITY_SCHEDULE = 'schedule_handoff'
+CAPABILITY_NOTIFY = 'notify_team'
+CAPABILITY_REMEMBER = 'remember_visitors'
+
+ALL_CAPABILITIES = (
+    CAPABILITY_QUALIFY,
+    CAPABILITY_COLLECT,
+    CAPABILITY_SCHEDULE,
+    CAPABILITY_NOTIFY,
+    CAPABILITY_REMEMBER,
+)
+
+CAPABILITY_LABELS = {
+    CAPABILITY_QUALIFY: 'Qualify visitors (needs, budget, timeline)',
+    CAPABILITY_COLLECT: 'Collect contact details',
+    CAPABILITY_SCHEDULE: 'Schedule visits / callbacks',
+    CAPABILITY_NOTIFY: 'Notify your team (handoff)',
+    CAPABILITY_REMEMBER: 'Remember returning visitors',
+}
+
+DEFAULT_CAPABILITIES_BY_ROLE = {
+    'sales_agent': [CAPABILITY_QUALIFY, CAPABILITY_COLLECT, CAPABILITY_SCHEDULE, CAPABILITY_NOTIFY, CAPABILITY_REMEMBER],
+    'support_specialist': [CAPABILITY_COLLECT, CAPABILITY_REMEMBER],
+    'booking_assistant': [CAPABILITY_COLLECT, CAPABILITY_SCHEDULE, CAPABILITY_NOTIFY, CAPABILITY_REMEMBER],
+    'lead_gen': [CAPABILITY_QUALIFY, CAPABILITY_COLLECT, CAPABILITY_NOTIFY, CAPABILITY_REMEMBER],
+}

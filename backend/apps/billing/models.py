@@ -8,6 +8,7 @@ class BillingPlan(models.Model):
     conversation_limit = models.PositiveIntegerField()
     token_limit = models.PositiveIntegerField()
     employee_limit = models.PositiveIntegerField(default=1)
+    stripe_price_id = models.CharField(max_length=100, blank=True)
     is_active = models.BooleanField(default=True)
 
     class Meta:
@@ -28,6 +29,7 @@ class Invoice(models.Model):
     plan = models.ForeignKey(BillingPlan, on_delete=models.PROTECT)
     amount = models.DecimalField(max_digits=8, decimal_places=2)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
+    stripe_invoice_id = models.CharField(max_length=100, blank=True)
     period_start = models.DateField()
     period_end = models.DateField()
     notes = models.TextField(blank=True)

@@ -56,10 +56,10 @@ def employee_hire(request):
 def employee_detail(request, pk):
     workspace = _workspace_or_redirect(request)
     employee = get_object_or_404(AIEmployee, pk=pk, workspace=workspace)
-    snippet = employee.embed_snippet()
     return render(request, 'employees/detail.html', {
         'employee': employee,
-        'embed_snippet': snippet,
+        'embed_snippet': employee.embed_snippet(),
+        'team_embed_snippet': workspace.team_embed_snippet(),
         'workspace': workspace,
     })
 

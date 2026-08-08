@@ -1,0 +1,89 @@
+{% extends 'base_app.html' %}
+{% block title %}Conversation #{{ session.id }} — LiftBot{% endblock %}
+{% block page_title %}{{ session.employee.name }}{% endblock %}
+{% block page_subtitle %}Visitor {{ session.visitor_id|slice:":8" }} · {% if session.is_human_mode %}You are in control{% else %}AI Employee active{% endif %}{% endblock %}
+{% block top_actions %}
+  {% if session.is_human_mode %}
+  <form method="post" action="{% url 'conversation_release' session.pk %}">{% csrf_token %}
+    <button class="lb-btn lb-btn-ghost" type="submit">Return to AI Employee</button>
+  </form>
+  {% else %}
+  <form method="post" action="{% url 'conversation_takeover' session.pk %}">{% csrf_token %}
+    <button class="lb-btn lb-btn-primary" type="submit">Take over</button>
+  </form>
+  {% endif %}
+{% endblock %}
+{% block content %}
+<div class="lb-card" style="max-width:720px;overflow:hidden;padding:0;">
+  <div id="live-msgs" style="height:420px;overflow:auto;padding:16px;background:#F9FAFB;display:flex;flex-direction:column;gap:8px;"
+       data-poll="{% url 'conversation_poll' session.pk %}"
+       data-after="{{ messages.last.id|default:0 }}">
+    {% for m in messages %}
+    <div class="msg" data-id="{{ m.id }}" style="align-self:{% if m.role == 'visitor' %}flex-end{% else %}flex-start{% endif %};max-width:85%;">
+      <div style="font-size:11px;color:var(--lb-muted);margin-bottom:2px;">{{ m.get_role_display }}{% if m.author %} · {{ m.author.first_name|default:m.author.email }}{% endif %}</div>
+      <div style="padding:8px 12px;border-radius:14px;font-size:13px;line-height:1.4;
+        background:{% if m.role == 'visitor' %}#7C3AED{% elif m.role == 'human' %}#DBEAFE{% elif m.role == 'system' %}#FEF3C7{% else %}#fff{% endif %};
+        color:{% if m.role == 'visitor' %}#fff{% else %}#111827{% endif %};
+        border:{% if m.role == 'visitor' %}0{% else %}1px solid #E5E7EB{% endif %};">{{ m.content }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  <form id="reply-form" method="post" action="{% url 'conversation_reply' session.pk %}" style="display:flex;gap:8px;padding:12px;border-top:1px solid #E5E7EB;background:#fff;">
+    {% csrf_token %}
+    <input name="content" id="reply-input" style="flex:1;border:1px solid #E5E7EB;border-radius:999px;padding:10px 14px;" placeholder="Reply as teammate…" autocomplete="off" />
+    <button class="lb-btn lb-btn-primary" type="submit">Send</button>
+  </form>
+</div>
+<script>
+(() => {
+  const box = document.getElementById('live-msgs');
+  let afterId = parseInt(box.dataset.after || '0', 10);
+  const pollUrl = box.dataset.poll;
+
+  function appendMsg(m) {
+    if (document.querySelector('.msg[data-id="'+m.id+'"]')) return;
+    afterId = Math.max(afterId, m.id);
+    const wrap = document.createElement('div');
+    wrap.className = 'msg';
+    wrap.dataset.id = m.id;
+    wrap.style.cssText = 'align-self:' + (m.role === 'visitor' ? 'flex-end' : 'flex-start') + ';max-width:85%;';
+    const role = document.createElement('div');
+    role.style.cssText = 'font-size:11px;color:#6B7280;margin-bottom:2px;';
+    role.textContent = m.role + (m.author ? ' · ' + m.author : '');
+    const bubble = document.createElement('div');
+    const bg = m.role === 'visitor' ? '#7C3AED' : (m.role === 'human' ? '#DBEAFE' : (m.role === 'system' ? '#FEF3C7' : '#fff'));
+    const color = m.role === 'visitor' ? '#fff' : '#111827';
+    bubble.style.cssText = 'padding:8px 12px;border-radius:14px;font-size:13px;line-height:1.4;background:'+bg+';color:'+color+';border:'+(m.role==='visitor'?'0':'1px solid #E5E7EB')+';';
+    bubble.textContent = m.content;
+    wrap.appendChild(role); wrap.appendChild(bubble);
+    box.appendChild(wrap);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  setInterval(async () => {
+    try {
+      const res = await fetch(pollUrl + '?after_id=' + afterId);
+      const data = await res.json();
+      (data.messages || []).forEach(appendMsg);
+    } catch (_) {}
+  }, 2000);
+
+  document.getElementById('reply-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = document.getElementById('reply-input');
+    const content = input.value.trim();
+    if (!content) return;
+    const fd = new FormData(e.target);
+    fd.set('content', content);
+    input.value = '';
+    const res = await fetch(e.target.action, {
+      method: 'POST',
+      headers: {'X-Requested-With': 'XMLHttpRequest'},
+      body: fd,
+    });
+    const data = await res.json();
+    if (data.message) appendMsg(data.message);
+  });
+})();
+</script>
+{% endblock %}

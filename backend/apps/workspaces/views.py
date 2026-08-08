@@ -1,9 +1,14 @@
+from datetime import timedelta
+
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.db.models import Count, Sum
+from django.db.models.functions import TruncDate
+from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.timesince import timesince
 
-from apps.chat.models import ChatSession, Message
+from apps.chat.models import ChatSession, Message, EmployeeTask, VisitorProfile
 from apps.employees.models import AIEmployee
 from apps.knowledge.models import KnowledgeSource
 from apps.leads.models import Lead
@@ -61,6 +66,7 @@ def dashboard(request):
     leads_qs = Lead.objects.filter(workspace=workspace) if workspace else Lead.objects.none()
     leads = list(leads_qs.select_related('employee').order_by('-created_at')[:8])
     lead_count = leads_qs.count() if workspace else 0
+    task_count = EmployeeTask.objects.filter(workspace=workspace, status=EmployeeTask.Status.OPEN).count() if workspace else 0
 
     sessions = []
     conversation_count = 0
@@ -88,6 +94,7 @@ def dashboard(request):
     completed_steps = sum(1 for s in steps if s['done'])
 
     embed_snippet = primary.embed_snippet() if primary else ''
+    team_embed_snippet = workspace.team_embed_snippet() if workspace else ''
 
     cards = [
         {
@@ -96,7 +103,7 @@ def dashboard(request):
             'status': 'Completed' if workspace else 'In Progress',
             'done': bool(workspace),
             'cta': 'Edit',
-            'url': 'billing' if workspace else 'dashboard',
+            'url': 'settings' if workspace else 'dashboard',
             'icon': 'BI',
         },
         {
@@ -180,6 +187,8 @@ def dashboard(request):
         'setup_steps': steps,
         'completed_steps': completed_steps,
         'embed_snippet': embed_snippet,
+        'team_embed_snippet': team_embed_snippet,
+        'task_count': task_count,
         'cards': cards,
         'quick_setup': quick_setup,
         'usage_percent': workspace.usage_percent if workspace else 0,
@@ -188,6 +197,215 @@ def dashboard(request):
 
 def home(request):
     if request.user.is_authenticated:
-        from django.shortcuts import redirect
         return redirect('dashboard')
     return render(request, 'home.html')
+
+
+@login_required
+def analytics(request):
+    workspace = user_workspace(request.user)
+    if not workspace:
+        messages.info(request, 'Create a workspace first.')
+        return redirect('dashboard')
+
+    now = timezone.now()
+    day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    week_ago = now - timedelta(days=7)
+    month_ago = now - timedelta(days=30)
+    chart_start = day_start - timedelta(days=13)
+
+    sessions = ChatSession.objects.filter(employee__workspace=workspace)
+    messages_qs = Message.objects.filter(session__employee__workspace=workspace)
+    leads = Lead.objects.filter(workspace=workspace)
+    tasks = EmployeeTask.objects.filter(workspace=workspace)
+    visitors = VisitorProfile.objects.filter(workspace=workspace)
+    employees = list(AIEmployee.objects.filter(workspace=workspace, is_active=True))
+
+    conv_total = sessions.count()
+    conv_7d = sessions.filter(started_at__gte=week_ago).count()
+    conv_30d = sessions.filter(started_at__gte=month_ago).count()
+    conv_today = sessions.filter(started_at__gte=day_start).count()
+
+    msg_total = messages_qs.count()
+    msg_visitor = messages_qs.filter(role=Message.Role.VISITOR).count()
+    msg_employee = messages_qs.filter(role=Message.Role.EMPLOYEE).count()
+    msg_human = messages_qs.filter(role=Message.Role.HUMAN).count()
+    tokens_period = messages_qs.filter(created_at__gte=month_ago).aggregate(t=Sum('tokens_used'))['t'] or 0
+
+    lead_total = leads.count()
+    lead_7d = leads.filter(created_at__gte=week_ago).count()
+    lead_30d = leads.filter(created_at__gte=month_ago).count()
+
+    task_open = tasks.filter(status=EmployeeTask.Status.OPEN).count()
+    task_done = tasks.filter(status=EmployeeTask.Status.DONE).count()
+    task_handoff = tasks.filter(task_type=EmployeeTask.TaskType.HANDOFF).count()
+    task_schedule = tasks.filter(task_type=EmployeeTask.TaskType.SCHEDULE).count()
+    human_sessions = sessions.filter(status=ChatSession.Status.HUMAN).count()
+
+    # Last 14 days conversation chart
+    by_day = {
+        row['day'].date() if hasattr(row['day'], 'date') else row['day']: row['c']
+        for row in (
+            sessions.filter(started_at__gte=chart_start)
+            .annotate(day=TruncDate('started_at'))
+            .values('day')
+            .annotate(c=Count('id'))
+        )
+        if row['day']
+    }
+    leads_by_day = {
+        row['day'].date() if hasattr(row['day'], 'date') else row['day']: row['c']
+        for row in (
+            leads.filter(created_at__gte=chart_start)
+            .annotate(day=TruncDate('created_at'))
+            .values('day')
+            .annotate(c=Count('id'))
+        )
+        if row['day']
+    }
+    chart_days = []
+    max_bar = 1
+    for i in range(14):
+        d = (chart_start + timedelta(days=i)).date()
+        conv_n = by_day.get(d, 0)
+        lead_n = leads_by_day.get(d, 0)
+        max_bar = max(max_bar, conv_n, lead_n)
+        chart_days.append({
+            'label': d.strftime('%a'),
+            'date': d.strftime('%b %d'),
+            'conversations': conv_n,
+            'leads': lead_n,
+        })
+    for day in chart_days:
+        day['conv_pct'] = round((day['conversations'] / max_bar) * 100)
+        day['lead_pct'] = round((day['leads'] / max_bar) * 100)
+
+    # Per-employee breakdown
+    session_counts = dict(
+        sessions.values('employee_id').annotate(c=Count('id')).values_list('employee_id', 'c')
+    )
+    lead_counts = dict(
+        leads.values('employee_id').annotate(c=Count('id')).values_list('employee_id', 'c')
+    )
+    task_counts = dict(
+        tasks.filter(status=EmployeeTask.Status.OPEN)
+        .values('employee_id')
+        .annotate(c=Count('id'))
+        .values_list('employee_id', 'c')
+    )
+    employee_rows = []
+    for emp in employees:
+        employee_rows.append({
+            'employee': emp,
+            'conversations': session_counts.get(emp.id, 0),
+            'leads': lead_counts.get(emp.id, 0),
+            'open_tasks': task_counts.get(emp.id, 0),
+        })
+
+    recent_leads = list(leads.select_related('employee').order_by('-created_at')[:6])
+    recent_tasks = list(
+        tasks.select_related('employee').order_by('-created_at')[:6]
+    )
+
+    conv_limit = workspace.conversation_limit or 1
+    tok_limit = workspace.token_limit or 1
+
+    return render(request, 'workspaces/analytics.html', {
+        'workspace': workspace,
+        'stats': {
+            'conv_total': conv_total,
+            'conv_today': conv_today,
+            'conv_7d': conv_7d,
+            'conv_30d': conv_30d,
+            'msg_total': msg_total,
+            'msg_visitor': msg_visitor,
+            'msg_employee': msg_employee,
+            'msg_human': msg_human,
+            'tokens_period': tokens_period,
+            'lead_total': lead_total,
+            'lead_7d': lead_7d,
+            'lead_30d': lead_30d,
+            'task_open': task_open,
+            'task_done': task_done,
+            'task_handoff': task_handoff,
+            'task_schedule': task_schedule,
+            'human_sessions': human_sessions,
+            'visitors': visitors.count(),
+            'employees': len(employees),
+        },
+        'chart_days': chart_days,
+        'employee_rows': employee_rows,
+        'recent_leads': recent_leads,
+        'recent_tasks': recent_tasks,
+        'usage': {
+            'conversations': workspace.conversations_used,
+            'conversation_limit': workspace.conversation_limit,
+            'conv_pct': min(100, round((workspace.conversations_used / conv_limit) * 100)),
+            'tokens': workspace.tokens_used,
+            'token_limit': workspace.token_limit,
+            'tok_pct': min(100, round((workspace.tokens_used / tok_limit) * 100)),
+            'overall_pct': workspace.usage_percent,
+        },
+    })
+
+
+@login_required
+def workspace_settings(request):
+    workspace = user_workspace(request.user)
+    if not workspace:
+        messages.info(request, 'Create a workspace first.')
+        return redirect('dashboard')
+
+    profile = getattr(request.user, 'profile', None)
+
+    if request.method == 'POST':
+        section = request.POST.get('section') or 'workspace'
+
+        if section == 'workspace':
+            name = (request.POST.get('name') or '').strip()
+            brand = (request.POST.get('brand_color') or '').strip() or '#0F766E'
+            if name:
+                workspace.name = name[:200]
+            if brand.startswith('#') and len(brand) in (4, 7):
+                workspace.brand_color = brand
+            workspace.save(update_fields=['name', 'brand_color', 'updated_at'])
+            messages.success(request, 'Workspace settings saved.')
+
+        elif section == 'webhook':
+            workspace.webhook_url = (request.POST.get('webhook_url') or '').strip()
+            workspace.save(update_fields=['webhook_url', 'updated_at'])
+            messages.success(request, 'Webhook URL saved.')
+
+        elif section == 'account':
+            full_name = (request.POST.get('full_name') or '').strip()
+            first = (request.POST.get('first_name') or '').strip()
+            last = (request.POST.get('last_name') or '').strip()
+            request.user.first_name = first[:150]
+            request.user.last_name = last[:150]
+            request.user.save(update_fields=['first_name', 'last_name'])
+            if profile is not None:
+                profile.full_name = full_name or f'{first} {last}'.strip()
+                profile.save(update_fields=['full_name'])
+            messages.success(request, 'Account updated.')
+
+        elif section == 'regenerate_workspace_token':
+            import secrets
+            workspace.widget_token = secrets.token_urlsafe(24)
+            workspace.save(update_fields=['widget_token', 'updated_at'])
+            messages.success(request, 'Team widget token regenerated. Update embeds that use the old token.')
+
+        return redirect('settings')
+
+    memberships = (
+        WorkspaceMembership.objects
+        .filter(workspace=workspace)
+        .select_related('user')
+        .order_by('created_at')
+    )
+
+    return render(request, 'workspaces/settings.html', {
+        'workspace': workspace,
+        'profile': profile,
+        'memberships': memberships,
+        'team_embed_snippet': workspace.team_embed_snippet(),
+    })

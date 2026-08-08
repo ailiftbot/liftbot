@@ -1,32 +1,47 @@
 {% extends 'base_app.html' %}
 {% block title %}{{ employee.name }} — LiftBot{% endblock %}
 {% block page_title %}{{ employee.name }}{% endblock %}
-{% block page_subtitle %}{{ employee.get_role_display }} · {{ employee.get_personality_display }}{% endblock %}
+{% block page_subtitle %}{{ employee.get_role_display }}{% if employee.department %} · {{ employee.department }}{% endif %}{% endblock %}
 {% block top_actions %}
   <a class="lb-btn lb-btn-ghost" href="{% url 'employee_edit' employee.pk %}">Edit</a>
   <a class="lb-btn lb-btn-ghost" href="{% url 'knowledge_list' employee.pk %}">Train</a>
   <a class="lb-btn lb-btn-primary" href="{% url 'employee_playground' employee.pk %}">Playground</a>
 {% endblock %}
 {% block content %}
-<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;">
+<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px;">
   <div class="lb-card" style="padding:20px;">
-    <h3 style="margin:0 0 8px;font-size:15px;">Website embed</h3>
-    <p style="margin:0 0 12px;color:var(--lb-muted);font-size:13px;">Paste on any page. Visitors meet {{ employee.name }} — not a generic assistant.</p>
+    <h3 style="margin:0 0 8px;font-size:15px;">Single AI Employee embed</h3>
+    <p style="margin:0 0 12px;color:var(--lb-muted);font-size:13px;">Visitors talk directly to {{ employee.name }}.</p>
     <pre style="background:#0B1220;color:#C4B5FD;padding:14px;border-radius:10px;font-size:12px;overflow:auto;white-space:pre-wrap;">{{ embed_snippet }}</pre>
-    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
-      <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'employee_fire' employee.pk %}">Fire employee</a>
-      {% if employee.is_active %}
-      <span class="lb-badge lb-badge-green"><span class="lb-dot"></span> Active</span>
-      {% endif %}
-    </div>
+  </div>
+  <div class="lb-card" style="padding:20px;">
+    <h3 style="margin:0 0 8px;font-size:15px;">Whole team embed</h3>
+    <p style="margin:0 0 12px;color:var(--lb-muted);font-size:13px;">Visitor picks which AI Employee to talk to (Sales, Support, etc.).</p>
+    <pre style="background:#0B1220;color:#C4B5FD;padding:14px;border-radius:10px;font-size:12px;overflow:auto;white-space:pre-wrap;">{{ team_embed_snippet }}</pre>
+  </div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+  <div class="lb-card" style="padding:20px;">
+    <h3 style="margin:0 0 12px;font-size:15px;">What this employee can do</h3>
+    <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.8;color:#374151;">
+      {% for cap in employee.capabilities %}
+      <li>{{ cap|cut:"_"|title }}</li>
+      {% empty %}
+      <li>Default role capabilities</li>
+      {% endfor %}
+    </ul>
+    {% if employee.handoff_email %}
+    <p style="margin:14px 0 0;font-size:12px;color:var(--lb-muted);">Handoffs go to: <strong>{{ employee.handoff_email }}</strong></p>
+    {% endif %}
   </div>
   <div class="lb-card" style="padding:20px;">
     <h3 style="margin:0 0 8px;font-size:15px;">Greeting</h3>
     <p style="margin:0;font-size:14px;line-height:1.5;">{{ employee.greeting_message }}</p>
-    <h3 style="margin:18px 0 8px;font-size:15px;">Brand color</h3>
-    <div style="display:flex;align-items:center;gap:10px;">
-      <span style="width:28px;height:28px;border-radius:8px;background:{{ employee.brand_color|default:'#7C3AED' }};"></span>
-      <code>{{ employee.brand_color|default:'#7C3AED' }}</code>
+    <div style="margin-top:14px;">
+      {% if employee.is_active %}
+      <span class="lb-badge lb-badge-green"><span class="lb-dot"></span> Active AI Employee</span>
+      {% endif %}
+      <a class="lb-btn lb-btn-ghost lb-btn-sm" style="margin-left:8px;" href="{% url 'employee_fire' employee.pk %}">Fire</a>
     </div>
   </div>
 </div>

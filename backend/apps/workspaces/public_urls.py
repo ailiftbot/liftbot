@@ -5,12 +5,15 @@ from django.conf import settings
 
 def public_base_url(request=None) -> str:
     """
-    Prefer the current request host so embeds match the URL you are viewing
-    (e.g. http://liftbot.brandinglift.com:8001). Fall back to PUBLIC_APP_URL.
+    Prefer PUBLIC_APP_URL so embeds never include :8001.
+    The app should be reached via reverse proxy on port 80/443.
     """
+    configured = (getattr(settings, 'PUBLIC_APP_URL', None) or '').rstrip('/')
+    if configured:
+        return configured
     if request is not None:
         return request.build_absolute_uri('/').rstrip('/')
-    return settings.PUBLIC_APP_URL.rstrip('/')
+    return 'http://localhost'
 
 
 def widget_urls(request=None) -> dict:

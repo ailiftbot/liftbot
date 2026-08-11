@@ -210,6 +210,23 @@ def home(request):
     return render(request, 'home.html')
 
 
+def helloworld(request):
+    """Public widget demo page — /helloworld/ or /helloworld/?token=…"""
+    urls = widget_urls(request)
+    token = (request.GET.get('token') or '').strip()
+    if not token and request.user.is_authenticated:
+        workspace = user_workspace(request.user)
+        if workspace:
+            emp = AIEmployee.objects.filter(workspace=workspace, is_active=True).first()
+            if emp:
+                token = emp.widget_token
+    return render(request, 'helloworld.html', {
+        'employee_token': token,
+        'widget_url': urls['widget'],
+        'api_base': urls['api'],
+    })
+
+
 @login_required
 def analytics(request):
     workspace = user_workspace(request.user)

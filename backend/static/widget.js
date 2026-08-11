@@ -16,10 +16,22 @@
 
   var employeeToken = script.getAttribute('data-employee-token');
   var workspaceToken = script.getAttribute('data-workspace-token');
-  var apiBase = (
-    script.getAttribute('data-api-base') ||
-    script.src.replace(/\/static\/widget\.js(\?.*)?$/, '') + '/api/widget'
-  ).replace(/\/$/, '');
+  // Prefer data-api-base; otherwise derive from the script's own src host
+  // so embeds work when loaded from http://liftbot.brandinglift.com:8001/static/widget.js
+  var derivedApi = '';
+  try {
+    if (script.src) {
+      derivedApi = new URL(script.src, window.location.href).href
+        .replace(/\/static\/widget\.js(\?.*)?$/i, '')
+        .replace(/\/$/, '') + '/api/widget';
+    }
+  } catch (e) {
+    derivedApi = '';
+  }
+  var apiBase = (script.getAttribute('data-api-base') || derivedApi).replace(/\/$/, '');
+  if (!apiBase) {
+    console.warn('[LiftBot] Missing data-api-base and could not derive API URL from script src.');
+  }
 
   var storageKey = workspaceToken
     ? 'liftbot_ws_visitor_' + workspaceToken

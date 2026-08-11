@@ -168,7 +168,7 @@
       <div class="widget-frame" id="dash-preview"
            {% if primary_employee %}
            data-token="{{ primary_employee.widget_token }}"
-           data-api="/api/widget/"
+           data-api="{{ public_widget_api }}/"
            data-name="{{ primary_employee.name }}"
            data-role="{{ primary_employee.get_role_display }}"
            data-greeting="{{ primary_employee.greeting_message }}"

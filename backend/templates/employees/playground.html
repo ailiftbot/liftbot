@@ -8,7 +8,7 @@
     <strong>{{ employee.name }}</strong>
     <div style="font-size:12px;opacity:.9;">{{ employee.get_role_display }} · We're online</div>
   </div>
-  <div id="playground" data-token="{{ employee.widget_token }}" data-greeting="{{ employee.greeting_message }}" data-api="/api/widget/"
+  <div id="playground" data-token="{{ employee.widget_token }}" data-greeting="{{ employee.greeting_message }}" data-api="{{ public_widget_api }}/"
        style="height:420px;display:flex;flex-direction:column;">
     <div id="pg-messages" style="flex:1;overflow:auto;padding:14px;background:#F9FAFB;display:flex;flex-direction:column;gap:8px;"></div>
     <form id="pg-form" style="display:flex;gap:8px;padding:10px;border-top:1px solid #E5E7EB;background:#fff;">

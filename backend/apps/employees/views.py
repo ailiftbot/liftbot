@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
+from apps.workspaces.public_urls import widget_urls
 from apps.workspaces.views import user_workspace
 
 from .forms import AIEmployeeForm
@@ -56,10 +57,13 @@ def employee_hire(request):
 def employee_detail(request, pk):
     workspace = _workspace_or_redirect(request)
     employee = get_object_or_404(AIEmployee, pk=pk, workspace=workspace)
+    urls = widget_urls(request)
     return render(request, 'employees/detail.html', {
         'employee': employee,
-        'embed_snippet': employee.embed_snippet(),
-        'team_embed_snippet': workspace.team_embed_snippet(),
+        'embed_snippet': employee.embed_snippet(widget_url=urls['widget'], api_base=urls['api']),
+        'team_embed_snippet': workspace.team_embed_snippet(
+            widget_url=urls['widget'], api_base=urls['api']
+        ),
         'workspace': workspace,
     })
 
@@ -95,4 +99,9 @@ def employee_fire(request, pk):
 def playground(request, pk):
     workspace = _workspace_or_redirect(request)
     employee = get_object_or_404(AIEmployee, pk=pk, workspace=workspace)
-    return render(request, 'employees/playground.html', {'employee': employee, 'workspace': workspace})
+    urls = widget_urls(request)
+    return render(request, 'employees/playground.html', {
+        'employee': employee,
+        'workspace': workspace,
+        'public_widget_api': urls['api'],
+    })

@@ -14,6 +14,7 @@ from apps.knowledge.models import KnowledgeSource
 from apps.leads.models import Lead
 
 from .models import WorkspaceMembership
+from .public_urls import widget_urls
 
 
 def user_workspace(user):
@@ -93,8 +94,14 @@ def dashboard(request):
     steps = _setup_steps(workspace, primary, knowledge_count)
     completed_steps = sum(1 for s in steps if s['done'])
 
-    embed_snippet = primary.embed_snippet() if primary else ''
-    team_embed_snippet = workspace.team_embed_snippet() if workspace else ''
+    urls = widget_urls(request)
+    embed_snippet = (
+        primary.embed_snippet(widget_url=urls['widget'], api_base=urls['api']) if primary else ''
+    )
+    team_embed_snippet = (
+        workspace.team_embed_snippet(widget_url=urls['widget'], api_base=urls['api'])
+        if workspace else ''
+    )
 
     cards = [
         {
@@ -192,6 +199,8 @@ def dashboard(request):
         'cards': cards,
         'quick_setup': quick_setup,
         'usage_percent': workspace.usage_percent if workspace else 0,
+        'public_widget_api': urls['api'],
+        'public_widget_url': urls['widget'],
     })
 
 
@@ -403,9 +412,13 @@ def workspace_settings(request):
         .order_by('created_at')
     )
 
+    urls = widget_urls(request)
     return render(request, 'workspaces/settings.html', {
         'workspace': workspace,
         'profile': profile,
         'memberships': memberships,
-        'team_embed_snippet': workspace.team_embed_snippet(),
+        'team_embed_snippet': workspace.team_embed_snippet(
+            widget_url=urls['widget'], api_base=urls['api']
+        ),
+        'public_app_url': urls['app'],
     })

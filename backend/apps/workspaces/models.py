@@ -63,11 +63,13 @@ class Workspace(models.Model):
     def is_near_quota(self):
         return self.usage_percent >= 80
 
-    def team_embed_snippet(self) -> str:
+    def team_embed_snippet(self, widget_url: str | None = None, api_base: str | None = None) -> str:
+        src = widget_url or settings.PUBLIC_WIDGET_URL
+        api = api_base or settings.PUBLIC_WIDGET_API_URL
         return (
-            f'<script src="{settings.PUBLIC_WIDGET_URL}" '
+            f'<script src="{src}" '
             f'data-workspace-token="{self.widget_token}" '
-            f'data-api-base="{settings.PUBLIC_WIDGET_API_URL}" '
+            f'data-api-base="{api}" '
             f'defer></script>'
         )
 

@@ -4,11 +4,15 @@
 {% block page_subtitle %}Test {{ employee.name }} with your live knowledge and personality.{% endblock %}
 {% block content %}
 <div class="lb-card" style="max-width:480px;overflow:hidden;padding:0;">
-  <div style="padding:14px 16px;color:#fff;background:{{ employee.brand_color|default:workspace.brand_color|default:'#7C3AED' }};">
-    <strong>{{ employee.name }}</strong>
-    <div style="font-size:12px;opacity:.9;">{{ employee.get_role_display }} · We're online</div>
+  <div style="padding:14px 16px;color:#fff;background:{{ employee.brand_color|default:workspace.brand_color|default:'#7C3AED' }};display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <strong>{{ employee.name }}</strong>
+      <div style="font-size:12px;opacity:.9;">{{ employee.get_role_display }} · We're online</div>
+    </div>
+    <button id="pg-reset" type="button" style="background:rgba(255,255,255,.15);border:none;color:#fff;font-size:11px;padding:4px 8px;border-radius:999px;cursor:pointer;">New chat</button>
   </div>
-  <div id="playground" data-token="{{ employee.widget_token }}" data-greeting="{{ employee.greeting_message }}" data-api="{{ public_widget_api }}/"
+  <div id="playground" data-token="{{ employee.widget_token }}" data-greeting="{{ employee.greeting_message }}"
+       data-api="{{ public_widget_api }}/" data-history-url="{% url 'playground_history' employee.pk %}"
        style="height:420px;display:flex;flex-direction:column;">
     <div id="pg-messages" style="flex:1;overflow:auto;padding:14px;background:#F9FAFB;display:flex;flex-direction:column;gap:8px;"></div>
     <form id="pg-form" style="display:flex;gap:8px;padding:10px;border-top:1px solid #E5E7EB;background:#fff;">
@@ -22,10 +26,14 @@
   const root = document.getElementById('playground');
   const token = root.dataset.token;
   const api = root.dataset.api;
+  const historyUrl = root.dataset.historyUrl;
   const box = document.getElementById('pg-messages');
   const input = document.getElementById('pg-input');
   const sendBtn = document.getElementById('pg-send');
-  let sessionId = null, busy = false;
+  const storageKey = 'lb_playground_session_' + token;
+  let sessionId = localStorage.getItem(storageKey) || null;
+  let busy = false;
+
   function add(who, text) {
     const el = document.createElement('div');
     el.style.cssText = 'max-width:85%;padding:8px 12px;border-radius:14px;font-size:13px;line-height:1.4;' +
@@ -37,7 +45,36 @@
     box.scrollTop = box.scrollHeight;
     return el;
   }
-  add('them', root.dataset.greeting || 'Hi!');
+
+  async function loadHistory() {
+    if (!sessionId) {
+      add('them', root.dataset.greeting || 'Hi!');
+      return;
+    }
+    try {
+      const res = await fetch(historyUrl + '?session_id=' + encodeURIComponent(sessionId));
+      const data = await res.json().catch(() => ({}));
+      if (data.messages && data.messages.length) {
+        data.messages.forEach(m => add(m.role === 'visitor' ? 'you' : 'them', m.content));
+      } else {
+        localStorage.removeItem(storageKey);
+        sessionId = null;
+        add('them', root.dataset.greeting || 'Hi!');
+      }
+    } catch (_) {
+      add('them', root.dataset.greeting || 'Hi!');
+    }
+  }
+
+  document.getElementById('pg-reset').addEventListener('click', () => {
+    localStorage.removeItem(storageKey);
+    sessionId = null;
+    box.innerHTML = '';
+    add('them', root.dataset.greeting || 'Hi!');
+  });
+
+  loadHistory();
+
   document.getElementById('pg-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     if (busy) return;
@@ -54,7 +91,10 @@
       });
       const data = await res.json().catch(() => ({}));
       thinking.textContent = res.ok ? (data.reply || 'No reply.') : (data.error || 'Could not reply.');
-      if (data.session_id) sessionId = data.session_id;
+      if (data.session_id) {
+        sessionId = data.session_id;
+        localStorage.setItem(storageKey, sessionId);
+      }
     } catch (_) {
       thinking.textContent = 'Network error.';
     } finally {

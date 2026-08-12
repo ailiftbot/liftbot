@@ -69,7 +69,7 @@ def _get_employee(token: str) -> AIEmployee:
 def _employee_payload(employee: AIEmployee) -> dict:
     color = employee.brand_color or employee.workspace.brand_color
     avatar_url = employee.avatar.url if employee.avatar else ''
-    caps = employee.capabilities or employee.default_capabilities()
+    caps = employee.capabilities if employee.capabilities is not None else employee.default_capabilities()
     actions = []
     if 'collect_contact' in caps:
         actions.append({'id': 'collect_contact', 'label': 'Share my details'})
@@ -122,7 +122,8 @@ def widget_config(request):
     workspace = employee.workspace
     payload = _employee_payload(employee)
 
-    if visitor_id and 'remember_visitors' in (employee.capabilities or employee.default_capabilities()):
+    caps_for_config = employee.capabilities if employee.capabilities is not None else employee.default_capabilities()
+    if visitor_id and 'remember_visitors' in caps_for_config:
         resume = get_resume_context(workspace, visitor_id)
         payload.update(resume)
         profile = get_or_create_profile(workspace, visitor_id)

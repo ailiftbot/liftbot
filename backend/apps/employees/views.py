@@ -1,7 +1,9 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
+from apps.chat.models import ChatSession
 from apps.workspaces.public_urls import widget_urls
 from apps.workspaces.views import user_workspace
 
@@ -105,3 +107,17 @@ def playground(request, pk):
         'workspace': workspace,
         'public_widget_api': urls['api'],
     })
+
+
+@login_required
+def playground_history(request, pk):
+    workspace = _workspace_or_redirect(request)
+    if not workspace:
+        return JsonResponse({'messages': []})
+    employee = get_object_or_404(AIEmployee, pk=pk, workspace=workspace)
+    session_id = request.GET.get('session_id')
+    session = ChatSession.objects.filter(pk=session_id, employee=employee).first() if session_id else None
+    if not session:
+        return JsonResponse({'messages': []})
+    msgs = session.messages.order_by('id').values('role', 'content')
+    return JsonResponse({'session_id': session.id, 'messages': list(msgs)})

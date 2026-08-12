@@ -53,7 +53,7 @@ class AIEmployee(models.Model):
     def build_system_prompt(self) -> str:
         company = self.workspace.name if self.workspace_id else 'the company'
         dept = self.department or self.get_role_display()
-        caps = self.capabilities or self.default_capabilities()
+        caps = self.capabilities if self.capabilities is not None else self.default_capabilities()
 
         lines = [
             f'You are {self.name}, an AI Employee working as {dept} at {company}.',
@@ -95,7 +95,7 @@ class AIEmployee(models.Model):
     def save(self, *args, **kwargs):
         if not self.widget_token:
             self.widget_token = secrets.token_urlsafe(24)
-        if not self.capabilities:
+        if self.capabilities is None:
             self.capabilities = self.default_capabilities()
         if not self.system_prompt:
             self.system_prompt = self.build_system_prompt()

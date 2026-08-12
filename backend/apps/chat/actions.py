@@ -108,7 +108,7 @@ def create_task(workspace, employee, session, task_type, title, details, lead=No
 def create_tasks_for_intents(workspace, employee, session, message: str, profile, lead=None) -> list[EmployeeTask]:
     from apps.chat.constants import CAPABILITY_NOTIFY, CAPABILITY_SCHEDULE, CAPABILITY_QUALIFY
 
-    caps = set(employee.capabilities or [])
+    caps = set(employee.capabilities) if employee.capabilities is not None else set(employee.default_capabilities())
     created = []
     for intent in detect_intents(message):
         if intent == EmployeeTask.TaskType.SCHEDULE and CAPABILITY_SCHEDULE not in caps:
@@ -156,7 +156,7 @@ def handle_widget_action(workspace, employee, session, profile, action: str, dat
         CAPABILITY_COLLECT, CAPABILITY_NOTIFY, CAPABILITY_SCHEDULE,
     )
 
-    caps = set(employee.capabilities or employee.default_capabilities())
+    caps = set(employee.capabilities) if employee.capabilities is not None else set(employee.default_capabilities())
     lead = None
 
     if action == 'collect_contact':

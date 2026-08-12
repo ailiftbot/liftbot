@@ -39,11 +39,12 @@ class AIEmployeeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance.pk:
-            self.fields['capability_choices'].initial = self.instance.capabilities or self.instance.default_capabilities()
+            self.fields['capability_choices'].initial = self.instance.capabilities if self.instance.capabilities is not None else self.instance.default_capabilities()
 
     def save(self, commit=True):
         employee = super().save(commit=False)
-        employee.capabilities = self.cleaned_data.get('capability_choices') or employee.default_capabilities()
+        caps = self.cleaned_data.get('capability_choices')
+        employee.capabilities = caps if caps is not None else employee.default_capabilities()
         employee.system_prompt = employee.build_system_prompt()
         if commit:
             employee.save()

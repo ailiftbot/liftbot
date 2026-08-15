@@ -168,6 +168,9 @@
     var sessionId = localStorage.getItem(sessionKey(token)) || null;
     var lastMsgId = 0;
     var pollTimer = null;
+    var bodyLockApplied = false;
+    var bodyOverflow = '';
+    var bodyOverscrollBehavior = '';
 
     var launcher = el('button', {
       type: 'button',
@@ -195,6 +198,24 @@
     function closePanel() {
       open = false;
       panel.style.display = 'none';
+      setBodyScrollLocked(false);
+    }
+
+    function setBodyScrollLocked(locked) {
+      if (!document.body) return;
+      if (locked && isMobileViewport()) {
+        if (!bodyLockApplied) {
+          bodyOverflow = document.body.style.overflow || '';
+          bodyOverscrollBehavior = document.body.style.overscrollBehavior || '';
+          bodyLockApplied = true;
+        }
+        document.body.style.overflow = 'hidden';
+        document.body.style.overscrollBehavior = 'none';
+      } else if (bodyLockApplied) {
+        document.body.style.overflow = bodyOverflow;
+        document.body.style.overscrollBehavior = bodyOverscrollBehavior;
+        bodyLockApplied = false;
+      }
     }
 
     function applyResponsiveLayout() {
@@ -233,6 +254,7 @@
           height: '56px',
         });
       }
+      setBodyScrollLocked(open && isMobileViewport());
     }
 
     var header = el('div', {
@@ -483,13 +505,15 @@
     renderActions();
 
     launcher.addEventListener('click', function () {
-      open = !open;
-      panel.style.display = open ? 'flex' : 'none';
       if (open) {
-        applyResponsiveLayout();
-        input.focus();
-        if (humanMode || sessionId) startPolling();
+        closePanel();
+        return;
       }
+      open = true;
+      panel.style.display = 'flex';
+      applyResponsiveLayout();
+      input.focus();
+      if (humanMode || sessionId) startPolling();
     });
 
     form.addEventListener('submit', function (e) {

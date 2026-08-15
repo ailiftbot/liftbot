@@ -241,20 +241,34 @@
       if (!open || !isMobileViewport()) return;
       applyResponsiveLayout();
       if (visualViewportResizeTimer) window.clearTimeout(visualViewportResizeTimer);
-      visualViewportResizeTimer = window.setTimeout(applyResponsiveLayout, 120);
+      // iOS animates the keyboard open/close over ~250-350ms, and reports
+      // viewport size in more than one step, so we re-check a few times
+      // instead of trusting a single resize/scroll event.
+      visualViewportResizeTimer = window.setTimeout(applyResponsiveLayout, 80);
+      window.setTimeout(applyResponsiveLayout, 250);
+      window.setTimeout(applyResponsiveLayout, 400);
     }
 
     function applyResponsiveLayout() {
       if (isMobileViewport()) {
         var viewport = getViewportBox();
         Object.assign(panel.style, {
-          top: viewport.top + 'px',
+          position: 'fixed',
+          top: '0',
+          left: '0',
           right: 'auto',
           bottom: 'auto',
-          left: viewport.left + 'px',
           width: viewport.width + 'px',
           maxWidth: viewport.width + 'px',
           height: viewport.height + 'px',
+          // transform instead of top/left: on iOS Safari, position:fixed
+          // elements are laid out against the *layout* viewport, which does
+          // not shrink when the keyboard opens - only the *visual* viewport
+          // does. Setting top/left directly leaves the panel positioned
+          // against the wrong reference and it slides off-screen. A
+          // transform is GPU-composited and tracks the visual viewport
+          // correctly, so the panel stays fully visible above the keyboard.
+          transform: 'translate(' + viewport.left + 'px, ' + viewport.top + 'px)',
           borderRadius: '0',
         });
         Object.assign(launcher.style, {
@@ -272,6 +286,7 @@
           width: '360px',
           maxWidth: 'calc(100vw - 24px)',
           height: '560px',
+          transform: 'none',
           borderRadius: '18px',
         });
         Object.assign(launcher.style, {
@@ -282,10 +297,18 @@
         });
       }
       setBodyScrollLocked(open && isMobileViewport());
+      if (open) {
+        window.requestAnimationFrame(function () {
+          messages.scrollTop = messages.scrollHeight;
+        });
+      }
     }
 
     var header = el('div', {
-      style: { background: color, color: '#fff', padding: '14px 16px', display: 'flex', gap: '10px', alignItems: 'center' },
+      style: {
+        background: color, color: '#fff', padding: '14px 16px', display: 'flex', gap: '10px',
+        alignItems: 'center', flexShrink: '0',
+      },
     }, [
       cfg.avatar_url ? el('img', { src: cfg.avatar_url, alt: '', style: { width: '40px', height: '40px', borderRadius: '999px', objectFit: 'cover' } }) : null,
       el('div', {}, [
@@ -316,7 +339,7 @@
     var resumeBar = null;
     if (cfg.returning_visitor && cfg.resume_message) {
       resumeBar = el('div', {
-        style: { padding: '10px 12px', background: '#EDE9FE', borderBottom: '1px solid #DDD6FE', fontSize: '12px', color: '#5B21B6', lineHeight: '1.4' },
+        style: { padding: '10px 12px', background: '#EDE9FE', borderBottom: '1px solid #DDD6FE', fontSize: '12px', color: '#5B21B6', lineHeight: '1.4', flexShrink: '0' },
       });
       resumeBar.appendChild(document.createTextNode(cfg.resume_message));
       var resumeActions = el('div', { style: { display: 'flex', gap: '6px', marginTop: '8px' } });
@@ -337,8 +360,13 @@
       resumeBar.appendChild(resumeActions);
     }
 
-    var messages = el('div', { style: { flex: '1', overflowY: 'auto', padding: '14px', background: '#f7faf9', height: '280px' } });
-    var actionBar = el('div', { style: { padding: '8px 10px', borderTop: '1px solid #E5E7EB', display: 'flex', flexWrap: 'wrap', gap: '6px', background: '#fff' } });
+    var messages = el('div', {
+      style: {
+        flex: '1', minHeight: '0', overflowY: 'auto', padding: '14px', background: '#f7faf9',
+        WebkitOverflowScrolling: 'touch',
+      },
+    });
+    var actionBar = el('div', { style: { padding: '8px 10px', borderTop: '1px solid #E5E7EB', display: 'flex', flexWrap: 'wrap', gap: '6px', background: '#fff', flexShrink: '0' } });
     var form = el('form', {
       style: {
         display: 'flex',
@@ -347,6 +375,7 @@
         paddingBottom: 'calc(10px + env(safe-area-inset-bottom))',
         borderTop: '1px solid #e5e7eb',
         background: '#fff',
+        flexShrink: '0',
       },
     });
     var input = el('input', {
@@ -354,7 +383,7 @@
       placeholder: 'Message ' + cfg.name + '…',
       style: { flex: '1', border: '1px solid #d1d5db', borderRadius: '999px', padding: '10px 14px', outline: 'none', fontSize: '16px' },
     });
-    var send = el('button', { type: 'submit', style: { border: '0', borderRadius: '999px', background: color, color: '#fff', padding: '0 16px', cursor: 'pointer' }, text: 'Send' });
+    var send = el('button', { type: 'submit', style: { border: '0', borderRadius: '999px', background: color, color: '#fff', padding: '0 16px', cursor: 'pointer', flexShrink: '0' }, text: 'Send' });
     form.appendChild(input);
     form.appendChild(send);
 
@@ -558,12 +587,15 @@
 
     input.addEventListener('focus', function () {
       applyResponsiveLayout();
-      window.setTimeout(applyResponsiveLayout, 120);
-      window.setTimeout(applyResponsiveLayout, 260);
+      window.requestAnimationFrame(applyResponsiveLayout);
+      window.setTimeout(applyResponsiveLayout, 100);
+      window.setTimeout(applyResponsiveLayout, 300);
+      window.setTimeout(applyResponsiveLayout, 500);
     });
 
     input.addEventListener('blur', function () {
-      window.setTimeout(applyResponsiveLayout, 120);
+      window.setTimeout(applyResponsiveLayout, 100);
+      window.setTimeout(applyResponsiveLayout, 300);
     });
 
     form.addEventListener('submit', function (e) {

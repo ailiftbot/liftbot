@@ -71,6 +71,10 @@
     });
   }
 
+  function isMobileViewport() {
+    return window.matchMedia && window.matchMedia('(max-width: 640px)').matches;
+  }
+
   function startWithEmployee(token) {
     fetchJson(apiBase + '/config/?token=' + encodeURIComponent(token) + '&visitor_id=' + encodeURIComponent(visitorId))
       .then(function (cfg) {
@@ -91,6 +95,29 @@
           fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif', overflow: 'hidden',
         },
       });
+      var resizeRoster = function () {
+        if (isMobileViewport()) {
+          Object.assign(panel.style, {
+            left: '12px',
+            right: '12px',
+            bottom: '12px',
+            width: 'auto',
+            maxWidth: 'none',
+            maxHeight: '70vh',
+          });
+        } else {
+          Object.assign(panel.style, {
+            left: 'auto',
+            right: '20px',
+            bottom: '20px',
+            width: '320px',
+            maxWidth: 'calc(100vw - 24px)',
+            maxHeight: 'none',
+          });
+        }
+      };
+      resizeRoster();
+      window.addEventListener('resize', resizeRoster);
       panel.appendChild(el('div', {
         style: { background: color, color: '#fff', padding: '14px 16px', fontWeight: '700', fontSize: '14px' },
         text: roster.workspace + ' — Choose your AI Employee',
@@ -107,7 +134,11 @@
         });
         btn.appendChild(el('div', { style: { fontWeight: '650', fontSize: '13px' }, text: emp.name }));
         btn.appendChild(el('div', { style: { fontSize: '11px', color: '#6B7280', marginTop: '2px' }, text: emp.role }));
-        btn.addEventListener('click', function () { panel.remove(); startWithEmployee(emp.token); });
+        btn.addEventListener('click', function () {
+          window.removeEventListener('resize', resizeRoster);
+          panel.remove();
+          startWithEmployee(emp.token);
+        });
         list.appendChild(btn);
       });
       panel.appendChild(list);
@@ -161,6 +192,49 @@
       },
     });
 
+    function closePanel() {
+      open = false;
+      panel.style.display = 'none';
+    }
+
+    function applyResponsiveLayout() {
+      if (isMobileViewport()) {
+        Object.assign(panel.style, {
+          top: '0',
+          right: '0',
+          bottom: '0',
+          left: '0',
+          width: '100vw',
+          maxWidth: '100vw',
+          height: '100dvh',
+          borderRadius: '0',
+        });
+        Object.assign(launcher.style, {
+          right: '12px',
+          bottom: '12px',
+          width: '52px',
+          height: '52px',
+        });
+      } else {
+        Object.assign(panel.style, {
+          top: 'auto',
+          right: '20px',
+          bottom: '88px',
+          left: 'auto',
+          width: '360px',
+          maxWidth: 'calc(100vw - 24px)',
+          height: '560px',
+          borderRadius: '18px',
+        });
+        Object.assign(launcher.style, {
+          right: '20px',
+          bottom: '20px',
+          width: '56px',
+          height: '56px',
+        });
+      }
+    }
+
     var header = el('div', {
       style: { background: color, color: '#fff', padding: '14px 16px', display: 'flex', gap: '10px', alignItems: 'center' },
     }, [
@@ -169,7 +243,26 @@
         el('div', { style: { fontWeight: '700' }, text: cfg.name }),
         el('div', { id: 'lb-status', style: { fontSize: '12px', opacity: '0.9' }, text: cfg.role + ' · AI Employee' }),
       ]),
+      el('button', {
+        type: 'button',
+        'aria-label': 'Close chat',
+        style: {
+          marginLeft: 'auto',
+          border: '0',
+          background: 'rgba(255,255,255,.18)',
+          color: '#fff',
+          width: '30px',
+          height: '30px',
+          borderRadius: '999px',
+          cursor: 'pointer',
+          fontSize: '16px',
+          lineHeight: '1',
+          padding: '0',
+        },
+        text: '×',
+      }),
     ]);
+    header.lastChild.addEventListener('click', closePanel);
 
     var resumeBar = null;
     if (cfg.returning_visitor && cfg.resume_message) {
@@ -201,7 +294,7 @@
     var input = el('input', {
       type: 'text',
       placeholder: 'Message ' + cfg.name + '…',
-      style: { flex: '1', border: '1px solid #d1d5db', borderRadius: '999px', padding: '10px 14px', outline: 'none' },
+      style: { flex: '1', border: '1px solid #d1d5db', borderRadius: '999px', padding: '10px 14px', outline: 'none', fontSize: '16px' },
     });
     var send = el('button', { type: 'submit', style: { border: '0', borderRadius: '999px', background: color, color: '#fff', padding: '0 16px', cursor: 'pointer' }, text: 'Send' });
     form.appendChild(input);
@@ -214,6 +307,8 @@
     panel.appendChild(form);
     document.body.appendChild(panel);
     document.body.appendChild(launcher);
+    applyResponsiveLayout();
+    window.addEventListener('resize', applyResponsiveLayout);
 
     function pill(bg, solid) {
       return {
@@ -391,6 +486,7 @@
       open = !open;
       panel.style.display = open ? 'flex' : 'none';
       if (open) {
+        applyResponsiveLayout();
         input.focus();
         if (humanMode || sessionId) startPolling();
       }

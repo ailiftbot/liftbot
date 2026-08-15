@@ -171,6 +171,7 @@
     var bodyLockApplied = false;
     var bodyOverflow = '';
     var bodyOverscrollBehavior = '';
+    var visualViewportResizeTimer = null;
 
     var launcher = el('button', {
       type: 'button',
@@ -218,16 +219,42 @@
       }
     }
 
+    function getViewportBox() {
+      var vv = window.visualViewport;
+      if (vv) {
+        return {
+          top: Math.max(0, vv.offsetTop || 0),
+          left: Math.max(0, vv.offsetLeft || 0),
+          width: Math.max(0, vv.width || window.innerWidth || 0),
+          height: Math.max(0, vv.height || window.innerHeight || 0),
+        };
+      }
+      return {
+        top: 0,
+        left: 0,
+        width: window.innerWidth || 0,
+        height: window.innerHeight || 0,
+      };
+    }
+
+    function handleVisualViewportChange() {
+      if (!open || !isMobileViewport()) return;
+      applyResponsiveLayout();
+      if (visualViewportResizeTimer) window.clearTimeout(visualViewportResizeTimer);
+      visualViewportResizeTimer = window.setTimeout(applyResponsiveLayout, 120);
+    }
+
     function applyResponsiveLayout() {
       if (isMobileViewport()) {
+        var viewport = getViewportBox();
         Object.assign(panel.style, {
-          top: '0',
-          right: '0',
-          bottom: '0',
-          left: '0',
-          width: '100vw',
-          maxWidth: '100vw',
-          height: '100dvh',
+          top: viewport.top + 'px',
+          right: 'auto',
+          bottom: 'auto',
+          left: viewport.left + 'px',
+          width: viewport.width + 'px',
+          maxWidth: viewport.width + 'px',
+          height: viewport.height + 'px',
           borderRadius: '0',
         });
         Object.assign(launcher.style, {
@@ -312,7 +339,16 @@
 
     var messages = el('div', { style: { flex: '1', overflowY: 'auto', padding: '14px', background: '#f7faf9', height: '280px' } });
     var actionBar = el('div', { style: { padding: '8px 10px', borderTop: '1px solid #E5E7EB', display: 'flex', flexWrap: 'wrap', gap: '6px', background: '#fff' } });
-    var form = el('form', { style: { display: 'flex', gap: '8px', padding: '10px', borderTop: '1px solid #e5e7eb', background: '#fff' } });
+    var form = el('form', {
+      style: {
+        display: 'flex',
+        gap: '8px',
+        padding: '10px',
+        paddingBottom: 'calc(10px + env(safe-area-inset-bottom))',
+        borderTop: '1px solid #e5e7eb',
+        background: '#fff',
+      },
+    });
     var input = el('input', {
       type: 'text',
       placeholder: 'Message ' + cfg.name + '…',
@@ -331,6 +367,10 @@
     document.body.appendChild(launcher);
     applyResponsiveLayout();
     window.addEventListener('resize', applyResponsiveLayout);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleVisualViewportChange);
+      window.visualViewport.addEventListener('scroll', handleVisualViewportChange);
+    }
 
     function pill(bg, solid) {
       return {
@@ -514,6 +554,16 @@
       applyResponsiveLayout();
       input.focus();
       if (humanMode || sessionId) startPolling();
+    });
+
+    input.addEventListener('focus', function () {
+      applyResponsiveLayout();
+      window.setTimeout(applyResponsiveLayout, 120);
+      window.setTimeout(applyResponsiveLayout, 260);
+    });
+
+    input.addEventListener('blur', function () {
+      window.setTimeout(applyResponsiveLayout, 120);
     });
 
     form.addEventListener('submit', function (e) {

@@ -71,6 +71,10 @@
     });
   }
 
+  function isMobileViewport() {
+    return window.matchMedia && window.matchMedia('(max-width: 640px)').matches;
+  }
+
   function startWithEmployee(token) {
     fetchJson(apiBase + '/config/?token=' + encodeURIComponent(token) + '&visitor_id=' + encodeURIComponent(visitorId))
       .then(function (cfg) {
@@ -91,6 +95,29 @@
           fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif', overflow: 'hidden',
         },
       });
+      var resizeRoster = function () {
+        if (isMobileViewport()) {
+          Object.assign(panel.style, {
+            left: '12px',
+            right: '12px',
+            bottom: '12px',
+            width: 'auto',
+            maxWidth: 'none',
+            maxHeight: '70vh',
+          });
+        } else {
+          Object.assign(panel.style, {
+            left: 'auto',
+            right: '20px',
+            bottom: '20px',
+            width: '320px',
+            maxWidth: 'calc(100vw - 24px)',
+            maxHeight: 'none',
+          });
+        }
+      };
+      resizeRoster();
+      window.addEventListener('resize', resizeRoster);
       panel.appendChild(el('div', {
         style: { background: color, color: '#fff', padding: '14px 16px', fontWeight: '700', fontSize: '14px' },
         text: roster.workspace + ' — Choose your AI Employee',
@@ -107,7 +134,11 @@
         });
         btn.appendChild(el('div', { style: { fontWeight: '650', fontSize: '13px' }, text: emp.name }));
         btn.appendChild(el('div', { style: { fontSize: '11px', color: '#6B7280', marginTop: '2px' }, text: emp.role }));
-        btn.addEventListener('click', function () { panel.remove(); startWithEmployee(emp.token); });
+        btn.addEventListener('click', function () {
+          window.removeEventListener('resize', resizeRoster);
+          panel.remove();
+          startWithEmployee(emp.token);
+        });
         list.appendChild(btn);
       });
       panel.appendChild(list);
@@ -137,6 +168,10 @@
     var sessionId = localStorage.getItem(sessionKey(token)) || null;
     var lastMsgId = 0;
     var pollTimer = null;
+    var bodyLockApplied = false;
+    var bodyOverflow = '';
+    var bodyOverscrollBehavior = '';
+    var visualViewportResizeTimer = null;
 
     var launcher = el('button', {
       type: 'button',
@@ -161,20 +196,150 @@
       },
     });
 
+    function closePanel() {
+      open = false;
+      panel.style.display = 'none';
+      setBodyScrollLocked(false);
+    }
+
+    function setBodyScrollLocked(locked) {
+      if (!document.body) return;
+      if (locked && isMobileViewport()) {
+        if (!bodyLockApplied) {
+          bodyOverflow = document.body.style.overflow || '';
+          bodyOverscrollBehavior = document.body.style.overscrollBehavior || '';
+          bodyLockApplied = true;
+        }
+        document.body.style.overflow = 'hidden';
+        document.body.style.overscrollBehavior = 'none';
+      } else if (bodyLockApplied) {
+        document.body.style.overflow = bodyOverflow;
+        document.body.style.overscrollBehavior = bodyOverscrollBehavior;
+        bodyLockApplied = false;
+      }
+    }
+
+    function getViewportBox() {
+      var vv = window.visualViewport;
+      if (vv) {
+        return {
+          top: Math.max(0, vv.offsetTop || 0),
+          left: Math.max(0, vv.offsetLeft || 0),
+          width: Math.max(0, vv.width || window.innerWidth || 0),
+          height: Math.max(0, vv.height || window.innerHeight || 0),
+        };
+      }
+      return {
+        top: 0,
+        left: 0,
+        width: window.innerWidth || 0,
+        height: window.innerHeight || 0,
+      };
+    }
+
+    function handleVisualViewportChange() {
+      if (!open || !isMobileViewport()) return;
+      applyResponsiveLayout();
+      if (visualViewportResizeTimer) window.clearTimeout(visualViewportResizeTimer);
+      // iOS animates the keyboard open/close over ~250-350ms, and reports
+      // viewport size in more than one step, so we re-check a few times
+      // instead of trusting a single resize/scroll event.
+      visualViewportResizeTimer = window.setTimeout(applyResponsiveLayout, 80);
+      window.setTimeout(applyResponsiveLayout, 250);
+      window.setTimeout(applyResponsiveLayout, 400);
+    }
+
+    function applyResponsiveLayout() {
+      if (isMobileViewport()) {
+        var viewport = getViewportBox();
+        Object.assign(panel.style, {
+          position: 'fixed',
+          top: '0',
+          left: '0',
+          right: 'auto',
+          bottom: 'auto',
+          width: viewport.width + 'px',
+          maxWidth: viewport.width + 'px',
+          height: viewport.height + 'px',
+          // transform instead of top/left: on iOS Safari, position:fixed
+          // elements are laid out against the *layout* viewport, which does
+          // not shrink when the keyboard opens - only the *visual* viewport
+          // does. Setting top/left directly leaves the panel positioned
+          // against the wrong reference and it slides off-screen. A
+          // transform is GPU-composited and tracks the visual viewport
+          // correctly, so the panel stays fully visible above the keyboard.
+          transform: 'translate(' + viewport.left + 'px, ' + viewport.top + 'px)',
+          borderRadius: '0',
+        });
+        Object.assign(launcher.style, {
+          right: '12px',
+          bottom: '12px',
+          width: '52px',
+          height: '52px',
+        });
+      } else {
+        Object.assign(panel.style, {
+          top: 'auto',
+          right: '20px',
+          bottom: '88px',
+          left: 'auto',
+          width: '360px',
+          maxWidth: 'calc(100vw - 24px)',
+          height: '560px',
+          transform: 'none',
+          borderRadius: '18px',
+        });
+        Object.assign(launcher.style, {
+          right: '20px',
+          bottom: '20px',
+          width: '56px',
+          height: '56px',
+        });
+      }
+      setBodyScrollLocked(open && isMobileViewport());
+      if (open) {
+        window.requestAnimationFrame(function () {
+          messages.scrollTop = messages.scrollHeight;
+        });
+      }
+    }
+
     var header = el('div', {
-      style: { background: color, color: '#fff', padding: '14px 16px', display: 'flex', gap: '10px', alignItems: 'center' },
+      style: {
+        background: color, color: '#fff', padding: '14px 16px', display: 'flex', gap: '10px',
+        alignItems: 'center', flexShrink: '0',
+      },
     }, [
       cfg.avatar_url ? el('img', { src: cfg.avatar_url, alt: '', style: { width: '40px', height: '40px', borderRadius: '999px', objectFit: 'cover' } }) : null,
       el('div', {}, [
         el('div', { style: { fontWeight: '700' }, text: cfg.name }),
         el('div', { id: 'lb-status', style: { fontSize: '12px', opacity: '0.9' }, text: cfg.role + ' · AI Employee' }),
       ]),
+      el('button', {
+        type: 'button',
+        'aria-label': 'Close chat',
+        style: {
+          marginLeft: 'auto',
+          border: '0',
+          background: 'rgba(255,255,255,.18)',
+          color: '#fff',
+          width: '30px',
+          height: '30px',
+          borderRadius: '999px',
+          cursor: 'pointer',
+          fontSize: '16px',
+          lineHeight: '1',
+          padding: '0',
+        },
+        text: '×',
+      }),
     ]);
+    header.lastChild.addEventListener('click', closePanel);
 
     var resumeBar = null;
     if (cfg.returning_visitor && cfg.resume_message) {
       resumeBar = el('div', {
-        style: { padding: '10px 12px', background: '#EDE9FE', borderBottom: '1px solid #DDD6FE', fontSize: '12px', color: '#5B21B6', lineHeight: '1.4' },
+        style: { padding: '10px 12px', background: '#EDE9FE', borderBottom: '1px solid #DDD6FE', fontSize: '12px', color: '#5B21B6', lineHeight: '1.4', flexShrink: '0' },
       });
       resumeBar.appendChild(document.createTextNode(cfg.resume_message));
       var resumeActions = el('div', { style: { display: 'flex', gap: '6px', marginTop: '8px' } });
@@ -195,15 +360,30 @@
       resumeBar.appendChild(resumeActions);
     }
 
-    var messages = el('div', { style: { flex: '1', overflowY: 'auto', padding: '14px', background: '#f7faf9', height: '280px' } });
-    var actionBar = el('div', { style: { padding: '8px 10px', borderTop: '1px solid #E5E7EB', display: 'flex', flexWrap: 'wrap', gap: '6px', background: '#fff' } });
-    var form = el('form', { style: { display: 'flex', gap: '8px', padding: '10px', borderTop: '1px solid #e5e7eb', background: '#fff' } });
+    var messages = el('div', {
+      style: {
+        flex: '1', minHeight: '0', overflowY: 'auto', padding: '14px', background: '#f7faf9',
+        WebkitOverflowScrolling: 'touch',
+      },
+    });
+    var actionBar = el('div', { style: { padding: '8px 10px', borderTop: '1px solid #E5E7EB', display: 'flex', flexWrap: 'wrap', gap: '6px', background: '#fff', flexShrink: '0' } });
+    var form = el('form', {
+      style: {
+        display: 'flex',
+        gap: '8px',
+        padding: '10px',
+        paddingBottom: 'calc(10px + env(safe-area-inset-bottom))',
+        borderTop: '1px solid #e5e7eb',
+        background: '#fff',
+        flexShrink: '0',
+      },
+    });
     var input = el('input', {
       type: 'text',
       placeholder: 'Message ' + cfg.name + '…',
-      style: { flex: '1', border: '1px solid #d1d5db', borderRadius: '999px', padding: '10px 14px', outline: 'none' },
+      style: { flex: '1', border: '1px solid #d1d5db', borderRadius: '999px', padding: '10px 14px', outline: 'none', fontSize: '16px' },
     });
-    var send = el('button', { type: 'submit', style: { border: '0', borderRadius: '999px', background: color, color: '#fff', padding: '0 16px', cursor: 'pointer' }, text: 'Send' });
+    var send = el('button', { type: 'submit', style: { border: '0', borderRadius: '999px', background: color, color: '#fff', padding: '0 16px', cursor: 'pointer', flexShrink: '0' }, text: 'Send' });
     form.appendChild(input);
     form.appendChild(send);
 
@@ -214,6 +394,12 @@
     panel.appendChild(form);
     document.body.appendChild(panel);
     document.body.appendChild(launcher);
+    applyResponsiveLayout();
+    window.addEventListener('resize', applyResponsiveLayout);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleVisualViewportChange);
+      window.visualViewport.addEventListener('scroll', handleVisualViewportChange);
+    }
 
     function pill(bg, solid) {
       return {
@@ -388,12 +574,28 @@
     renderActions();
 
     launcher.addEventListener('click', function () {
-      open = !open;
-      panel.style.display = open ? 'flex' : 'none';
       if (open) {
-        input.focus();
-        if (humanMode || sessionId) startPolling();
+        closePanel();
+        return;
       }
+      open = true;
+      panel.style.display = 'flex';
+      applyResponsiveLayout();
+      input.focus();
+      if (humanMode || sessionId) startPolling();
+    });
+
+    input.addEventListener('focus', function () {
+      applyResponsiveLayout();
+      window.requestAnimationFrame(applyResponsiveLayout);
+      window.setTimeout(applyResponsiveLayout, 100);
+      window.setTimeout(applyResponsiveLayout, 300);
+      window.setTimeout(applyResponsiveLayout, 500);
+    });
+
+    input.addEventListener('blur', function () {
+      window.setTimeout(applyResponsiveLayout, 100);
+      window.setTimeout(applyResponsiveLayout, 300);
     });
 
     form.addEventListener('submit', function (e) {

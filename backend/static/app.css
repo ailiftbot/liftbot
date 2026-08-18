@@ -535,7 +535,7 @@ body.lb-app {
   opacity: 1;
 }
 
-/* --- MOBILE RESPONSIVE UPDATES (Hamburger Left, Dashboard Next to it) --- */
+/* --- MOBILE RESPONSIVE UPDATES --- */
 
 @media (max-width: 1100px) {
   .lb-shell { grid-template-columns: 1fr; }
@@ -552,17 +552,11 @@ body.lb-app {
     transition: transform 0.25s ease;
     z-index: 1000;
     padding-top: 56px;
-    overflow: hidden;
+    padding-bottom: 100px; /* <--- Added: space to scroll to the footer */
+    overflow-y: auto;       /* <--- Fixed: CHANGED from hidden to auto */
+    -webkit-overflow-scrolling: touch; /* <--- Added: smooth scroll on iOS */
   }
   .lb-sidebar.open { transform: translateX(0); }
-  .lb-sidebar .lb-nav {
-    min-height: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-    padding-right: 2px;
-  }
-  .lb-sidebar-foot { flex-shrink: 0; }
   .lb-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .lb-analytics-grid,
   .lb-settings-grid { grid-template-columns: 1fr; }
@@ -723,7 +717,7 @@ body.lb-app {
   .lb-settings-panel .desc { font-size: 12px; margin-bottom: 12px; }
   
   /* Sidebar */
-  .lb-sidebar { width: 75vw; max-width: 250px; }
+  .lb-sidebar { width: 75vw; max-width: 250px; padding-bottom: 100px; }
   .lb-brand { padding: 6px 10px 16px; gap: 8px; }
   .lb-brand-mark { width: 32px; height: 32px; }
   .lb-brand strong { font-size: 13px; }
@@ -765,7 +759,7 @@ body.lb-app {
     padding: 9px 8px;
   }
   .lb-panel-head { margin-bottom: 10px; }
-  .lb-sidebar { width: 85vw; padding-top: 50px; }
+  .lb-sidebar { width: 85vw; padding-top: 50px; padding-bottom: 100px; }
   .lb-nav a { padding: 8px 10px; font-size: 12px; }
   .lb-plan-card { padding: 10px; margin-bottom: 10px; }
   .lb-userchip .meta { display: block !important; }

@@ -199,7 +199,7 @@
     function closePanel() {
       open = false;
       panel.style.display = 'none';
-      launcher.style.display = 'flex';  // <--- Added: Show launcher when chat closes
+      launcher.style.display = 'flex'; 
       setBodyScrollLocked(false);
     }
 
@@ -242,9 +242,6 @@
       if (!open || !isMobileViewport()) return;
       applyResponsiveLayout();
       if (visualViewportResizeTimer) window.clearTimeout(visualViewportResizeTimer);
-      // iOS animates the keyboard open/close over ~250-350ms, and reports
-      // viewport size in more than one step, so we re-check a few times
-      // instead of trusting a single resize/scroll event.
       visualViewportResizeTimer = window.setTimeout(applyResponsiveLayout, 80);
       window.setTimeout(applyResponsiveLayout, 250);
       window.setTimeout(applyResponsiveLayout, 400);
@@ -252,15 +249,17 @@
 
     function applyResponsiveLayout() {
       if (isMobileViewport()) {
+        // FIXED: Anchored at bottom, max height 70vh
         Object.assign(panel.style, {
           position: 'fixed',
-          top: '12px',
+          top: 'auto',
           left: '12px',
           right: '12px',
-          bottom: 'auto',
+          bottom: '12px',
           width: 'auto',
           maxWidth: 'calc(100% - 24px)',
-          height: 'calc(100vh - 80px - env(safe-area-inset-bottom))',
+          height: 'auto',
+          maxHeight: '70vh',
           transform: 'none',
           borderRadius: '12px',
         });
@@ -326,7 +325,7 @@
           lineHeight: '1',
           padding: '0',
         },
-        text: '×', // <--- You can change this to '—' or '˅' for a minimize-style icon
+        text: '×',
       }),
     ]);
     header.lastChild.addEventListener('click', closePanel);
@@ -574,7 +573,7 @@
         return;
       }
       open = true;
-      launcher.style.display = 'none';  // <--- Added: Hide launcher when chat opens
+      launcher.style.display = 'none'; // Widget button overlap fix: hides when open
       panel.style.display = 'flex';
       applyResponsiveLayout();
       input.focus();

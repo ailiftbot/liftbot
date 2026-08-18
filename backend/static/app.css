@@ -535,7 +535,7 @@ body.lb-app {
   opacity: 1;
 }
 
-/* --- MOBILE RESPONSIVE UPDATES (Hamburger Left, Dashboard Next to it) --- */
+/* --- MOBILE RESPONSIVE UPDATES --- */
 
 @media (max-width: 1100px) {
   .lb-shell { grid-template-columns: 1fr; }
@@ -552,6 +552,9 @@ body.lb-app {
     transition: transform 0.25s ease;
     z-index: 1000;
     padding-top: 56px;
+    padding-bottom: 100px; /* Allows scrolling to reach footer */
+    overflow-y: auto; /* Ensures scroll works */
+    -webkit-overflow-scrolling: touch; /* Fixes smooth scrolling on iOS */
   }
   .lb-sidebar.open { transform: translateX(0); }
   .lb-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -562,7 +565,6 @@ body.lb-app {
 }
 
 @media (max-width: 768px) {
-  /* UPDATED: Flex-start pushes Dashboard to left, margin-left: auto pushes actions to right */
   .lb-topbar { 
     padding: 12px 16px; 
     gap: 8px;
@@ -592,28 +594,15 @@ body.lb-app {
   .lb-userchip .meta span { color: var(--lb-muted); font-size: 12px; }
   .lb-userchip { padding-left: 8px; border-left: 1px solid var(--lb-border); }
   
-  /* Buttons */
   .lb-btn { padding: 8px 12px; font-size: 12px; }
   .lb-btn-sm { padding: 6px 10px; font-size: 11px; }
-  
-  /* Forms */
-  .lb-form input, .lb-form select, .lb-form textarea {
-    font-size: 16px; 
-  }
-  
-  /* Cards and panels */
+  .lb-form input, .lb-form select, .lb-form textarea { font-size: 16px; }
   .lb-card { border-radius: 12px; }
   .lb-form .field { margin-bottom: 12px; }
-  
-  /* Analytics grid */
   .lb-analytics-panel { padding: 14px 16px; }
   .lb-chart { height: 140px; }
-  
-  /* Settings */
   .lb-settings-panel { padding: 16px; }
   .lb-settings-panel h2 { font-size: 15px; }
-  
-  /* Tables */
   .lb-table-head { display: none; }
   .lb-table-row {
     grid-template-columns: 1fr 1fr;
@@ -623,7 +612,6 @@ body.lb-app {
 }
 
 @media (max-width: 640px) {
-  /* UPDATED: Flex-start pushes Dashboard to left, margin-left: auto pushes actions to right */
   .lb-topbar { 
     padding: 10px 12px; 
     gap: 6px;
@@ -649,24 +637,18 @@ body.lb-app {
   .lb-stat-value { font-size: 18px; }
   .lb-stat-meta { font-size: 11px; }
   
-  /* Avatar on mobile */
   .lb-avatar { width: 30px; height: 30px; font-size: 11px; }
   .lb-userchip .meta { display: block !important; }
   .lb-userchip .meta strong { display: none; }
   .lb-userchip .meta span { color: var(--lb-muted); font-size: 11px; }
   .lb-userchip { padding-left: 8px; }
   
-  /* Buttons */
   .lb-btn { padding: 7px 10px; font-size: 11px; }
   .lb-btn-sm { padding: 5px 8px; font-size: 10px; }
-  
-  /* Cards */
   .lb-card { border-radius: 10px; }
   .lb-card-head { padding: 12px 14px; }
   .lb-panel-head { flex-wrap: wrap; }
   .lb-panel-head h2 { font-size: 14px; }
-  
-  /* Forms */
   .lb-form label { font-size: 12px; }
   .lb-form input, .lb-form select, .lb-form textarea {
     font-size: 16px;
@@ -675,8 +657,6 @@ body.lb-app {
   }
   .lb-form .field { margin-bottom: 10px; }
   .lb-code-block { font-size: 11px; padding: 8px 10px; }
-  
-  /* Responsive table */
   .lb-table-head { display: none; }
   .lb-table-row {
     grid-template-columns: 1fr;
@@ -701,34 +681,24 @@ body.lb-app {
     margin-bottom: 2px;
   }
   
-  /* Analytics */
   .lb-analytics-grid { gap: 10px; }
   .lb-analytics-panel { padding: 12px 14px; }
   .lb-chart { height: 120px; }
   .lb-legend { flex-wrap: wrap; font-size: 10px; }
-  
-  /* Settings grid */
   .lb-settings-grid { gap: 10px; }
   .lb-settings-panel { padding: 14px; }
   .lb-settings-panel h2 { font-size: 14px; margin-bottom: 8px; }
   .lb-settings-panel .desc { font-size: 12px; margin-bottom: 12px; }
-  
-  /* Sidebar */
-  .lb-sidebar { width: 75vw; max-width: 250px; }
+  .lb-sidebar { width: 75vw; max-width: 250px; padding-bottom: 100px; }
   .lb-brand { padding: 6px 10px 16px; gap: 8px; }
   .lb-brand-mark { width: 32px; height: 32px; }
   .lb-brand strong { font-size: 13px; }
   .lb-nav a { padding: 8px 10px; font-size: 12.5px; }
-  
-  /* Badges */
   .lb-badge { font-size: 10px; padding: 2px 8px; }
-  
-  /* Flash messages */
   .lb-flash { padding: 8px 12px; font-size: 12px; margin-top: 10px; }
 }
 
 @media (max-width: 480px) {
-  /* UPDATED: Flex-start pushes Dashboard to left, margin-left: auto pushes actions to right */
   .lb-topbar { 
     padding: 8px 10px; 
     gap: 4px;
@@ -756,7 +726,7 @@ body.lb-app {
     padding: 9px 8px;
   }
   .lb-panel-head { margin-bottom: 10px; }
-  .lb-sidebar { width: 85vw; padding-top: 50px; }
+  .lb-sidebar { width: 85vw; padding-top: 50px; padding-bottom: 100px; }
   .lb-nav a { padding: 8px 10px; font-size: 12px; }
   .lb-plan-card { padding: 10px; margin-bottom: 10px; }
   .lb-userchip .meta { display: block !important; }

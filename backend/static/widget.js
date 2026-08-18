@@ -181,6 +181,12 @@
         width: '56px', height: '56px', borderRadius: '999px', border: '0', cursor: 'pointer',
         background: color, color: '#fff', boxShadow: '0 8px 24px rgba(0,0,0,.18)',
         fontSize: '13px', fontWeight: '700',
+        /* FIX: Centering for alphabet letter */
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        lineHeight: '1',
+        padding: '0',
       },
       text: (cfg.name || 'AI').slice(0, 1).toUpperCase(),
     });
@@ -199,7 +205,7 @@
     function closePanel() {
       open = false;
       panel.style.display = 'none';
-      launcher.style.display = 'flex';  // <--- Added: Show launcher when chat closes
+      launcher.style.display = 'flex';  // Show launcher when chat closes
       setBodyScrollLocked(false);
     }
 
@@ -252,15 +258,17 @@
 
     function applyResponsiveLayout() {
       if (isMobileViewport()) {
+        // FIX: Anchored at bottom, limited height to 65vh (not full screen)
         Object.assign(panel.style, {
           position: 'fixed',
-          top: '12px',
+          bottom: '12px',
+          top: 'auto',
           left: '12px',
           right: '12px',
-          bottom: 'auto',
           width: 'auto',
           maxWidth: 'calc(100% - 24px)',
-          height: 'calc(100vh - 80px - env(safe-area-inset-bottom))',
+          height: 'auto',
+          maxHeight: '65vh', // Prevents covering full screen
           transform: 'none',
           borderRadius: '12px',
         });
@@ -326,7 +334,7 @@
           lineHeight: '1',
           padding: '0',
         },
-        text: '×', // <--- You can change this to '—' or '˅' for a minimize-style icon
+        text: '×',
       }),
     ]);
     header.lastChild.addEventListener('click', closePanel);
@@ -574,7 +582,7 @@
         return;
       }
       open = true;
-      launcher.style.display = 'none';  // <--- Added: Hide launcher when chat opens
+      launcher.style.display = 'none';  // Hide launcher when chat opens
       panel.style.display = 'flex';
       applyResponsiveLayout();
       input.focus();

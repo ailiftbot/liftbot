@@ -3,17 +3,28 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>{% block title %}LiftBot{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="{% static 'app.css' %}" />
+  <style>
+    /* Critical mobile styles - ensure hamburger displays */
+    @media (max-width: 1100px) {
+      .lb-menu-toggle { display: flex !important; }
+    }
+    @media (max-width: 768px) {
+      .lb-topbar { flex-wrap: wrap; }
+      .lb-topbar h1 { max-width: 100%; }
+    }
+  </style>
   {% block extra_css %}{% endblock %}
 </head>
 <body class="lb-app">
   <div class="lb-shell">
-    <aside class="lb-sidebar">
+    <div class="lb-sidebar-overlay" id="lbOverlay"></div>
+    <aside class="lb-sidebar" id="lbSidebar">
       <a class="lb-brand" href="{% url 'dashboard' %}">
         <div class="lb-brand-mark">L</div>
         <div>
@@ -21,6 +32,7 @@
           <span>by Brandinglift</span>
         </div>
       </a>
+      <button type="button" class="lb-sidebar-close" id="lbSidebarClose" aria-label="Close menu">×</button>
 
       <nav class="lb-nav">
         <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><span class="ico">■</span> Dashboard</a>
@@ -64,7 +76,9 @@
 
     <div class="lb-main">
       <header class="lb-topbar">
-        <div>
+        <button type="button" class="lb-menu-toggle" id="lbMenuToggle" aria-label="Open menu">☰</button>
+        <button type="button" class="lb-back-btn" id="lbBackBtn" aria-label="Go back" style="display:none;">← Back</button>
+        <div class="lb-topbar-title">
           <h1>{% block page_title %}Dashboard{% endblock %}</h1>
           <p class="sub">{% block page_subtitle %}Welcome back!{% endblock %}</p>
         </div>
@@ -104,6 +118,51 @@
       </div>
     </div>
   </div>
+  <script>
+  (function () {
+    var sidebar = document.getElementById('lbSidebar');
+    var overlay = document.getElementById('lbOverlay');
+    var toggle = document.getElementById('lbMenuToggle');
+    var closeBtn = document.getElementById('lbSidebarClose');
+    var backBtn = document.getElementById('lbBackBtn');
+
+    function openMenu() {
+      sidebar.classList.add('open');
+      overlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMenu() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    if (toggle) toggle.addEventListener('click', openMenu);
+    if (closeBtn) closeBtn.addEventListener('click', closeMenu);
+    if (overlay) overlay.addEventListener('click', closeMenu);
+    
+    // Back button functionality
+    if (backBtn) {
+      backBtn.addEventListener('click', function() {
+        if (document.referrer && document.referrer.indexOf(window.location.host) !== -1) {
+          window.history.back();
+        } else {
+          window.location.href = '{% url "dashboard" %}';
+        }
+      });
+    }
+
+    // Close the nav link that was just used
+    sidebar.querySelectorAll('a').forEach(function (a) {
+      a.addEventListener('click', closeMenu);
+    });
+
+    // if the window is resized back up to desktop width, make sure the
+    // mobile-only open state doesn't linger
+    window.addEventListener('resize', function () {
+      if (window.innerWidth > 1100) closeMenu();
+    });
+  })();
+  </script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

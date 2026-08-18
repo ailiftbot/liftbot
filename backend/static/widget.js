@@ -177,7 +177,7 @@
       type: 'button',
       'aria-label': 'Talk to ' + cfg.name,
       style: {
-        position: 'fixed', right: '20px', bottom: '20px', zIndex: '2147483000',
+        position: 'fixed', right: '20px', bottom: '20px', zIndex: '2147483001',
         width: '56px', height: '56px', borderRadius: '999px', border: '0', cursor: 'pointer',
         background: color, color: '#fff', boxShadow: '0 8px 24px rgba(0,0,0,.18)',
         fontSize: '13px', fontWeight: '700',
@@ -251,31 +251,24 @@
 
     function applyResponsiveLayout() {
       if (isMobileViewport()) {
-        var viewport = getViewportBox();
         Object.assign(panel.style, {
           position: 'fixed',
-          top: '0',
-          left: '0',
-          right: 'auto',
+          top: '12px',
+          left: '12px',
+          right: '12px',
           bottom: 'auto',
-          width: viewport.width + 'px',
-          maxWidth: viewport.width + 'px',
-          height: viewport.height + 'px',
-          // transform instead of top/left: on iOS Safari, position:fixed
-          // elements are laid out against the *layout* viewport, which does
-          // not shrink when the keyboard opens - only the *visual* viewport
-          // does. Setting top/left directly leaves the panel positioned
-          // against the wrong reference and it slides off-screen. A
-          // transform is GPU-composited and tracks the visual viewport
-          // correctly, so the panel stays fully visible above the keyboard.
-          transform: 'translate(' + viewport.left + 'px, ' + viewport.top + 'px)',
-          borderRadius: '0',
+          width: 'auto',
+          maxWidth: 'calc(100% - 24px)',
+          height: 'calc(100vh - 80px - env(safe-area-inset-bottom))',
+          transform: 'none',
+          borderRadius: '12px',
         });
         Object.assign(launcher.style, {
           right: '12px',
           bottom: '12px',
           width: '52px',
           height: '52px',
+          zIndex: '2147483001',
         });
       } else {
         Object.assign(panel.style, {
@@ -294,6 +287,7 @@
           bottom: '20px',
           width: '56px',
           height: '56px',
+          zIndex: '2147483000',
         });
       }
       setBodyScrollLocked(open && isMobileViewport());

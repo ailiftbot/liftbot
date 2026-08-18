@@ -199,6 +199,7 @@
     function closePanel() {
       open = false;
       panel.style.display = 'none';
+      launcher.style.display = 'flex';  // <--- Added: Show launcher when chat closes
       setBodyScrollLocked(false);
     }
 
@@ -325,7 +326,7 @@
           lineHeight: '1',
           padding: '0',
         },
-        text: '×',
+        text: '×', // <--- You can change this to '—' or '˅' for a minimize-style icon
       }),
     ]);
     header.lastChild.addEventListener('click', closePanel);
@@ -573,6 +574,7 @@
         return;
       }
       open = true;
+      launcher.style.display = 'none';  // <--- Added: Hide launcher when chat opens
       panel.style.display = 'flex';
       applyResponsiveLayout();
       input.focus();

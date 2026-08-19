@@ -334,7 +334,195 @@
   .dash-right { position: static; }
   .mgmt-grid { grid-template-columns: 1fr 1fr; }
   .overview { grid-column: 1 / -1; }
+  .dash-left { gap: 14px; }
 }
+
+@media (max-width: 1024px) {
+  .mgmt-grid { grid-template-columns: 1fr 1fr; }
+  .mgmt-card { min-height: 130px; }
+  .bottom-grid { gap: 12px; }
+  .panel { padding: 14px; }
+  .panel-head { margin-bottom: 10px; }
+  .panel-head h3 { font-size: 13px; }
+  .quick-item, .conv-item { padding: 8px 0; }
+}
+
 @media (max-width: 800px) {
-  .mgmt-grid, .bottom-grid { grid-template-columns: 1fr; }
+  .dash-grid { gap: 14px; }
+  .mgmt-grid { grid-template-columns: 1fr; }
+  .bottom-grid { grid-template-columns: 1fr; gap: 12px; }
+  .stepper { padding: 14px 16px 12px; }
+  .stepper-head { margin-bottom: 12px; }
+  .step { flex: 1; }
+  .step .bubble { width: 24px; height: 24px; font-size: 11px; }
+  .step .label { font-size: 10px; }
+}
+
+@media (max-width: 768px) {
+  .dash-grid { gap: 12px; }
+  .dash-left { gap: 12px; }
+  .dash-right { gap: 12px; }
+  .stepper { padding: 12px 14px 10px; margin-bottom: 12px; }
+  .stepper-track { gap: 2px; row-gap: 10px; }
+  .stepper-track::before { left: 12px; right: 12px; top: 12px; }
+  .step { gap: 4px; }
+  .step .bubble { width: 22px; height: 22px; font-size: 10px; }
+  .step .label { font-size: 9px; }
+  .mgmt-grid { gap: 12px; }
+  .mgmt-card { padding: 12px; gap: 8px; min-height: 120px; }
+  .mgmt-card .icon { width: 32px; height: 32px; font-size: 10px; }
+  .mgmt-card h3 { font-size: 13px; }
+  .mgmt-card p { font-size: 11.5px; }
+  .overview { padding: 12px 14px; }
+  .overview h3 { font-size: 13px; margin-bottom: 10px; }
+  .overview-row { padding: 6px 0; font-size: 11.5px; }
+  .usage-ring { margin-top: 8px; padding-top: 8px; }
+  .usage-ring label { font-size: 10.5px; margin-bottom: 4px; }
+  .bottom-grid { gap: 12px; }
+  .panel { padding: 12px 14px; }
+  .panel-head { margin-bottom: 10px; }
+  .panel-head h3 { font-size: 13px; }
+  .panel-head a { font-size: 11px; }
+  .quick-item { grid-template-columns: 24px 1fr auto; gap: 8px; padding: 8px 0; }
+  .quick-num { width: 24px; height: 24px; font-size: 10px; }
+  .quick-item h4 { font-size: 12px; }
+  .quick-item p { font-size: 10.5px; }
+  .conv-item { grid-template-columns: 32px 1fr auto; gap: 8px; padding: 8px 0; }
+  .conv-av { width: 32px; height: 32px; font-size: 11px; }
+  .conv-item h4 { font-size: 12px; }
+  .conv-item p { font-size: 10.5px; max-width: 120px; }
+  .conv-item time { font-size: 10px; }
+  .preview-card { border-radius: 14px; }
+  .preview-card h3 { padding: 12px 12px 0; font-size: 12px; }
+  .widget-frame { margin: 10px; height: 360px; border-radius: 12px; }
+  .widget-head { padding: 10px 12px; }
+  .widget-head .bot-av { width: 30px; height: 30px; }
+  .widget-head strong { font-size: 12px; }
+  .widget-head span { font-size: 10px; }
+  .bubble-bot, .bubble-user { max-width: 85%; font-size: 11.5px; padding: 7px 10px; }
+  .quick-replies { gap: 4px; }
+  .quick-replies button { padding: 4px 8px; font-size: 10px; }
+  .widget-form { gap: 6px; padding: 8px; }
+  .widget-form input { padding: 8px 10px; font-size: 12px; }
+  .widget-form button { width: 32px; height: 32px; }
+  .install-card { padding: 12px; }
+  .install-card h3 { font-size: 12px; }
+  .install-card p { font-size: 11px; }
+  .codebox { padding: 10px; font-size: 10px; }
+  .codebox button { padding: 3px 6px; font-size: 10px; }
+  .employee-switch { gap: 6px; }
+  .employee-switch select { padding: 6px 10px; font-size: 12px; min-width: 0; }
+}
+
+@media (max-width: 640px) {
+  .dash-grid { gap: 10px; }
+  .dash-left { gap: 10px; }
+  .dash-right { gap: 10px; }
+  .stepper { padding: 10px 12px 8px; }
+  .stepper-head { margin-bottom: 10px; }
+  .stepper-head h2 { font-size: 13px; }
+  .stepper-head span { font-size: 11px; }
+  .stepper-track { gap: 0px; row-gap: 8px; }
+  .stepper-track::before { left: 10px; right: 10px; top: 10px; }
+  .step { flex: 1 1 25%; gap: 3px; }
+  .step .bubble { width: 20px; height: 20px; font-size: 9px; border: 1.5px solid #DDD6FE; }
+  .step .label { font-size: 8px; }
+  .mgmt-grid { grid-template-columns: 1fr; gap: 10px; }
+  .mgmt-card { padding: 10px 12px; gap: 6px; min-height: 110px; }
+  .mgmt-card .icon { width: 30px; height: 30px; font-size: 9px; }
+  .mgmt-card h3 { font-size: 12px; }
+  .mgmt-card p { font-size: 11px; }
+  .mgmt-card .row { gap: 6px; }
+  .overview { padding: 10px 12px; }
+  .overview h3 { font-size: 12px; margin-bottom: 8px; }
+  .overview-row { padding: 5px 0; font-size: 11px; }
+  .usage-ring { margin-top: 6px; padding-top: 6px; }
+  .usage-ring label { font-size: 10px; margin-bottom: 3px; }
+  .usage-bar { height: 6px; }
+  .bottom-grid { gap: 10px; }
+  .panel { padding: 10px 12px; border-radius: 10px; }
+  .panel-head { margin-bottom: 8px; flex-wrap: wrap; }
+  .panel-head h3 { font-size: 12px; }
+  .panel-head a { font-size: 10px; }
+  .quick-item { grid-template-columns: 20px 1fr auto; gap: 6px; padding: 6px 0; }
+  .quick-num { width: 20px; height: 20px; font-size: 9px; }
+  .quick-item h4 { font-size: 11px; }
+  .quick-item p { font-size: 10px; margin-top: 1px; }
+  .conv-item { grid-template-columns: 28px 1fr auto; gap: 6px; padding: 6px 0; }
+  .conv-av { width: 28px; height: 28px; font-size: 10px; }
+  .conv-item h4 { font-size: 11px; }
+  .conv-item p { font-size: 10px; max-width: 100px; }
+  .conv-item time { font-size: 9px; }
+  .preview-card { border-radius: 12px; }
+  .preview-card h3 { padding: 10px 10px 0; font-size: 11px; }
+  .widget-frame { margin: 8px; height: 320px; border-radius: 10px; }
+  .widget-head { padding: 8px 10px; }
+  .widget-head .bot-av { width: 28px; height: 28px; font-size: 10px; }
+  .widget-head strong { font-size: 11px; }
+  .widget-head span { font-size: 9px; }
+  .widget-messages { padding: 10px; gap: 6px; }
+  .bubble-bot, .bubble-user { max-width: 85%; font-size: 11px; padding: 6px 9px; border-radius: 12px; }
+  .quick-replies { gap: 3px; }
+  .quick-replies button { padding: 3px 7px; font-size: 9px; }
+  .widget-form { gap: 5px; padding: 6px; }
+  .widget-form input { padding: 7px 8px; font-size: 11px; border-radius: 8px; }
+  .widget-form button { width: 30px; height: 30px; font-size: 12px; }
+  .install-card { padding: 10px; border-radius: 10px; }
+  .install-card h3 { font-size: 11px; margin-bottom: 4px; }
+  .install-card p { font-size: 10px; margin-bottom: 8px; }
+  .codebox { padding: 8px; font-size: 9px; border-radius: 8px; }
+  .codebox button { top: 6px; right: 6px; padding: 2px 5px; font-size: 9px; }
+  .employee-switch { gap: 5px; margin-bottom: 10px; }
+  .employee-switch select { padding: 6px 8px; font-size: 11px; min-width: 0; }
+}
+
+@media (max-width: 480px) {
+  .dash-grid { gap: 8px; }
+  .dash-left { gap: 8px; }
+  .dash-right { gap: 8px; }
+  .stepper { padding: 8px 10px 6px; }
+  .stepper-head { margin-bottom: 8px; }
+  .stepper-head h2 { font-size: 12px; }
+  .stepper-track { row-gap: 6px; }
+  .stepper-track::before { left: 8px; right: 8px; top: 8px; height: 2px; }
+  .step .bubble { width: 18px; height: 18px; font-size: 8px; }
+  .step .label { font-size: 7px; }
+  .mgmt-grid { gap: 8px; }
+  .mgmt-card { padding: 8px 10px; min-height: 100px; }
+  .mgmt-card .icon { width: 28px; height: 28px; }
+  .mgmt-card h3 { font-size: 11px; }
+  .mgmt-card p { font-size: 10px; }
+  .overview { padding: 8px 10px; }
+  .overview h3 { font-size: 11px; margin-bottom: 6px; }
+  .overview-row { padding: 4px 0; font-size: 10px; }
+  .bottom-grid { gap: 8px; }
+  .panel { padding: 8px 10px; }
+  .panel-head h3 { font-size: 11px; }
+  .panel-head a { font-size: 9px; }
+  .quick-item { grid-template-columns: 18px 1fr auto; gap: 5px; padding: 5px 0; }
+  .quick-num { width: 18px; height: 18px; font-size: 8px; }
+  .quick-item h4 { font-size: 10px; }
+  .conv-item { grid-template-columns: 26px 1fr auto; gap: 5px; padding: 5px 0; }
+  .conv-av { width: 26px; height: 26px; font-size: 9px; }
+  .conv-item h4 { font-size: 10px; }
+  .conv-item p { font-size: 9px; max-width: 80px; }
+  .preview-card { border-radius: 10px; }
+  .preview-card h3 { padding: 8px 8px 0; font-size: 10px; }
+  .widget-frame { margin: 6px; height: 280px; border-radius: 8px; }
+  .widget-head { padding: 6px 8px; }
+  .widget-head .bot-av { width: 26px; height: 26px; font-size: 9px; }
+  .widget-head strong { font-size: 10px; }
+  .widget-head span { font-size: 8px; }
+  .bubble-bot, .bubble-user { font-size: 10px; padding: 5px 8px; }
+  .quick-replies { gap: 2px; }
+  .quick-replies button { padding: 2px 6px; font-size: 8px; }
+  .widget-form { gap: 4px; padding: 4px; }
+  .widget-form input { padding: 6px 7px; font-size: 10px; }
+  .widget-form button { width: 28px; height: 28px; }
+  .install-card { padding: 8px; }
+  .install-card h3 { font-size: 10px; }
+  .install-card p { font-size: 9px; margin-bottom: 6px; }
+  .codebox { padding: 6px; font-size: 8px; }
+  .codebox button { padding: 1px 4px; font-size: 8px; }
+  .employee-switch select { font-size: 10px; }
 }

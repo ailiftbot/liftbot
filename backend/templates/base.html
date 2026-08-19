@@ -11,18 +11,67 @@
     :root { --p:#7C3AED; --pd:#6D28D9; --ink:#111827; --bg:#F3F4F6; }
     * { box-sizing: border-box; }
     body { margin:0; font-family:"Plus Jakarta Sans",system-ui,sans-serif; background:var(--bg); color:var(--ink); }
-    header { display:flex; justify-content:space-between; align-items:center; padding:16px 28px; background:#0B1220; color:#fff; }
+    header { 
+      display:flex; justify-content:space-between; align-items:center; padding:16px 28px; 
+      background:#0B1220; color:#fff; position: relative; z-index: 100;
+    }
     .brand { font-weight:800; font-size:18px; color:#fff; text-decoration:none; }
-    nav a { color:#D1D5DB; text-decoration:none; margin-left:14px; font-size:13.5px; font-weight:600; }
+    nav { display: flex; align-items: center; gap: 20px; }
+    nav a { color:#D1D5DB; text-decoration:none; font-size:13.5px; font-weight:600; transition: color 0.2s; }
+    nav a:hover { color: #fff; }
     nav a.cta { background:var(--p); color:#fff; padding:8px 14px; border-radius:999px; }
+    nav a.cta:hover { background:var(--pd); }
+    
+    .nav-toggle { display:none; background:none; border:1px solid #D1D5DB; color:#fff; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:18px; }
+    
+    .nav-overlay { display:none; position:fixed; inset:0; background:rgba(11,18,32,.8); z-index:999; opacity:0; transition:opacity 0.2s; }
+    .nav-overlay.open { display:block; opacity:1; }
+    
+    .nav-mobile { 
+      display:none; position:fixed; top:0; right:0; height:100vh; width:100%; max-width:300px; 
+      background:#0B1220; z-index:1000; transform:translateX(100%); transition:transform 0.3s ease; 
+      flex-direction:column; padding-top:60px;
+    }
+    .nav-mobile.open { transform:translateX(0); }
+    .nav-mobile a { color:#D1D5DB; text-decoration:none; padding:12px 20px; font-size:14px; font-weight:600; display:block; border-bottom:1px solid rgba(255,255,255,0.05); }
+    .nav-mobile a:hover { color:#fff; background:rgba(255,255,255,0.08); }
+    .nav-mobile a.cta { background:var(--p); color:#fff; margin:12px; border-radius:999px; text-align:center; border:none; }
+    .nav-close { position:absolute; top:16px; right:16px; background:rgba(255,255,255,.1); border:0; color:#fff; width:30px; height:30px; border-radius:999px; font-size:20px; cursor:pointer; }
+    
     main { max-width:960px; margin:0 auto; padding:28px 20px 48px; }
     .flash { background:#EDE9FE; color:#5B21B6; border-radius:10px; padding:10px 14px; margin-bottom:14px; font-size:13px; }
+    
+    @media (max-width: 768px) {
+      header { padding: 12px 16px; }
+      .brand { font-size: 16px; }
+      nav { display: none; }
+      .nav-toggle { display: block; }
+      nav a { margin-left: 0; }
+      main { padding: 20px 16px 40px; }
+    }
+    
+    @media (max-width: 640px) {
+      header { padding: 12px 14px; }
+      main { padding: 16px 12px 36px; }
+      .flash { padding: 8px 12px; font-size: 12px; }
+    }
   </style>
 </head>
 <body>
+  <div class="nav-overlay" id="navOverlay"></div>
+  <div class="nav-mobile" id="navMobile">
+    <button class="nav-close" id="navClose" aria-label="Close menu">×</button>
+    {% if user.is_authenticated %}
+      <a href="{% url 'dashboard' %}">Dashboard</a>
+    {% else %}
+      <a href="{% url 'login' %}">Log in</a>
+      <a class="cta" href="{% url 'signup' %}">Start hiring</a>
+    {% endif %}
+  </div>
+  
   <header>
     <a class="brand" href="{% url 'home' %}">LiftBot</a>
-    <nav>
+    <nav id="navDesktop">
       {% if user.is_authenticated %}
         <a href="{% url 'dashboard' %}">Dashboard</a>
       {% else %}
@@ -30,12 +79,47 @@
         <a class="cta" href="{% url 'signup' %}">Start hiring</a>
       {% endif %}
     </nav>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">☰</button>
   </header>
+  
   {% if messages %}
   <main style="padding-bottom:0;">
     {% for message in messages %}<div class="flash">{{ message }}</div>{% endfor %}
   </main>
   {% endif %}
   <main>{% block content %}{% endblock %}</main>
+  
+  <script>
+    (function () {
+      var toggle = document.getElementById('navToggle');
+      var close = document.getElementById('navClose');
+      var overlay = document.getElementById('navOverlay');
+      var navMobile = document.getElementById('navMobile');
+      
+      function openMenu() {
+        navMobile.classList.add('open');
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+      
+      function closeMenu() {
+        navMobile.classList.remove('open');
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+      
+      if (toggle) toggle.addEventListener('click', openMenu);
+      if (close) close.addEventListener('click', closeMenu);
+      if (overlay) overlay.addEventListener('click', closeMenu);
+      
+      navMobile.querySelectorAll('a').forEach(function (a) {
+        a.addEventListener('click', closeMenu);
+      });
+      
+      window.addEventListener('resize', function () {
+        if (window.innerWidth > 768) closeMenu();
+      });
+    })();
+  </script>
 </body>
 </html>

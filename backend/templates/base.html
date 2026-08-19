@@ -61,6 +61,10 @@
   <div class="nav-overlay" id="navOverlay"></div>
   <div class="nav-mobile" id="navMobile">
     <button class="nav-close" id="navClose" aria-label="Close menu">×</button>
+    
+    <a href="{% url 'about' %}">About</a>
+    <a href="{% url 'contact' %}">Contact</a>
+    
     {% if user.is_authenticated %}
       <a href="{% url 'dashboard' %}">Dashboard</a>
     {% else %}
@@ -72,6 +76,8 @@
   <header>
     <a class="brand" href="{% url 'home' %}">LiftBot</a>
     <nav id="navDesktop">
+      <a href="{% url 'about' %}">About</a>
+      <a href="{% url 'contact' %}">Contact</a>
       {% if user.is_authenticated %}
         <a href="{% url 'dashboard' %}">Dashboard</a>
       {% else %}

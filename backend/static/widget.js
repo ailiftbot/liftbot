@@ -17,6 +17,22 @@
     return;
   }
 
+  // GUARD: if the embed snippet was accidentally included more than once
+  // on the page (header + footer, GTM + hardcoded, SPA re-render, etc.)
+  // this stops a second copy from mounting a duplicate widget — which is
+  // what causes the greeting/replies to show up twice, stacked on top
+  // of each other.
+  window.__LIFTBOT_MOUNTED__ = window.__LIFTBOT_MOUNTED__ || {};
+  var guardKey = 'ws:' + (workspaceTokenAttr(script) || '') + '|emp:' + (employeeTokenAttr(script) || '');
+  if (window.__LIFTBOT_MOUNTED__[guardKey]) {
+    console.warn('[LiftBot] Widget already mounted on this page — skipping duplicate <script> tag.');
+    return;
+  }
+  window.__LIFTBOT_MOUNTED__[guardKey] = true;
+
+  function workspaceTokenAttr(s) { return s.getAttribute('data-workspace-token'); }
+  function employeeTokenAttr(s) { return s.getAttribute('data-employee-token'); }
+
   var employeeToken = script.getAttribute('data-employee-token');
   var workspaceToken = script.getAttribute('data-workspace-token');
 
@@ -292,7 +308,7 @@
 
       'function setOpen(v){document.body.className=v?"open":"closed";' +
       'window.frameElement.dispatchEvent(new CustomEvent("lb-toggle",{detail:{open:v}}));' +
-      'if(v){input.focus();if(humanMode||sessionId)startPolling();}}' +
+      'if(v){input.focus();if(humanMode)startPolling();}}' +
       'launcher.addEventListener("click",function(){setOpen(true);});' +
       'closeBtn.addEventListener("click",function(){setOpen(false);});' +
 
@@ -317,6 +333,7 @@
       'fetchJson(apiBase+"/action/",{method:"POST",headers:{"Content-Type":"application/json"},' +
       'body:JSON.stringify({token:token,action:action,visitor_id:visitorId,session_id:sessionId,data:data||{}})})' +
       '.then(function(res){if(res.session_id){sessionId=res.session_id;localStorage.setItem(sessionKey,sessionId);}' +
+      'if(res.message_id)lastMsgId=Math.max(lastMsgId,res.message_id);' +
       'node.textContent=res.message||"Done.";if(res.request_takeover){humanMode=true;' +
       'statusEl.textContent="Connecting you to a teammate…";startPolling();}})' +
       '.catch(function(err){node.textContent=err.message||"Could not complete that action.";});}' +
@@ -348,15 +365,18 @@
       'var kind=m.role==="human"?"human":(m.role==="system"?"system":"them");addMsg(kind,m.content);});})' +
       '.catch(function(){});},2500);}' +
 
-      'function sendMessage(text,continueLast){if(!text)return;addMsg("you",text);var node=addMsg("them","…");' +
+      'var sending=false;' +
+      'function sendMessage(text,continueLast){if(!text||sending)return;sending=true;addMsg("you",text);var node=addMsg("them","…");' +
       'fetchJson(apiBase+"/message/",{method:"POST",headers:{"Content-Type":"application/json"},' +
       'body:JSON.stringify({token:token,message:text,visitor_id:visitorId,session_id:sessionId,stream:false,continue_last:!!continueLast})})' +
       '.then(function(data){if(data.session_id){sessionId=data.session_id;localStorage.setItem(sessionKey,sessionId);}' +
+      'if(data.message_id)lastMsgId=Math.max(lastMsgId,data.message_id);' +
       'if(data.human_mode){humanMode=true;node.textContent=data.message||"A teammate will reply shortly.";' +
-      'statusEl.textContent="Talking with a teammate";startPolling();return;}' +
+      'statusEl.textContent="Talking with a teammate";startPolling();sending=false;return;}' +
       'node.textContent=data.reply||"No reply.";' +
-      'if(data.actions&&data.actions.tasks_created&&data.actions.tasks_created.length)addMsg("system","✓ "+data.actions.tasks_created[0].title);})' +
-      '.catch(function(){node.textContent="Sorry, I could not reply right now.";});}' +
+      'if(data.actions&&data.actions.tasks_created&&data.actions.tasks_created.length)addMsg("system","✓ "+data.actions.tasks_created[0].title);' +
+      'sending=false;})' +
+      '.catch(function(){node.textContent="Sorry, I could not reply right now.";sending=false;});}' +
 
       'var resumeEl=document.getElementById("lbResume");' +
       'if(resumeEl&&cfg.returning_visitor&&cfg.resume_message){resumeEl.textContent=cfg.resume_message;' +

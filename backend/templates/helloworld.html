@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hello World — LiftBot widget</title>
+  <style>
+    body { font-family: "Plus Jakarta Sans", system-ui, sans-serif; max-width: 640px; margin: 48px auto; padding: 0 20px; color: #111827; }
+    h1 { font-size: 28px; margin: 0 0 8px; letter-spacing: -0.02em; }
+    p { color: #6B7280; line-height: 1.55; }
+    code { background: #F3F4F6; padding: 2px 6px; border-radius: 6px; font-size: 12.5px; word-break: break-all; }
+    .note { margin-top: 24px; padding: 14px 16px; background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 12px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h1>hello world</h1>
+  <p>Test page for the LiftBot website widget. Use the chat bubble at the bottom-right.</p>
+
+  {% if employee_token %}
+  <script
+    src="{{ widget_url }}"
+    data-employee-token="{{ employee_token }}"
+    data-api-base="{{ api_base }}"
+    defer
+  ></script>
+  {% else %}
+  <div class="note">
+    No AI Employee token found. Open
+    <code>/helloworld/?token=YOUR_EMPLOYEE_TOKEN</code>
+    or hire an employee and reload while logged in.
+  </div>
+  {% endif %}
+</body>
+</html>

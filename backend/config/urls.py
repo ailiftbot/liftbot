@@ -11,6 +11,11 @@ urlpatterns = [
     path('', TemplateView.as_view(template_name='marketing/home.html'), name='home'),
     path('about/', TemplateView.as_view(template_name='marketing/about.html'), name='about'),
     path('contact/', TemplateView.as_view(template_name='marketing/contact.html'), name='contact'),
+    path('ai-employees/', TemplateView.as_view(template_name='marketing/ai_employees.html'), name='ai_employees'),
+    path('features/', TemplateView.as_view(template_name='marketing/features.html'), name='features'),
+    path('how-it-works/', TemplateView.as_view(template_name='marketing/how_it_works.html'), name='how_it_works'),
+    path('industries/', TemplateView.as_view(template_name='marketing/industries.html'), name='industries'),
+    path('solutions/', TemplateView.as_view(template_name='marketing/solutions.html'), name='solutions'),
     # ---------------------------------------------
 
     # --- Existing App Routes ---

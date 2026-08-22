@@ -1,3 +1,5 @@
+
+
 /* ==========================================================================
    LiftBot Marketing page
    Designed to work inside base.html
@@ -591,3 +593,4 @@ color: white; background: black;
   .lb__demo-online::before { animation: none; }
   .lb__btn:hover { transform: none; }
 }
+

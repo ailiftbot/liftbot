@@ -62,6 +62,11 @@
   <div class="nav-mobile" id="navMobile">
     <button class="nav-close" id="navClose" aria-label="Close menu">×</button>
     
+    <a href="{% url 'ai_employees' %}">AI Employees</a>
+    <a href="{% url 'features' %}">Features</a>
+    <a href="{% url 'how_it_works' %}">How It Works</a>
+    <a href="{% url 'industries' %}">Industries</a>
+    <a href="{% url 'solutions' %}">Solutions</a>
     <a href="{% url 'about' %}">About</a>
     <a href="{% url 'contact' %}">Contact</a>
     
@@ -76,6 +81,11 @@
   <header>
     <a class="brand" href="{% url 'home' %}">LiftBot</a>
     <nav id="navDesktop">
+      <a href="{% url 'ai_employees' %}">AI Employees</a>
+      <a href="{% url 'features' %}">Features</a>
+      <a href="{% url 'how_it_works' %}">How It Works</a>
+      <a href="{% url 'industries' %}">Industries</a>
+      <a href="{% url 'solutions' %}">Solutions</a>
       <a href="{% url 'about' %}">About</a>
       <a href="{% url 'contact' %}">Contact</a>
       {% if user.is_authenticated %}

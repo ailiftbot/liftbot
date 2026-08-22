@@ -1,0 +1,168 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>{% block title %}LiftBot{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'app.css' %}" />
+  <style>
+    /* Critical mobile styles - ensure hamburger displays */
+    @media (max-width: 1100px) {
+      .lb-menu-toggle { display: flex !important; }
+    }
+    @media (max-width: 768px) {
+      .lb-topbar { flex-wrap: wrap; }
+      .lb-topbar h1 { max-width: 100%; }
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="lb-app">
+  <div class="lb-shell">
+    <div class="lb-sidebar-overlay" id="lbOverlay"></div>
+    <aside class="lb-sidebar" id="lbSidebar">
+      <a class="lb-brand" href="{% url 'dashboard' %}">
+        <div class="lb-brand-mark">L</div>
+        <div>
+          <strong>LiftBot</strong>
+          <span>by Brandinglift</span>
+        </div>
+      </a>
+      <button type="button" class="lb-sidebar-close" id="lbSidebarClose" aria-label="Close menu">×</button>
+
+      <nav class="lb-nav">
+        <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><span class="ico">■</span> Dashboard</a>
+        <a href="{% url 'employee_list' %}" class="{% if 'employee' in request.resolver_match.url_name %}active{% endif %}"><span class="ico">◉</span> AI Employees</a>
+        {% if primary_employee %}
+        <a href="{% url 'knowledge_list' primary_employee.pk %}" class="{% if 'knowledge' in request.resolver_match.url_name %}active{% endif %}"><span class="ico">☰</span> Knowledge Base</a>
+        <a href="{% url 'employee_edit' primary_employee.pk %}" class="{% if request.resolver_match.url_name == 'employee_edit' %}active{% endif %}"><span class="ico">✦</span> Personality</a>
+        <a href="{% url 'employee_detail' primary_employee.pk %}" class="{% if request.resolver_match.url_name == 'employee_detail' %}active{% endif %}"><span class="ico">⧉</span> Website Widget</a>
+        <a href="{% url 'employee_playground' primary_employee.pk %}" class="{% if request.resolver_match.url_name == 'employee_playground' %}active{% endif %}"><span class="ico">▶</span> Playground</a>
+        {% else %}
+        <a href="{% url 'employee_hire' %}"><span class="ico">☰</span> Knowledge Base</a>
+        <a href="{% url 'employee_hire' %}"><span class="ico">✦</span> Personality</a>
+        <a href="{% url 'employee_hire' %}"><span class="ico">⧉</span> Website Widget</a>
+        {% endif %}
+        <a href="{% url 'leads' %}" class="{% if request.resolver_match.url_name == 'leads' %}active{% endif %}"><span class="ico">◎</span> Leads</a>
+        <a href="{% url 'employee_tasks' %}" class="{% if request.resolver_match.url_name == 'employee_tasks' %}active{% endif %}"><span class="ico">✓</span> Employee Tasks</a>
+        <a href="{% url 'conversations' %}" class="{% if request.resolver_match.url_name == 'conversations' %}active{% endif %}"><span class="ico">▤</span> Conversations</a>
+        <a href="{% url 'analytics' %}" class="{% if request.resolver_match.url_name == 'analytics' %}active{% endif %}"><span class="ico">◈</span> Analytics</a>
+        <a href="{% url 'billing' %}" class="{% if request.resolver_match.url_name == 'billing' %}active{% endif %}"><span class="ico">$</span> Billing</a>
+        <a href="{% url 'settings' %}" class="{% if request.resolver_match.url_name == 'settings' %}active{% endif %}"><span class="ico">⚙</span> Settings</a>
+      </nav>
+
+      <div class="lb-sidebar-foot">
+        {% if current_workspace %}
+        <div class="lb-plan-card">
+          <p>Your Plan</p>
+          <strong>{{ current_workspace.plan.name|default:'Unassigned' }}</strong>
+          <div class="usage" title="Usage {{ current_workspace.usage_percent|floatformat:0 }}%">
+            <span style="width: {{ current_workspace.usage_percent|floatformat:0 }}%"></span>
+          </div>
+          <a class="lb-btn-upgrade" href="{% url 'billing' %}">Upgrade Plan</a>
+        </div>
+        {% endif %}
+        <a href="{% url 'settings' %}" style="display:block;color:#9CA3AF;font-size:12px;padding:6px 8px;text-decoration:none;">Settings</a>
+        <form method="post" action="{% url 'logout' %}" style="margin:0;">
+          {% csrf_token %}
+          <button type="submit" style="background:none;border:0;color:#9CA3AF;font-size:12px;padding:6px 8px;cursor:pointer;">Log out</button>
+        </form>
+      </div>
+    </aside>
+
+    <div class="lb-main">
+      <header class="lb-topbar">
+        <button type="button" class="lb-menu-toggle" id="lbMenuToggle" aria-label="Open menu">☰</button>
+        <button type="button" class="lb-back-btn" id="lbBackBtn" aria-label="Go back" style="display:none;">← Back</button>
+        <div class="lb-topbar-title">
+          <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+          <p class="sub">{% block page_subtitle %}Welcome back!{% endblock %}</p>
+        </div>
+        <div class="lb-top-actions">
+          {% block top_actions %}{% endblock %}
+          <div class="lb-userchip">
+            <div class="lb-avatar">{{ user.first_name|default:user.email|slice:":2"|upper }}</div>
+            <div class="meta">
+              <strong>{{ user.first_name|default:user.email }}</strong>
+              <span>{{ current_workspace.name|default:'Workspace' }}</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {% if messages %}
+      <div class="lb-messages">
+        {% for message in messages %}
+          <div class="lb-flash">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if user.is_authenticated and user.profile and not user.profile.email_verified %}
+      <div class="lb-messages">
+        <div class="lb-flash" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+          <span>Verify your email to secure this workspace.</span>
+          <form method="post" action="{% url 'resend_verification' %}" style="margin:0;">{% csrf_token %}
+            <button class="lb-btn lb-btn-primary lb-btn-sm" type="submit">Resend email</button>
+          </form>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="lb-content">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+  <script>
+  (function () {
+    var sidebar = document.getElementById('lbSidebar');
+    var overlay = document.getElementById('lbOverlay');
+    var toggle = document.getElementById('lbMenuToggle');
+    var closeBtn = document.getElementById('lbSidebarClose');
+    var backBtn = document.getElementById('lbBackBtn');
+
+    function openMenu() {
+      sidebar.classList.add('open');
+      overlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMenu() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    if (toggle) toggle.addEventListener('click', openMenu);
+    if (closeBtn) closeBtn.addEventListener('click', closeMenu);
+    if (overlay) overlay.addEventListener('click', closeMenu);
+    
+    // Back button functionality
+    if (backBtn) {
+      backBtn.addEventListener('click', function() {
+        if (document.referrer && document.referrer.indexOf(window.location.host) !== -1) {
+          window.history.back();
+        } else {
+          window.location.href = '{% url "dashboard" %}';
+        }
+      });
+    }
+
+    // Close the nav link that was just used
+    sidebar.querySelectorAll('a').forEach(function (a) {
+      a.addEventListener('click', closeMenu);
+    });
+
+    // if the window is resized back up to desktop width, make sure the
+    // mobile-only open state doesn't linger
+    window.addEventListener('resize', function () {
+      if (window.innerWidth > 1100) closeMenu();
+    });
+  })();
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

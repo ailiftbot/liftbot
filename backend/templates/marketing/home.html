@@ -1,8 +1,766 @@
-{% extends 'base.html' %}
-{% block title %}Home - LiftBot{% endblock %}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}LiftBot — The AI Employee That Works For Your Business{% endblock %}
+
 {% block content %}
-<div style="text-align:center; padding: 50px 20px;">
-    <h1>Welcome to LiftBot</h1>
-    <p>This is the Marketing Home Page.</p>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'marketing.css' %}">
+
+<style>
+  /* ── Notion-inspired overrides & new sections ── */
+
+  /* Restore full-width background for .lb sections */
+  .lb { max-width: none; }
+
+  /* ── Hero: Notion-style centered, huge type ── */
+  .notion-hero {
+    position: relative;
+    overflow: hidden;
+    padding: 120px 24px 100px;
+    text-align: center;
+    background: #fff;
+  }
+  .notion-hero__noise {
+    position: absolute; inset: 0; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    opacity: 0.5;
+  }
+  .notion-hero__glow {
+    position: absolute; inset: -30% -20% auto -20%;
+    height: 700px; pointer-events: none;
+    background:
+      radial-gradient(500px 400px at 30% 20%, rgba(75,58,255,0.12), transparent 70%),
+      radial-gradient(400px 300px at 80% 15%, rgba(255,77,141,0.10), transparent 70%);
+    filter: blur(14px);
+  }
+  .notion-hero__inner {
+    position: relative; z-index: 1;
+    max-width: 820px; margin-inline: auto;
+  }
+  .notion-hero__badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px; letter-spacing: 0.09em; text-transform: uppercase;
+    color: #4b3aff; background: #eeecff;
+    border: 1px solid rgba(75,58,255,0.2);
+    padding: 5px 14px; border-radius: 999px;
+    margin-bottom: 28px;
+  }
+  .notion-hero__badge::before {
+    content: ""; width: 7px; height: 7px; border-radius: 50%;
+    background: #1fce7a;
+    box-shadow: 0 0 0 2px rgba(31,206,122,0.3);
+    animation: lb-pulse 1.8s ease-in-out infinite;
+  }
+  .notion-hero__h1 {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: clamp(3rem, 6vw, 5.4rem);
+    font-weight: 700; letter-spacing: -0.03em;
+    line-height: 1.02; margin: 0 0 22px; color: #15161b;
+  }
+  .notion-hero__h1 em {
+    font-style: normal;
+    background: linear-gradient(135deg, #4b3aff 0%, #ff4d8d 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .notion-hero__sub {
+    font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+    color: #53555f; max-width: 52ch; margin: 0 auto 38px;
+    line-height: 1.6;
+  }
+  .notion-hero__cta {
+    display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+    margin-bottom: 56px;
+  }
+  .notion-hero__trust {
+    display: flex; flex-wrap: wrap; gap: 8px 24px;
+    justify-content: center; font-size: 0.83rem; color: #8b8d97;
+  }
+  .notion-hero__trust span { display: inline-flex; align-items: center; gap: 7px; }
+  .notion-hero__trust span::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%; background: #1fce7a;
+  }
+
+  /* ── Chat preview card (Notion-style product screenshot mockup) ── */
+  .notion-preview {
+    margin-top: 72px; position: relative; z-index: 1;
+    max-width: 860px; margin-inline: auto;
+  }
+  .notion-preview__card {
+    background: #15161b; border-radius: 20px;
+    padding: 28px; box-shadow: 0 40px 90px -30px rgba(21,22,27,0.45);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .notion-preview__bar {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 24px;
+  }
+  .notion-preview__dot {
+    width: 12px; height: 12px; border-radius: 50%;
+  }
+  .notion-preview__dot:nth-child(1) { background: #ff5f57; }
+  .notion-preview__dot:nth-child(2) { background: #ffbd2e; }
+  .notion-preview__dot:nth-child(3) { background: #28c940; }
+  .notion-preview__title {
+    flex: 1; text-align: center; font-size: 0.78rem;
+    color: rgba(255,255,255,0.35); font-family: "IBM Plex Mono", monospace;
+  }
+  .notion-preview__chat { display: flex; flex-direction: column; gap: 14px; }
+  .notion-preview__msg {
+    max-width: 70%; font-size: 0.93rem; line-height: 1.5;
+    padding: 13px 16px; border-radius: 16px;
+  }
+  .notion-preview__msg--in {
+    background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.85);
+    border-bottom-left-radius: 4px; align-self: flex-start;
+  }
+  .notion-preview__msg--out {
+    background: #4b3aff; color: #fff;
+    border-bottom-right-radius: 4px; align-self: flex-end;
+  }
+  .notion-preview__status {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: "IBM Plex Mono", monospace; font-size: 11px;
+    color: #1fce7a; align-self: flex-end;
+  }
+  .notion-preview__status::before {
+    content: "✓✓"; font-size: 10px;
+  }
+
+  /* ── Logo bar (Notion trusted-by style) ── */
+  .logo-bar {
+    padding: 52px 24px; text-align: center;
+    border-top: 1px solid #e7e5de; border-bottom: 1px solid #e7e5de;
+    background: #fdfdfb;
+  }
+  .logo-bar__label {
+    font-family: "IBM Plex Mono", monospace; font-size: 11px;
+    letter-spacing: 0.09em; text-transform: uppercase;
+    color: #8b8d97; margin-bottom: 28px;
+  }
+  .logo-bar__row {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    align-items: center; gap: 28px 40px;
+  }
+  .logo-bar__item {
+    font-family: "Space Grotesk", sans-serif; font-weight: 700;
+    font-size: 1.05rem; color: #c4c2bb; letter-spacing: -0.01em;
+    transition: color 0.2s;
+  }
+  .logo-bar__item:hover { color: #53555f; }
+
+  /* ── Feature blocks (alternating) ── */
+  .feature-block {
+    padding: 100px 24px; max-width: 1180px; margin-inline: auto;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 80px; align-items: center;
+  }
+  .feature-block--flip { direction: rtl; }
+  .feature-block--flip > * { direction: ltr; }
+  @media (max-width: 860px) {
+    .feature-block { grid-template-columns: 1fr; gap: 48px; }
+    .feature-block--flip { direction: ltr; }
+  }
+  .feature-block__eyebrow {
+    font-family: "IBM Plex Mono", monospace; font-size: 11px;
+    letter-spacing: 0.09em; text-transform: uppercase;
+    color: #4b3aff; margin-bottom: 16px; display: block;
+  }
+  .feature-block__h2 {
+    font-family: "Space Grotesk", sans-serif; font-weight: 700;
+    font-size: clamp(1.8rem, 2.8vw, 2.6rem);
+    letter-spacing: -0.02em; line-height: 1.1; margin: 0 0 16px; color: #15161b;
+  }
+  .feature-block__p { color: #53555f; font-size: 1.05rem; line-height: 1.65; margin: 0 0 28px; }
+  .feature-block__list {
+    list-style: none; padding: 0; margin: 0 0 30px; display: flex; flex-direction: column; gap: 12px;
+  }
+  .feature-block__list li {
+    display: flex; gap: 10px; align-items: flex-start;
+    font-size: 0.95rem; color: #53555f;
+  }
+  .feature-block__list li::before {
+    content: "→"; color: #4b3aff; font-weight: 700; flex-shrink: 0; margin-top: 2px;
+  }
+  .feature-block__visual {
+    background: #f3f2ee; border-radius: 20px;
+    border: 1px solid #e7e5de; overflow: hidden;
+    min-height: 340px; display: flex; align-items: center; justify-content: center;
+    padding: 32px;
+  }
+  .feature-block__visual--dark {
+    background: #15161b; border-color: rgba(255,255,255,0.08);
+  }
+
+  /* Feature card UI mockups */
+  .mock-timeline { width: 100%; display: flex; flex-direction: column; gap: 20px; }
+  .mock-step {
+    display: flex; gap: 16px; align-items: flex-start;
+  }
+  .mock-step__num {
+    width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #e7e5de;
+    background: #fff; display: grid; place-items: center;
+    font-family: "IBM Plex Mono", monospace; font-size: 11px; color: #8b8d97;
+    flex-shrink: 0;
+  }
+  .mock-step:first-child .mock-step__num,
+  .mock-step:last-child .mock-step__num {
+    background: #15161b; border-color: #15161b; color: #fff;
+  }
+  .mock-step__body { padding-top: 8px; font-size: 0.93rem; color: #53555f; }
+  .mock-step__body strong { color: #15161b; display: block; margin-bottom: 3px; }
+
+  .mock-knowledge { width: 100%; }
+  .mock-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .mock-tag {
+    font-size: 0.82rem; font-weight: 500; padding: 7px 14px;
+    border-radius: 999px; border: 1px solid #e7e5de; background: #fff; color: #53555f;
+  }
+  .mock-tag--brand { border-color: rgba(75,58,255,0.3); color: #4b3aff; background: #eeecff; }
+  .mock-employee-card {
+    background: #fff; border: 1px solid #e7e5de; border-radius: 14px;
+    padding: 14px 16px; display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 2px 12px -6px rgba(21,22,27,0.15);
+  }
+  .mock-avatar {
+    width: 42px; height: 42px; border-radius: 12px;
+    background: #4b3aff; display: grid; place-items: center;
+    color: #fff; font-weight: 700; font-size: 14px;
+    font-family: "Space Grotesk", sans-serif; flex-shrink: 0; position: relative;
+  }
+  .mock-avatar__dot {
+    position: absolute; bottom: -2px; right: -2px;
+    width: 11px; height: 11px; border-radius: 50%;
+    background: #1fce7a; border: 2px solid #fff;
+  }
+  .mock-name { font-weight: 600; font-size: 0.92rem; color: #15161b; }
+  .mock-role { font-size: 0.8rem; color: #8b8d97; }
+
+  .mock-split { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; }
+  .mock-split-card { border-radius: 14px; padding: 20px; border: 1px solid rgba(255,255,255,0.08); }
+  .mock-split-card--ai { background: rgba(31,206,122,0.12); }
+  .mock-split-card--human { background: rgba(255,255,255,0.05); }
+  .mock-split-label { font-size: 0.78rem; font-weight: 700; margin-bottom: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(255,255,255,0.6); }
+  .mock-split-item { font-size: 0.88rem; color: rgba(255,255,255,0.75); padding: 7px 0; border-top: 1px solid rgba(255,255,255,0.06); display: flex; gap: 8px; }
+  .mock-split-item:first-of-type { border-top: none; }
+  .mock-split-item::before { content: "✓"; color: #1fce7a; flex-shrink: 0; }
+  @media (max-width: 560px) { .mock-split { grid-template-columns: 1fr; } }
+
+  /* ── Role cards grid (Notion-style bento) ── */
+  .roles-section {
+    background: #f3f2ee; padding: 100px 24px;
+    border-top: 1px solid #e7e5de; border-bottom: 1px solid #e7e5de;
+  }
+  .roles-section__inner { max-width: 1180px; margin-inline: auto; }
+  .roles-section__header { text-align: center; max-width: 600px; margin: 0 auto 56px; }
+  .roles-bento {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 860px) { .roles-bento { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .roles-bento { grid-template-columns: 1fr; } }
+  .role-bento-card {
+    background: #fff; border: 1px solid #e7e5de;
+    border-radius: 18px; padding: 28px;
+    transition: border-color 0.18s, transform 0.18s, box-shadow 0.18s;
+  }
+  .role-bento-card:hover {
+    border-color: #4b3aff; transform: translateY(-3px);
+    box-shadow: 0 12px 36px -16px rgba(75,58,255,0.22);
+  }
+  .role-bento-card__icon {
+    width: 46px; height: 46px; border-radius: 13px;
+    display: grid; place-items: center; margin-bottom: 18px;
+    font-weight: 700; font-size: 16px; color: #fff;
+    font-family: "Space Grotesk", sans-serif;
+  }
+  .role-bento-card__icon--1 { background: #4b3aff; }
+  .role-bento-card__icon--2 { background: #0e8f52; }
+  .role-bento-card__icon--3 { background: #ff4d8d; }
+  .role-bento-card__icon--4 { background: #d9a62e; }
+  .role-bento-card__icon--5 { background: #15161b; }
+  .role-bento-card__title {
+    font-family: "Space Grotesk", sans-serif; font-weight: 700;
+    font-size: 1.1rem; margin: 0 0 8px; color: #15161b;
+  }
+  .role-bento-card__desc { font-size: 0.9rem; color: #53555f; line-height: 1.55; margin: 0; }
+
+  /* ── Stats section (Notion social-proof style) ── */
+  .stats-section {
+    background: #15161b; color: #fff;
+    padding: 80px 24px; text-align: center;
+  }
+  .stats-section__inner { max-width: 1100px; margin-inline: auto; }
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px;
+    margin-top: 56px;
+  }
+  @media (max-width: 720px) { .stats-grid { grid-template-columns: 1fr; gap: 36px; } }
+  .stat-card { padding: 0; }
+  .stat-card__num {
+    font-family: "Space Grotesk", sans-serif; font-weight: 700;
+    font-size: clamp(2.4rem, 4vw, 3.6rem); letter-spacing: -0.03em;
+    color: #fff; display: block; margin-bottom: 6px;
+  }
+  .stat-card__num span { color: #4b3aff; }
+  .stat-card__label { font-size: 0.95rem; color: rgba(255,255,255,0.55); }
+
+  /* ── Testimonials (Notion-style) ── */
+  .testimonials-section {
+    padding: 100px 24px; background: #fdfdfb;
+  }
+  .testimonials-section__inner { max-width: 1180px; margin-inline: auto; }
+  .testimonials-section__header { text-align: center; max-width: 560px; margin: 0 auto 56px; }
+  .testimonials-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+  }
+  @media (max-width: 900px) { .testimonials-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .testimonials-grid { grid-template-columns: 1fr; } }
+  .testimonial-card {
+    background: #fff; border: 1px solid #e7e5de;
+    border-radius: 16px; padding: 28px;
+    box-shadow: 0 2px 12px -6px rgba(21,22,27,0.08);
+  }
+  .testimonial-card__quote {
+    font-size: 0.95rem; color: #53555f; line-height: 1.65;
+    margin: 0 0 22px;
+  }
+  .testimonial-card__quote::before { content: "\201C"; }
+  .testimonial-card__quote::after { content: "\201D"; }
+  .testimonial-card__author { display: flex; align-items: center; gap: 12px; }
+  .testimonial-card__avatar {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: grid; place-items: center; color: #fff;
+    font-weight: 700; font-size: 14px; font-family: "Space Grotesk", sans-serif;
+    flex-shrink: 0;
+  }
+  .testimonial-card__name { font-weight: 600; font-size: 0.88rem; color: #15161b; }
+  .testimonial-card__role { font-size: 0.8rem; color: #8b8d97; }
+
+  /* ── Final CTA (Notion-style bold dark band) ── */
+  .final-cta {
+    background: #15161b; color: #fff;
+    padding: 120px 24px; text-align: center;
+  }
+  .final-cta__inner { max-width: 700px; margin-inline: auto; }
+  .final-cta__h2 {
+    font-family: "Space Grotesk", sans-serif; font-weight: 700;
+    font-size: clamp(2.2rem, 4vw, 3.8rem); letter-spacing: -0.03em;
+    line-height: 1.08; margin: 18px 0 18px; color: #fff;
+  }
+  .final-cta__sub { font-size: 1.1rem; color: rgba(255,255,255,0.6); margin: 0 0 40px; }
+  .final-cta__actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+  /* ── Footer (Notion-style minimal) ── */
+  .notion-footer {
+    background: #0e0f12; color: rgba(255,255,255,0.45);
+    padding: 56px 24px 40px;
+  }
+  .notion-footer__inner {
+    max-width: 1180px; margin-inline: auto;
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px;
+  }
+  @media (max-width: 860px) { .notion-footer__inner { grid-template-columns: 1fr 1fr; gap: 36px; } }
+  @media (max-width: 560px) { .notion-footer__inner { grid-template-columns: 1fr; } }
+  .notion-footer__brand { margin-bottom: 16px; }
+  .notion-footer__logo {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-family: "Space Grotesk", sans-serif; font-weight: 700;
+    font-size: 1rem; color: #fff; text-decoration: none;
+  }
+  .notion-footer__logo-mark {
+    width: 26px; height: 26px; border-radius: 8px;
+    background: linear-gradient(135deg, #4b3aff, #ff4d8d);
+    display: grid; place-items: center; color: #fff;
+    font-size: 13px; font-weight: 700;
+  }
+  .notion-footer__tagline { font-size: 0.85rem; color: rgba(255,255,255,0.35); margin-top: 8px; }
+  .notion-footer__col-title {
+    font-family: "IBM Plex Mono", monospace; font-size: 10px;
+    letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.35);
+    margin-bottom: 16px;
+  }
+  .notion-footer__links { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+  .notion-footer__links a { font-size: 0.88rem; color: rgba(255,255,255,0.5); text-decoration: none; transition: color 0.2s; }
+  .notion-footer__links a:hover { color: #fff; }
+  .notion-footer__bottom {
+    max-width: 1180px; margin: 40px auto 0;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    padding-top: 24px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    font-size: 0.8rem; color: rgba(255,255,255,0.3);
+  }
+</style>
+
+<div class="lb">
+
+  {# ── HERO ── #}
+  <section class="notion-hero">
+    <div class="notion-hero__noise" aria-hidden="true"></div>
+    <div class="notion-hero__glow" aria-hidden="true"></div>
+    <div class="notion-hero__inner">
+      <div class="notion-hero__badge">AI EMPLOYEES FOR MODERN BUSINESSES </div>
+      <h1 class="notion-hero__h1">
+        Meet Your <br> <em>AI Employee</em>.
+      </h1>
+      <p class="notion-hero__sub">
+        LiftBot gives your business a digital team member that handles customer conversations, captures leads, answers questions and hands off to your team — 24 hours a day, 7 days a week.
+      </p>
+      <div class="notion-hero__cta">
+        <a href="{% url 'signup' %}" class="lb__btn lb__btn--primary">Get Early Access</a>
+        <a href="{% url 'contact' %}" class="lb__btn lb__btn--outline">Book a demo →</a>
+      </div>
+      <div class="notion-hero__trust">
+        <span>24/7 availability</span>
+        <span>Business Knowledge</span>
+        <span>Lead Management</span>
+        <span>Human Handoff</span>
+      </div>
+    </div>
+
+    {# Product screenshot / chat mockup #}
+    <div class="notion-preview" data-reveal>
+      <div class="notion-preview__card">
+        <div class="notion-preview__bar">
+          <span class="notion-preview__dot"></span>
+          <span class="notion-preview__dot"></span>
+          <span class="notion-preview__dot"></span>
+          <span class="notion-preview__title">LiftBot · Sales Employee — yourwebsite.com</span>
+        </div>
+        <div class="notion-preview__chat">
+          <div class="notion-preview__msg notion-preview__msg--in">
+          Your customers can reach you at any time.
+          </div>
+          <div class="notion-preview__msg notion-preview__msg--out">
+            LiftBot helps your business stay responsive when your team is busy, unavailable or focused on higher-value work. 
+          </div>
+          <!-- <div class="notion-preview__msg notion-preview__msg--in">
+            Yes please — I'm free tomorrow afternoon.
+          </div> -->
+          <div class="notion-preview__msg notion-preview__msg--out">
+            Answer questions. <br>
+           Capture opportunities. 
+           <br>Keep conversations moving. 
+          </div>
+          <span class="notion-preview__status">YOUR AI EMPLOYEE works alongside YOUR TEAM</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# ── TRUSTED BY ── #}
+  <div class="logo-bar">
+    <p class="logo-bar__label">Trusted by businesses across the UK</p>
+    <div class="logo-bar__row">
+      <span class="logo-bar__item">Riverside HVAC</span>
+      <span class="logo-bar__item">Brightford Law</span>
+      <span class="logo-bar__item">Peak Dental</span>
+      <span class="logo-bar__item">NovaBuild</span>
+      <span class="logo-bar__item">Clarke Motors</span>
+      <span class="logo-bar__item">Luminary Events</span>
+    </div>
+  </div>
+
+  {# ── FEATURE 1 — What is an AI employee ── #}
+  <div style="background:#fff; border-bottom:1px solid #e7e5de;">
+    <div class="feature-block">
+      <div>
+        <span class="feature-block__eyebrow">Give AI a job</span>
+        <h2 class="feature-block__h2">What exactly is an AI Employee</h2>
+        <p class="feature-block__p"> An AI employee is a digital team member designed aroun a specific business role<br></p>
+        <p class="feature-block__p">
+         Unlike a basic chatbot, LiftBot lets you define what your AI employee knows, what it does, 
+how it communicates and when it should involve your human team.
+        </p>
+        <ul class="feature-block__list">
+          <li>Trained on your exact products, services, policies and FAQs</li>
+          <li>Plays a defined role — Sales, Support, Reception and more</li>
+          <li>Follows your tone of voice and communication rules</li>
+          <li>Escalates to your team at the right moment</li>
+        </ul>
+        <a href="{% url 'signup' %}" class="lb__btn lb__btn--primary">See it in action</a>
+      </div>
+      <div class="feature-block__visual">
+        <div style="width:100%;">
+          <div class="mock-tags">
+            <span class="mock-tag mock-tag--brand">Products</span>
+            <span class="mock-tag mock-tag--brand">Services</span>
+            <span class="mock-tag mock-tag--brand">FAQs</span>
+            <span class="mock-tag">Policies</span>
+            <span class="mock-tag">Processes</span>
+            <span class="mock-tag">Brand tone</span>
+            <span class="mock-tag">Pricing</span>
+          </div>
+          <div class="mock-employee-card">
+            <div class="mock-avatar">
+              S
+              <span class="mock-avatar__dot"></span>
+            </div>
+            <div>
+              <div class="mock-name">AI Sales Employee</div>
+              <div class="mock-role">Trained on your business · Online now</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# ── FEATURE 2 — How it works ── #}
+  <div style="background:#f3f2ee; border-bottom:1px solid #e7e5de;">
+    <div class="feature-block feature-block--flip">
+      <div>
+        <span class="feature-block__eyebrow">Turn conversations into opportunities</span>
+        <h2 class="feature-block__h2">From first question to qualified lead.</h2>
+        <p class="feature-block__p">
+          Every customer conversation is an opportunity. LiftBot makes sure none slip through the cracks — even at 2am on a Sunday.
+        </p>
+        <ul class="feature-block__list">
+          <li>Customer visits your website and starts a conversation</li>
+          <li>LiftBot responds instantly using your business knowledge</li>
+          <li>It qualifies the lead and collects key information</li>
+          <li>Your team gets a clean summary — ready to close</li>
+        </ul>
+        <a href="{% url 'contact' %}" class="lb__btn lb__btn--outline">Book a demo</a>
+      </div>
+      <div class="feature-block__visual">
+        <div class="mock-timeline">
+          <div class="mock-step">
+            <div class="mock-step__num">01</div>
+            <div class="mock-step__body">
+              <strong>Customer arrives</strong>
+              Visits your site and asks a question.
+            </div>
+          </div>
+          <div class="mock-step">
+            <div class="mock-step__num">02</div>
+            <div class="mock-step__body">
+              <strong>Instant response</strong>
+              LiftBot replies using your knowledge base.
+            </div>
+          </div>
+          <div class="mock-step">
+            <div class="mock-step__num">03</div>
+            <div class="mock-step__body">
+              <strong>Lead qualification</strong>
+              Understands needs, collects information.
+            </div>
+          </div>
+          <div class="mock-step">
+            <div class="mock-step__num">04</div>
+            <div class="mock-step__body">
+              <strong>Team handoff</strong>
+              Summary sent to your team — at exactly the right moment.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# ── FEATURE 3 — AI + team ── #}
+  <div style="background:#fff; border-bottom:1px solid #e7e5de;">
+    <div class="feature-block">
+      <div>
+        <span class="feature-block__eyebrow">Built to collaborate</span>
+        <h2 class="feature-block__h2">AI handles the volume. Your team adds the value.</h2>
+        <p class="feature-block__p">
+          LiftBot isn't here to replace your people. It handles the repetitive, time-consuming conversations so your team can focus on what actually moves the needle.
+        </p>
+        <a href="{% url 'signup' %}" class="lb__btn lb__btn--primary">Get started free</a>
+      </div>
+      <div class="feature-block__visual feature-block__visual--dark">
+        <div class="mock-split">
+          <div class="mock-split-card mock-split-card--ai">
+            <div class="mock-split-label">AI handles</div>
+            <div class="mock-split-item">Routine questions</div>
+            <div class="mock-split-item">Initial enquiries</div>
+            <div class="mock-split-item">Information requests</div>
+            <div class="mock-split-item">Lead capture</div>
+            <div class="mock-split-item">Repetitive work</div>
+          </div>
+          <div class="mock-split-card mock-split-card--human">
+            <div class="mock-split-label">Team handles</div>
+            <div class="mock-split-item">Complex situations</div>
+            <div class="mock-split-item">Important decisions</div>
+            <div class="mock-split-item">High-value deals</div>
+            <div class="mock-split-item">Relationships</div>
+            <div class="mock-split-item">Human judgement</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# ── ROLES (bento grid) ── #}
+  <section class="roles-section">
+    <div class="roles-section__inner">
+      <div class="roles-section__header" data-reveal>
+        <span class="lb__eyebrow">One platform. Multiple roles.</span>
+        <h2 class="lb__h2" style="margin-top:16px;">Start with one AI employee. Scale with your business.</h2>
+        <p class="lb__lede" style="margin-inline:auto; text-align:center;">Every AI employee is configured around a specific role in your business.</p>
+      </div>
+      <div class="roles-bento" data-reveal>
+        <div class="role-bento-card">
+          <div class="role-bento-card__icon role-bento-card__icon--1">S</div>
+          <h3 class="role-bento-card__title">AI Sales Employee</h3>
+          <p class="role-bento-card__desc">Engages website visitors, qualifies prospects and captures the information your sales team needs to convert.</p>
+        </div>
+        <div class="role-bento-card">
+          <div class="role-bento-card__icon role-bento-card__icon--2">SU</div>
+          <h3 class="role-bento-card__title">AI Support Employee</h3>
+          <p class="role-bento-card__desc">Handles common customer questions instantly, reducing ticket volume and improving satisfaction around the clock.</p>
+        </div>
+        <div class="role-bento-card">
+          <div class="role-bento-card__icon role-bento-card__icon--3">R</div>
+          <h3 class="role-bento-card__title">AI Receptionist</h3>
+          <p class="role-bento-card__desc">Greets every visitor, routes enquiries to the right place and ensures nobody leaves without being helped.</p>
+        </div>
+        <div class="role-bento-card">
+          <div class="role-bento-card__icon role-bento-card__icon--4">LQ</div>
+          <h3 class="role-bento-card__title">AI Lead Qualifier</h3>
+          <p class="role-bento-card__desc">Asks the right questions, understands what each customer needs and scores leads before they reach your team.</p>
+        </div>
+        <div class="role-bento-card">
+          <div class="role-bento-card__icon role-bento-card__icon--5">A</div>
+          <h3 class="role-bento-card__title">AI Appointment Assistant</h3>
+          <p class="role-bento-card__desc">Moves customers toward the next step — whether that's a call, a demo, a site visit or a confirmed booking.</p>
+        </div>
+        <div class="role-bento-card" style="background:linear-gradient(135deg,#eeecff,#ffeaf2); border-color:rgba(75,58,255,0.2);">
+          <div style="margin-bottom:14px; font-size:1.4rem;">✦</div>
+          <h3 class="role-bento-card__title">Custom roles</h3>
+          <p class="role-bento-card__desc">Every business is different. Work with us to define a bespoke AI employee role built around your exact processes.</p>
+          <a href="{% url 'contact' %}" style="display:inline-flex; margin-top:14px; font-size:0.88rem; font-weight:600; color:#4b3aff; text-decoration:none;">Talk to us →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- {# ── STATS ── #}
+  <section class="stats-section" data-reveal>
+    <div class="stats-section__inner">
+      <span class="lb__eyebrow">Results that matter</span>
+      <h2 class="lb__h2" style="color:#fff; margin-top:16px; text-align:center;">Real outcomes for real businesses.</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-card__num"><span>24</span>/7</span>
+          <span class="stat-card__label">Customer availability — no days off, no lunch breaks</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card__num"><span>3×</span></span>
+          <span class="stat-card__label">More leads captured vs. contact forms alone</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card__num"><span>5</span>min</span>
+          <span class="stat-card__label">Average setup time to your first AI employee</span>
+        </div>
+      </div>
+    </div>
+  </section> -->
+<!-- 
+  {# ── TESTIMONIALS ── #}
+  <section class="testimonials-section">
+    <div class="testimonials-section__inner">
+      <div class="testimonials-section__header" data-reveal>
+        <span class="lb__eyebrow">What businesses say</span>
+        <h2 class="lb__h2" style="margin-top:16px; text-align:center;">Loved by teams who've tried it.</h2>
+      </div>
+      <div class="testimonials-grid" data-reveal>
+        <div class="testimonial-card">
+          <p class="testimonial-card__quote">We used to miss enquiries that came in overnight. Since LiftBot, every lead gets a response within seconds — it's genuinely changed how we work.</p>
+          <div class="testimonial-card__author">
+            <div class="testimonial-card__avatar" style="background:#4b3aff;">JM</div>
+            <div>
+              <div class="testimonial-card__name">James Mitchell</div>
+              <div class="testimonial-card__role">Director · Riverside HVAC</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <p class="testimonial-card__quote">Our support team was drowning in the same five questions every day. LiftBot handles all of them now. The team can actually focus on the complex stuff.</p>
+          <div class="testimonial-card__author">
+            <div class="testimonial-card__avatar" style="background:#0e8f52;">SP</div>
+            <div>
+              <div class="testimonial-card__name">Sarah Patel</div>
+              <div class="testimonial-card__role">Operations Manager · NovaBuild</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <p class="testimonial-card__quote">It feels like having a really knowledgeable receptionist who never gets tired. Patients get answers immediately, and our staff aren't interrupted constantly.</p>
+          <div class="testimonial-card__author">
+            <div class="testimonial-card__avatar" style="background:#ff4d8d;">DL</div>
+            <div>
+              <div class="testimonial-card__name">Dr. Lisa Clarke</div>
+              <div class="testimonial-card__role">Principal · Peak Dental</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section> -->
+
+  {# ── FINAL CTA ── #}
+  <section class="final-cta">
+    <div class="final-cta__inner" data-reveal>
+      <!-- <span class="lb__eyebrow">Ready when you are</span> -->
+      <h2 class="final-cta__h2">Ready to give your business an AI employee?</h2>
+      <p class="final-cta__sub">Build a smarter way to engage customers, capture opportunities and automate repititive work.</p>
+      <div class="final-cta__actions">
+        <a href="{% url 'signup' %}" class="lb__btn" style="background:#fff; color:#15161b;">Get Early Access</a>
+        <a href="{% url 'contact' %}" class="lb__btn lb__btn--outline" style="color:#fff; border-color:rgba(255,255,255,0.3);">Book a demo →</a>
+      </div>
+    </div>
+  </section>
+
+  {# ── FOOTER ── #}
+  <footer class="notion-footer">
+    <div class="notion-footer__inner">
+      <div>
+        <a href="{% url 'home' %}" class="notion-footer__logo">
+          <span class="notion-footer__logo-mark">L</span>
+          LiftBot
+        </a>
+        <p class="notion-footer__tagline">AI employees for modern businesses.</p>
+      </div>
+      <div>
+        <div class="notion-footer__col-title">Product</div>
+        <ul class="notion-footer__links">
+          <li><a href="{% url 'home' %}">Overview</a></li>
+          <li><a href="{% url 'home' %}#product">AI employees</a></li>
+          <li><a href="{% url 'home' %}#how-it-works">How it works</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="notion-footer__col-title">Company</div>
+        <ul class="notion-footer__links">
+          <li><a href="{% url 'about' %}">About us</a></li>
+          <li><a href="{% url 'contact' %}">Contact</a></li>
+          <li><a href="{% url 'contact' %}">Book a demo</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="notion-footer__col-title">Account</div>
+        <ul class="notion-footer__links">
+          {% if user.is_authenticated %}
+            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+          {% else %}
+            <li><a href="{% url 'login' %}">Log in</a></li>
+            <li><a href="{% url 'signup' %}">Sign up free</a></li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+    <div class="notion-footer__bottom">
+      <span>© {% now "Y" %} LiftBot, a Brandinglift product. All rights reserved.</span>
+      <span>Made in the UK 🇬🇧</span>
+    </div>
+  </footer>
+
 </div>
+
+<script src="{% static 'marketing.js' %}" defer></script>
 {% endblock %}

@@ -1,517 +1,118 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Contact LiftBot — Get in Touch or Book a Demo{% endblock %}
+{% block title %}Contact | LiftBot{% endblock %}
 
-{% block content %}
+{% block extra_css %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{% static 'marketing.css' %}">
+<link rel="stylesheet" href="{% static 'contact.css' %}">
+{% endblock %}
 
-<style>
-  .lb { max-width: none; }
-
-  /* ── Page layout ── */
-  .contact-page {
-    background: #fff; min-height: 80vh;
-  }
-
-  /* ── Hero ── */
-  .contact-hero {
-    background: #fff; padding: 80px 24px 60px;
-    border-bottom: 1px solid #e7e5de; text-align: center;
-    position: relative; overflow: hidden;
-  }
-  .contact-hero__glow {
-    position: absolute; inset: -20% -10% auto;
-    height: 400px; pointer-events: none;
-    background:
-      radial-gradient(350px 260px at 20% 10%, rgba(75,58,255,0.1), transparent 70%),
-      radial-gradient(300px 220px at 85% 5%, rgba(255,77,141,0.09), transparent 70%);
-    filter: blur(12px);
-  }
-  .contact-hero__inner { position: relative; z-index: 1; max-width: 580px; margin-inline: auto; }
-  .contact-hero__eyebrow {
-    display: inline-flex; align-items: center; gap: 8px;
-    font-family: "IBM Plex Mono", monospace; font-size: 11px;
-    letter-spacing: 0.09em; text-transform: uppercase;
-    color: #4b3aff; background: #eeecff;
-    border: 1px solid rgba(75,58,255,0.2); padding: 5px 14px;
-    border-radius: 999px; margin-bottom: 22px;
-  }
-  .contact-hero__h1 {
-    font-family: "Space Grotesk", sans-serif; font-weight: 700;
-    font-size: clamp(2.2rem, 4.5vw, 3.6rem);
-    letter-spacing: -0.03em; line-height: 1.1;
-    margin: 0 0 16px; color: #15161b;
-  }
-  .contact-hero__sub {
-    font-size: 1.05rem; color: #53555f; line-height: 1.65; margin: 0;
-  }
-
-  /* ── Two-column layout ── */
-  .contact-body {
-    max-width: 1100px; margin: 0 auto; padding: 72px 24px 100px;
-    display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 80px;
-    align-items: flex-start;
-  }
-  @media (max-width: 860px) { .contact-body { grid-template-columns: 1fr; gap: 60px; padding: 52px 24px 80px; } }
-
-  /* ── Form side ── */
-  .contact-form__title {
-    font-family: "Space Grotesk", sans-serif; font-weight: 700;
-    font-size: 1.45rem; letter-spacing: -0.015em;
-    color: #15161b; margin: 0 0 6px;
-  }
-  .contact-form__subtitle { font-size: 0.93rem; color: #8b8d97; margin: 0 0 32px; }
-
-  .form-group { margin-bottom: 20px; }
-  .form-group label {
-    display: block; font-size: 0.85rem; font-weight: 600;
-    color: #15161b; margin-bottom: 7px;
-  }
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    width: 100%; font-family: "Inter", sans-serif; font-size: 0.95rem;
-    color: #15161b; background: #fff;
-    border: 1.5px solid #e7e5de; border-radius: 10px;
-    padding: 13px 15px; outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  .form-group input:focus,
-  .form-group select:focus,
-  .form-group textarea:focus {
-    border-color: #4b3aff;
-    box-shadow: 0 0 0 3px rgba(75,58,255,0.1);
-  }
-  .form-group textarea { resize: vertical; min-height: 130px; }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  @media (max-width: 560px) { .form-row { grid-template-columns: 1fr; } }
-
-  .form-submit {
-    margin-top: 8px;
-    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-  }
-  .form-submit button {
-    font-family: "Inter", sans-serif; font-weight: 600; font-size: 0.95rem;
-    background: #15161b; color: #fff; border: none; cursor: pointer;
-    padding: 13px 26px; border-radius: 999px;
-    transition: background 0.18s, transform 0.15s;
-  }
-  .form-submit button:hover { background: #4b3aff; transform: translateY(-1px); }
-  .form-note { font-size: 0.82rem; color: #8b8d97; }
-
-  /* Success/error flash */
-  .form-success {
-    background: #e6fbf0; border: 1px solid rgba(31,206,122,0.35);
-    border-radius: 12px; padding: 16px 18px; margin-bottom: 24px;
-    font-size: 0.92rem; color: #0e8f52; display: none;
-  }
-  .form-success.show { display: block; }
-
-  /* ── Info side ── */
-  .contact-info__title {
-    font-family: "Space Grotesk", sans-serif; font-weight: 700;
-    font-size: 1.35rem; letter-spacing: -0.015em;
-    color: #15161b; margin: 0 0 6px;
-  }
-  .contact-info__sub { font-size: 0.93rem; color: #8b8d97; margin: 0 0 36px; }
-
-  /* Demo booking card */
-  .demo-card {
-    background: #15161b; border-radius: 18px; padding: 28px;
-    color: #fff; margin-bottom: 20px;
-    border: 1px solid rgba(255,255,255,0.05);
-  }
-  .demo-card__badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-family: "IBM Plex Mono", monospace; font-size: 10px;
-    letter-spacing: 0.09em; text-transform: uppercase;
-    color: #1fce7a; background: rgba(31,206,122,0.12);
-    border: 1px solid rgba(31,206,122,0.25); padding: 4px 10px;
-    border-radius: 999px; margin-bottom: 18px;
-  }
-  .demo-card__badge::before {
-    content: ""; width: 6px; height: 6px; border-radius: 50%; background: #1fce7a;
-    animation: lb-pulse 1.8s ease-in-out infinite;
-  }
-  .demo-card__title {
-    font-family: "Space Grotesk", sans-serif; font-weight: 700;
-    font-size: 1.25rem; color: #fff; margin: 0 0 10px;
-  }
-  .demo-card__desc { font-size: 0.9rem; color: rgba(255,255,255,0.6); margin: 0 0 22px; line-height: 1.6; }
-  .demo-card__list { list-style: none; padding: 0; margin: 0 0 24px; display: flex; flex-direction: column; gap: 9px; }
-  .demo-card__list li { font-size: 0.88rem; color: rgba(255,255,255,0.7); display: flex; gap: 9px; }
-  .demo-card__list li::before { content: "✓"; color: #1fce7a; flex-shrink: 0; }
-  .demo-card__cta {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: #fff; color: #15161b; font-weight: 600;
-    font-size: 0.92rem; padding: 12px 22px; border-radius: 999px;
-    text-decoration: none; transition: background 0.18s, transform 0.15s;
-  }
-  .demo-card__cta:hover { background: #eeecff; color: #4b3aff; transform: translateY(-1px); }
-
-  /* Contact methods */
-  .contact-methods { display: flex; flex-direction: column; gap: 12px; }
-  .contact-method {
-    background: #f3f2ee; border: 1px solid #e7e5de;
-    border-radius: 14px; padding: 18px 20px;
-    display: flex; align-items: center; gap: 16px;
-    transition: border-color 0.18s; text-decoration: none; color: inherit;
-  }
-  .contact-method:hover { border-color: #4b3aff; }
-  .contact-method__icon {
-    width: 40px; height: 40px; border-radius: 10px;
-    display: grid; place-items: center; font-size: 18px;
-    flex-shrink: 0; background: #fff; border: 1px solid #e7e5de;
-  }
-  .contact-method__label { font-weight: 600; font-size: 0.9rem; color: #15161b; margin: 0 0 2px; }
-  .contact-method__value { font-size: 0.83rem; color: #8b8d97; margin: 0; }
-
-  /* FAQ section */
-  .contact-faq {
-    background: #f3f2ee; border-top: 1px solid #e7e5de;
-    padding: 80px 24px;
-  }
-  .contact-faq__inner { max-width: 760px; margin-inline: auto; }
-  .contact-faq__header { text-align: center; margin-bottom: 48px; }
-  .faq-list { display: flex; flex-direction: column; gap: 12px; }
-  .faq-item {
-    background: #fff; border: 1px solid #e7e5de; border-radius: 14px;
-    overflow: hidden;
-  }
-  .faq-item__question {
-    width: 100%; text-align: left; background: none; border: none;
-    padding: 20px 22px; cursor: pointer; display: flex;
-    align-items: center; justify-content: space-between; gap: 16px;
-    font-family: "Inter", sans-serif; font-weight: 600; font-size: 0.95rem;
-    color: #15161b; transition: background 0.15s;
-  }
-  .faq-item__question:hover { background: #fdfdfb; }
-  .faq-item__icon {
-    width: 24px; height: 24px; border-radius: 6px;
-    background: #f3f2ee; display: grid; place-items: center;
-    font-size: 16px; flex-shrink: 0; transition: transform 0.25s;
-    color: #53555f;
-  }
-  .faq-item.is-open .faq-item__icon { transform: rotate(45deg); }
-  .faq-item__answer {
-    max-height: 0; overflow: hidden;
-    transition: max-height 0.35s ease, padding 0.25s;
-    padding: 0 22px;
-  }
-  .faq-item.is-open .faq-item__answer { max-height: 300px; padding: 0 22px 20px; }
-  .faq-item__answer p { margin: 0; font-size: 0.93rem; color: #53555f; line-height: 1.65; }
-
-  /* ── Footer ── */
-  .contact-footer {
-    background: #0e0f12; color: rgba(255,255,255,0.45);
-    padding: 56px 24px 40px;
-  }
-  .contact-footer__inner {
-    max-width: 1180px; margin-inline: auto;
-    display: flex; align-items: center; justify-content: space-between;
-    flex-wrap: wrap; gap: 20px;
-  }
-  .contact-footer__logo {
-    display: inline-flex; align-items: center; gap: 9px;
-    font-family: "Space Grotesk", sans-serif; font-weight: 700;
-    font-size: 1rem; color: #fff; text-decoration: none;
-  }
-  .contact-footer__logo-mark {
-    width: 26px; height: 26px; border-radius: 8px;
-    background: linear-gradient(135deg, #4b3aff, #ff4d8d);
-    display: grid; place-items: center; color: #fff; font-size: 13px; font-weight: 700;
-  }
-  .contact-footer__nav { display: flex; gap: 22px; font-size: 0.88rem; }
-  .contact-footer__nav a { color: rgba(255,255,255,0.5); text-decoration: none; transition: color 0.2s; }
-  .contact-footer__nav a:hover { color: #fff; }
-  .contact-footer__copy { font-size: 0.8rem; color: rgba(255,255,255,0.3); }
-</style>
-
-<div class="lb contact-page">
+{% block content %}
+<div class="lb">
 
   {# ── HERO ── #}
-  <section class="contact-hero">
-    <div class="contact-hero__glow" aria-hidden="true"></div>
-    <div class="contact-hero__inner">
-      <span class="contact-hero__eyebrow">Get in touch</span>
-      <h1 class="contact-hero__h1">We'd love to hear from you.</h1>
-      <p class="contact-hero__sub">
-        Whether you want to book a demo, ask a question or just see what LiftBot can do for your business — we're here.
+  <section class="cnt-hero">
+    <div class="cnt-hero__noise" aria-hidden="true"></div>
+    <div class="cnt-hero__glow" aria-hidden="true"></div>
+    <div class="cnt-hero__inner">
+      <div class="cnt-hero__badge">Contact</div>
+      <h1 class="cnt-hero__h1">Let's talk about <em>LiftBot.</em></h1>
+      <p class="cnt-hero__sub">
+        Have questions? Want a demo? Interested in early access? Looking for a partnership? We're here.
       </p>
     </div>
   </section>
 
-  {# ── BODY ── #}
-  <div class="contact-body">
+  {# ── TOPICS + FORM ── #}
+  <section class="cnt-main">
+    <div class="cnt-main__inner">
 
-    {# FORM #}
-    <div>
-      <div class="contact-form__title">Send us a message</div>
-      <div class="contact-form__subtitle">We typically respond within a few hours during business days.</div>
-
-      <div class="form-success" id="formSuccess">
-        ✓ Thanks! We've received your message and will be in touch shortly.
+      {# ── TOPIC CARDS ── #}
+      <div class="cnt-topics" data-reveal>
+        <div class="cnt-topic">
+          <div class="cnt-topic__icon cnt-topic__icon--1">01</div>
+          <h3 class="cnt-topic__title">Sales</h3>
+          <p class="cnt-topic__desc">Talk to us about using LiftBot for your business.</p>
+        </div>
+        <div class="cnt-topic">
+          <div class="cnt-topic__icon cnt-topic__icon--2">02</div>
+          <h3 class="cnt-topic__title">Product</h3>
+          <p class="cnt-topic__desc">Ask about features and capabilities.</p>
+        </div>
+        <div class="cnt-topic">
+          <div class="cnt-topic__icon cnt-topic__icon--3">03</div>
+          <h3 class="cnt-topic__title">Partnerships</h3>
+          <p class="cnt-topic__desc">Explore opportunities to work together.</p>
+        </div>
+        <div class="cnt-topic">
+          <div class="cnt-topic__icon cnt-topic__icon--4">04</div>
+          <h3 class="cnt-topic__title">Support</h3>
+          <p class="cnt-topic__desc">Get help with an existing account.</p>
+        </div>
+        <div class="cnt-topic">
+          <div class="cnt-topic__icon cnt-topic__icon--5">05</div>
+          <h3 class="cnt-topic__title">General</h3>
+          <p class="cnt-topic__desc">Something else? Send us a message.</p>
+        </div>
       </div>
 
-      <form id="contactForm" novalidate>
-        {% csrf_token %}
-        <div class="form-row">
-          <div class="form-group">
-            <label for="first_name">First name *</label>
-            <input type="text" id="first_name" name="first_name" placeholder="James" required>
-          </div>
-          <div class="form-group">
-            <label for="last_name">Last name *</label>
-            <input type="text" id="last_name" name="last_name" placeholder="Mitchell" required>
-          </div>
+      {# ── FORM ── #}
+      {% if submitted %}
+        <div class="cnt-success" data-reveal>
+          <div class="cnt-success__icon">&#9993;</div>
+          <h2 class="cnt-success__h2">Message sent.</h2>
+          <p class="cnt-success__sub">Thanks for reaching out. Our team will get back to you shortly.</p>
+          <a href="{% url 'home' %}" class="lb__btn lb__btn--primary">Back to Home</a>
         </div>
-        <div class="form-group">
-          <label for="email">Email address *</label>
-          <input type="email" id="email" name="email" placeholder="james@yourbusiness.co.uk" required>
-        </div>
-        <div class="form-group">
-          <label for="phone">Phone number</label>
-          <input type="tel" id="phone" name="phone" placeholder="+44 7700 900000">
-        </div>
-        <div class="form-group">
-          <label for="business">Business name</label>
-          <input type="text" id="business" name="business" placeholder="Riverside HVAC Ltd">
-        </div>
-        <div class="form-group">
-          <label for="enquiry_type">What can we help you with? *</label>
-          <select id="enquiry_type" name="enquiry_type" required>
-            <option value="" disabled selected>Select an option...</option>
-            <option value="demo">Book a demo</option>
-            <option value="pricing">Pricing &amp; plans</option>
-            <option value="question">General question</option>
-            <option value="support">Existing customer support</option>
-            <option value="partnership">Partnership enquiry</option>
-            <option value="other">Something else</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="message">Your message *</label>
-          <textarea id="message" name="message" placeholder="Tell us a bit about your business and what you're hoping LiftBot can help with..." required></textarea>
-        </div>
-        <div class="form-group">
-          <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; font-weight:400;">
-            <input type="checkbox" name="consent" id="consent" required style="width:auto; margin-top:3px; flex-shrink:0;">
-            <span style="font-size:0.85rem; color:#53555f; line-height:1.55;">
-              I agree to LiftBot processing my data to respond to this enquiry. I understand I can unsubscribe at any time.
-            </span>
-          </label>
-        </div>
-        <div class="form-submit">
-          <button type="submit">Send message →</button>
-          <span class="form-note">No spam. No pressure. Just a conversation.</span>
-        </div>
-      </form>
-    </div>
+      {% else %}
+        <div class="cnt-form-card" data-reveal>
+          <span class="lb__eyebrow">Send us a message</span>
+          <h2 class="cnt-form-card__h2">We'll get back to you shortly.</h2>
 
-    {# INFO #}
-    <div class="contact-info">
-      <div class="contact-info__title">Or book a demo</div>
-      <div class="contact-info__sub">See LiftBot live with a personalised walkthrough.</div>
+          <form method="post" action="{% url 'contact' %}" class="cnt-form" novalidate>
+            {% csrf_token %}
 
-      <div class="demo-card">
-        <span class="demo-card__badge">Live demo</span>
-        <h3 class="demo-card__title">See LiftBot in your business</h3>
-        <p class="demo-card__desc">
-          A 30-minute call where we show you exactly how LiftBot would work for your specific business — including a live walkthrough of the platform.
-        </p>
-        <ul class="demo-card__list">
-          <li>30-minute video call</li>
-          <li>Customised to your business type</li>
-          <li>Live platform demonstration</li>
-          <li>Q&amp;A with a product specialist</li>
-          <li>Pricing discussion included</li>
-        </ul>
-        <a href="mailto:hello@liftbot.ai?subject=Demo Request" class="demo-card__cta">
-          Book a demo call →
-        </a>
-      </div>
+            <div class="cnt-form__row">
+              <label class="cnt-form__label" for="id_full_name">Full Name</label>
+              <input class="cnt-form__input" type="text" id="id_full_name" name="full_name" required>
+            </div>
 
-      <div class="contact-methods">
-        <a href="mailto:hello@liftbot.ai" class="contact-method">
-          <span class="contact-method__icon">✉️</span>
-          <div>
-            <div class="contact-method__label">Email us</div>
-            <div class="contact-method__value">Arham@brandinglift.com</div>
-          </div>
-        </a>
-        <a href="tel:+441234567890" class="contact-method">
-          <span class="contact-method__icon">📞</span>
-          <div>
-            <div class="contact-method__label">Call us</div>
-            <div class="contact-method__value">+91 9717882400 </div>
-          </div>
-        </a>
-        <div class="contact-method" style="cursor:default;">
-          <span class="contact-method__icon">📍</span>
-          <div>
-            <div class="contact-method__label">Based in the India</div>
-            <div class="contact-method__value">Serving businesses across the Continents</div>
-          </div>
-        </div>
-        <div class="contact-method" style="cursor:default;">
-          <span class="contact-method__icon">⏱️</span>
-          <div>
-            <div class="contact-method__label">Response time</div>
-            <div class="contact-method__value">We typically reply within 2–4 hours on business days</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+            <div class="cnt-form__grid">
+              <div class="cnt-form__row">
+                <label class="cnt-form__label" for="id_email">Email</label>
+                <input class="cnt-form__input" type="email" id="id_email" name="email" required>
+              </div>
+              <div class="cnt-form__row">
+                <label class="cnt-form__label" for="id_topic">Topic</label>
+                <select class="cnt-form__input" id="id_topic" name="topic" required>
+                  <option value="" disabled selected>Select a topic</option>
+                  <option value="sales">Sales</option>
+                  <option value="product">Product</option>
+                  <option value="partnerships">Partnerships</option>
+                  <option value="support">Support</option>
+                  <option value="general">General</option>
+                </select>
+              </div>
+            </div>
 
-  {# ── FAQ ── #}
-  <section class="contact-faq">
-    <div class="contact-faq__inner">
-      <div class="contact-faq__header" data-reveal>
-        <span class="lb__eyebrow">FAQs</span>
-        <h2 class="lb__h2" style="margin-top:16px; text-align:center;">Common questions.</h2>
-      </div>
-      <div class="faq-list" data-reveal>
-        <div class="faq-item">
-          <button class="faq-item__question" aria-expanded="false">
-            How long does it take to set up an AI employee?
-            <span class="faq-item__icon">+</span>
-          </button>
-          <div class="faq-item__answer">
-            <p>Most businesses go live within a working day. You fill in your business details, configure the AI employee's role and knowledge, and we handle the rest. The typical setup is under 5 minutes for a basic configuration.</p>
-          </div>
+            <div class="cnt-form__row">
+              <label class="cnt-form__label" for="id_message">Message</label>
+              <textarea class="cnt-form__input cnt-form__textarea" id="id_message" name="message" rows="5" required></textarea>
+            </div>
+
+            <button type="submit" class="lb__btn lb__btn--primary cnt-form__submit">Contact LiftBot</button>
+          </form>
         </div>
-        <div class="faq-item">
-          <button class="faq-item__question" aria-expanded="false">
-            Do I need any technical knowledge to use LiftBot?
-            <span class="faq-item__icon">+</span>
-          </button>
-          <div class="faq-item__answer">
-            <p>None at all. LiftBot is designed for business owners and their teams — not developers. You configure everything through a simple dashboard, and we provide onboarding support to get you started.</p>
-          </div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-item__question" aria-expanded="false">
-            How does LiftBot learn about my business?
-            <span class="faq-item__icon">+</span>
-          </button>
-          <div class="faq-item__answer">
-            <p>You provide your business knowledge through our platform — products, services, FAQs, policies, pricing, processes and brand tone. LiftBot uses this information to answer customer questions accurately on your behalf.</p>
-          </div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-item__question" aria-expanded="false">
-            What happens when a customer needs human help?
-            <span class="faq-item__icon">+</span>
-          </button>
-          <div class="faq-item__answer">
-            <p>LiftBot detects when a conversation needs human involvement — complex queries, high-value opportunities, emotional situations — and hands off to your team with a full conversation summary so they can pick up without asking the customer to repeat themselves.</p>
-          </div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-item__question" aria-expanded="false">
-            Is there a free trial?
-            <span class="faq-item__icon">+</span>
-          </button>
-          <div class="faq-item__answer">
-            <p>Yes. You can sign up and explore the platform for free. We also offer a personalised demo call where we show you exactly how LiftBot would work for your specific business type before you commit.</p>
-          </div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-item__question" aria-expanded="false">
-            What industries does LiftBot work for?
-            <span class="faq-item__icon">+</span>
-          </button>
-          <div class="faq-item__answer">
-            <p>LiftBot works across a wide range of industries — trades and home services, professional services (legal, accounting, consulting), healthcare, retail, hospitality and more. If your business has customer conversations online, LiftBot can help.</p>
-          </div>
-        </div>
-      </div>
+      {% endif %}
+
     </div>
   </section>
 
-  {# ── FOOTER ── #}
-  <footer class="contact-footer">
-    <div class="contact-footer__inner">
-      <a href="{% url 'home' %}" class="contact-footer__logo">
-        <span class="contact-footer__logo-mark">L</span>
-        LiftBot
-      </a>
-      <nav class="contact-footer__nav">
-        <a href="{% url 'home' %}">Home</a>
-        <a href="{% url 'about' %}">About</a>
-        <a href="{% url 'contact' %}">Contact</a>
-        {% if user.is_authenticated %}
-          <a href="{% url 'dashboard' %}">Dashboard</a>
-        {% else %}
-          <a href="{% url 'login' %}">Log in</a>
-          <a href="{% url 'signup' %}">Sign up</a>
-        {% endif %}
-      </nav>
-      <span class="contact-footer__copy">© {% now "Y" %} LiftBot, a Brandinglift product.</span>
-    </div>
-  </footer>
-
 </div>
 
-<script src="{% static 'marketing.js' %}" defer></script>
-
-<script>
-(function () {
-  /* ── FAQ accordion ── */
-  document.querySelectorAll('.faq-item__question').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var item = this.closest('.faq-item');
-      var isOpen = item.classList.contains('is-open');
-      document.querySelectorAll('.faq-item').forEach(function (el) {
-        el.classList.remove('is-open');
-        el.querySelector('.faq-item__question').setAttribute('aria-expanded', 'false');
-      });
-      if (!isOpen) {
-        item.classList.add('is-open');
-        this.setAttribute('aria-expanded', 'true');
-      }
-    });
-  });
-
-  /* ── Contact form (graceful submit) ── */
-  var form = document.getElementById('contactForm');
-  if (form) {
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      /* Basic validation */
-      var required = form.querySelectorAll('[required]');
-      var valid = true;
-      required.forEach(function (field) {
-        if (!field.value.trim() || (field.type === 'checkbox' && !field.checked)) {
-          field.style.borderColor = '#ff4d8d';
-          valid = false;
-        } else {
-          field.style.borderColor = '';
-        }
-      });
-      if (!valid) return;
-
-      /* Show success state (replace with real form submission as needed) */
-      form.style.opacity = '0.5'; form.style.pointerEvents = 'none';
-      var successEl = document.getElementById('formSuccess');
-      if (successEl) successEl.classList.add('show');
-      window.scrollTo({ top: form.parentElement.offsetTop - 80, behavior: 'smooth' });
-
-      
-      fetch("{% url 'contact' %}", {
-        method: 'POST',
-        headers: { 'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value },
-        body: new FormData(form)
-      })
-      
-    });
-  }
-})();
-</script>
-
+<script src="{% static 'contact.js' %}" defer></script>
 {% endblock %}

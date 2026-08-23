@@ -3,13 +3,15 @@
 
 {% block title %}LiftBot Features | AI Employee Platform for Business{% endblock %}
 
-{% block content %}
+{% block extra_css %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{% static 'marketing.css' %}">
 <link rel="stylesheet" href="{% static 'features.css' %}">
+{% endblock %}
 
+{% block content %}
 <div class="lb">
 
   {# ── HERO ── #}
@@ -25,8 +27,8 @@
         LiftBot combines conversational AI with business knowledge and practical business workflows — so your AI employees can actually get things done.
       </p>
       <div class="feat-hero__cta">
-        <a href="{% url 'signup' %}" class="lb__btn lb__btn--primary">Get Early Access</a>
-        <a href="{% url 'contact' %}" class="lb__btn lb__btn--outline">Book a demo →</a>
+        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">Get Early Access</a>
+        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline">Book a demo →</a>
       </div>
     </div>
   </section>
@@ -128,7 +130,7 @@
           <li>Support customers at scale without growing your team</li>
           <li>Automate repetitive work so your team adds real value</li>
         </ul>
-        <a href="{% url 'contact' %}" class="lb__btn lb__btn--outline">See How LiftBot Works →</a>
+        <a href="{% url 'how_it_works' %}" class="lb__btn lb__btn--outline">See How LiftBot Works →</a>
       </div>
       <div class="feat-statement__visual" data-reveal>
         <span class="feat-pill">AI Conversations</span>
@@ -151,55 +153,11 @@
       <h2 class="feat-cta__h2">Everything you need to hire your first AI employee.</h2>
       <p class="feat-cta__sub">Get access to the full LiftBot platform and start building your AI workforce today.</p>
       <div class="feat-cta__actions">
-        <a href="{% url 'signup' %}" class="lb__btn" style="background:#fff; color:#15161b;">Get Early Access</a>
-        <a href="{% url 'contact' %}" class="lb__btn lb__btn--outline" style="color:#fff; border-color:rgba(255,255,255,0.3);">Book a demo →</a>
+        <a href="{% url 'early_access' %}" class="lb__btn" style="background:#fff; color:#15161b;">Get Early Access</a>
+        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline" style="color:#fff; border-color:rgba(255,255,255,0.3);">Book a demo →</a>
       </div>
     </div>
   </section>
-
-  {# ── FOOTER ── #}
-  <footer class="feat-footer">
-    <div class="feat-footer__inner">
-      <div>
-        <a href="{% url 'home' %}" class="feat-footer__logo">
-          <span class="feat-footer__logo-mark">L</span>
-          LiftBot
-        </a>
-        <p class="feat-footer__tagline">AI employees for modern businesses.</p>
-      </div>
-      <div>
-        <div class="feat-footer__col-title">Product</div>
-        <ul class="feat-footer__links">
-          <li><a href="{% url 'home' %}">Overview</a></li>
-          <li><a href="{% url 'ai_employees' %}">AI Employees</a></li>
-          <li><a href="{% url 'features' %}">Features</a></li>
-        </ul>
-      </div>
-      <div>
-        <div class="feat-footer__col-title">Company</div>
-        <ul class="feat-footer__links">
-          <li><a href="{% url 'about' %}">About us</a></li>
-          <li><a href="{% url 'contact' %}">Contact</a></li>
-          <li><a href="{% url 'contact' %}">Book a demo</a></li>
-        </ul>
-      </div>
-      <div>
-        <div class="feat-footer__col-title">Account</div>
-        <ul class="feat-footer__links">
-          {% if user.is_authenticated %}
-            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
-          {% else %}
-            <li><a href="{% url 'login' %}">Log in</a></li>
-            <li><a href="{% url 'signup' %}">Sign up free</a></li>
-          {% endif %}
-        </ul>
-      </div>
-    </div>
-    <div class="feat-footer__bottom">
-      <span>© {% now "Y" %} LiftBot, a Brandinglift product. All rights reserved.</span>
-      <span>Made in the UK 🇬🇧</span>
-    </div>
-  </footer>
 
 </div>
 

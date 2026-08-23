@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Security | LiftBot{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'marketing.css' %}">
+<link rel="stylesheet" href="{% static 'security.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="lb">
+
+  {# ── HERO ── #}
+  <section class="sec-hero">
+    <div class="sec-hero__noise" aria-hidden="true"></div>
+    <div class="sec-hero__glow" aria-hidden="true"></div>
+    <div class="sec-hero__inner">
+      <div class="sec-hero__badge">Security</div>
+      <h1 class="sec-hero__h1">Built with <em>trust</em> in mind.</h1>
+      <p class="sec-hero__sub">
+        Your AI employee may interact with customers and business information. That's why control, transparency and responsible AI matter.
+      </p>
+    </div>
+  </section>
+
+  {# ── PRINCIPLES GRID ── #}
+  <section class="sec-grid-section">
+    <div class="sec-grid-section__inner">
+
+      <div class="sec-grid" data-reveal>
+
+        <div class="sec-card">
+          <div class="sec-card__icon">&#128274;</div>
+          <h3 class="sec-card__title">Business Control</h3>
+          <p class="sec-card__desc">You control the information and instructions provided to your AI employees.</p>
+        </div>
+
+        <div class="sec-card">
+          <div class="sec-card__icon">&#128101;</div>
+          <h3 class="sec-card__title">Access</h3>
+          <p class="sec-card__desc">Manage who can access your LiftBot workspace.</p>
+        </div>
+
+        <div class="sec-card">
+          <div class="sec-card__icon">&#9881;</div>
+          <h3 class="sec-card__title">AI Configuration</h3>
+          <p class="sec-card__desc">Control your AI employee's role, knowledge and instructions.</p>
+        </div>
+
+        <div class="sec-card">
+          <div class="sec-card__icon">&#9878;</div>
+          <h3 class="sec-card__title">Responsible AI</h3>
+          <p class="sec-card__desc">AI should operate within clearly defined boundaries and appropriate human oversight.</p>
+        </div>
+
+      </div>
+
+      <div class="sec-note" data-reveal>
+        <p>Detailed security, infrastructure and compliance information will be published as LiftBot's production infrastructure matures.</p>
+      </div>
+
+    </div>
+  </section>
+
+  {# ── FINAL CTA ── #}
+  <section class="sec-cta">
+    <div class="sec-cta__inner" data-reveal>
+      <span class="lb__eyebrow" style="color:#cfe9ff; background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.16);">Questions about security?</span>
+      <h2 class="sec-cta__h2">We're happy to talk it through.</h2>
+      <p class="sec-cta__sub">Reach out and our team will walk you through how LiftBot handles your business data.</p>
+      <div class="sec-cta__actions">
+        <a href="{% url 'contact' %}" class="lb__btn" style="background:#fff; color:#15161b;">Talk to Us</a>
+        <a href="{% url 'privacy' %}" class="lb__btn lb__btn--outline" style="color:#fff; border-color:rgba(255,255,255,0.3);">View Privacy Policy &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="{% static 'security.js' %}" defer></script>
+{% endblock %}

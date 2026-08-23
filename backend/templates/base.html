@@ -11,65 +11,134 @@
     :root { --p:#7C3AED; --pd:#6D28D9; --ink:#111827; --bg:#F3F4F6; }
     * { box-sizing: border-box; }
     body { margin:0; font-family:"Plus Jakarta Sans",system-ui,sans-serif; background:var(--bg); color:var(--ink); }
-    header { 
-      display:flex; justify-content:space-between; align-items:center; padding:16px 28px; 
+
+    header {
+      display:flex; justify-content:space-between; align-items:center; padding:16px 28px;
       background:#0B1220; color:#fff; position: relative; z-index: 100;
     }
     .brand { font-weight:800; font-size:18px; color:#fff; text-decoration:none; }
-    nav { display: flex; align-items: center; gap: 20px; }
-    nav a { color:#D1D5DB; text-decoration:none; font-size:13.5px; font-weight:600; transition: color 0.2s; }
-    nav a:hover { color: #fff; }
-    nav a.cta { background:var(--p); color:#fff; padding:8px 14px; border-radius:999px; }
+
+    nav { display: flex; align-items: center; gap: 6px; }
+    nav > .nav-item { position: relative; }
+    nav a.nav-link {
+      display:flex; align-items:center; gap:5px; color:#D1D5DB; text-decoration:none;
+      font-size:13.5px; font-weight:600; padding:8px 10px; border-radius:8px; transition: color 0.2s, background 0.2s;
+    }
+    nav a.nav-link:hover { color:#fff; background:rgba(255,255,255,0.06); }
+    nav a.cta { background:var(--p); color:#fff; padding:9px 16px; border-radius:999px; margin-left:6px; }
     nav a.cta:hover { background:var(--pd); }
-    
+    .chev { font-size:10px; margin-top:1px; opacity:.8; }
+
+    /* Dropdown (desktop mega-menu) */
+    .nav-item.has-dropdown .dropdown-panel {
+      position:absolute; top:calc(100% + 10px); left:0; min-width:460px;
+      background:#fff; color:var(--ink); border-radius:14px; padding:22px;
+      box-shadow:0 24px 48px -12px rgba(0,0,0,.28); border:1px solid #EEF0F3;
+      opacity:0; visibility:hidden; transform:translateY(6px);
+      transition:opacity .16s ease, transform .16s ease, visibility .16s;
+      display:grid; grid-template-columns:1.3fr 1fr; gap:26px; z-index:200;
+    }
+    .nav-item.has-dropdown.single .dropdown-panel { min-width:220px; grid-template-columns:1fr; }
+    .nav-item.has-dropdown:hover .dropdown-panel,
+    .nav-item.has-dropdown:focus-within .dropdown-panel { opacity:1; visibility:visible; transform:translateY(0); }
+    .dd-col-label { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:#9CA3AF; font-weight:700; margin:0 0 10px; }
+    .dd-grid { display:grid; grid-template-columns:1fr 1fr; gap:2px 18px; }
+    .dd-col { display:flex; flex-direction:column; gap:2px; }
+    .dd-link { display:block; padding:7px 8px; border-radius:8px; color:#374151; text-decoration:none; font-size:13.5px; font-weight:500; }
+    .dd-link:hover { background:#F3F4F6; color:#111827; }
+    .dd-divider { border-left:1px solid #EEF0F3; padding-left:26px; }
+    .dd-viewall { display:inline-block; margin-top:12px; font-size:13px; font-weight:700; color:var(--p); text-decoration:none; }
+
     .nav-toggle { display:none; background:none; border:1px solid #D1D5DB; color:#fff; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:18px; }
-    
+
     .nav-overlay { display:none; position:fixed; inset:0; background:rgba(11,18,32,.8); z-index:999; opacity:0; transition:opacity 0.2s; }
     .nav-overlay.open { display:block; opacity:1; }
-    
-    .nav-mobile { 
-      display:none; position:fixed; top:0; right:0; height:100vh; width:100%; max-width:300px; 
-      background:#0B1220; z-index:1000; transform:translateX(100%); transition:transform 0.3s ease; 
-      flex-direction:column; padding-top:60px;
+
+    .nav-mobile {
+      display:none; position:fixed; top:0; right:0; height:100vh; width:100%; max-width:320px;
+      background:#0B1220; z-index:1000; transform:translateX(100%); transition:transform 0.3s ease;
+      flex-direction:column; padding-top:60px; overflow-y:auto;
     }
     .nav-mobile.open { transform:translateX(0); }
     .nav-mobile a { color:#D1D5DB; text-decoration:none; padding:12px 20px; font-size:14px; font-weight:600; display:block; border-bottom:1px solid rgba(255,255,255,0.05); }
     .nav-mobile a:hover { color:#fff; background:rgba(255,255,255,0.08); }
     .nav-mobile a.cta { background:var(--p); color:#fff; margin:12px; border-radius:999px; text-align:center; border:none; }
+    .nav-mobile .mob-group-label { padding:14px 20px 4px; font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:#6B7280; font-weight:700; }
+    .nav-mobile a.mob-sub { padding-left:32px; font-weight:500; font-size:13.5px; }
     .nav-close { position:absolute; top:16px; right:16px; background:rgba(255,255,255,.1); border:0; color:#fff; width:30px; height:30px; border-radius:999px; font-size:20px; cursor:pointer; }
-    
+
     main { max-width:960px; margin:0 auto; padding:28px 20px 48px; }
     .flash { background:#EDE9FE; color:#5B21B6; border-radius:10px; padding:10px 14px; margin-bottom:14px; font-size:13px; }
-    
+
+    /* Footer */
+    footer.lb-footer { background:#0B1220; color:#D1D5DB; padding:56px 28px 28px; margin-top:0; }
+    .lb-footer-inner { max-width:1180px; margin:0 auto; }
+    .lb-footer-top { display:flex; justify-content:space-between; gap:40px; flex-wrap:wrap; padding-bottom:40px; border-bottom:1px solid rgba(255,255,255,0.08); }
+    .lb-footer-brand { max-width:280px; }
+    .lb-footer-brand .brand { display:block; margin-bottom:10px; }
+    .lb-footer-brand p { font-size:13px; line-height:1.6; color:#9CA3AF; margin:4px 0; }
+    .lb-footer-cols { display:flex; gap:44px; flex-wrap:wrap; }
+    .lb-footer-col h4 { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:#9CA3AF; margin:0 0 14px; font-weight:700; }
+    .lb-footer-col a { display:block; color:#D1D5DB; text-decoration:none; font-size:13.5px; margin-bottom:10px; }
+    .lb-footer-col a:hover { color:#fff; }
+    .lb-footer-bottom { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; padding-top:22px; font-size:12.5px; color:#6B7280; }
+    .lb-footer-bottom-links { display:flex; gap:18px; }
+    .lb-footer-bottom-links a { color:#6B7280; text-decoration:none; }
+    .lb-footer-bottom-links a:hover { color:#D1D5DB; }
+
+    @media (max-width: 1024px) {
+      nav { display: none; }
+      .nav-toggle { display: block; }
+    }
     @media (max-width: 768px) {
       header { padding: 12px 16px; }
       .brand { font-size: 16px; }
-      nav { display: none; }
-      .nav-toggle { display: block; }
-      nav a { margin-left: 0; }
       main { padding: 20px 16px 40px; }
+      .lb-footer-top { flex-direction:column; gap:28px; }
     }
-    
     @media (max-width: 640px) {
       header { padding: 12px 14px; }
       main { padding: 16px 12px 36px; }
       .flash { padding: 8px 12px; font-size: 12px; }
+      footer.lb-footer { padding:40px 18px 20px; }
     }
   </style>
+  {% block extra_css %}{% endblock %}
 </head>
 <body>
   <div class="nav-overlay" id="navOverlay"></div>
   <div class="nav-mobile" id="navMobile">
     <button class="nav-close" id="navClose" aria-label="Close menu">×</button>
-    
+
     <a href="{% url 'ai_employees' %}">AI Employees</a>
     <a href="{% url 'features' %}">Features</a>
     <a href="{% url 'how_it_works' %}">How It Works</a>
-    <a href="{% url 'industries' %}">Industries</a>
     <a href="{% url 'solutions' %}">Solutions</a>
+
+    <div class="mob-group-label">Industries</div>
+    <a class="mob-sub" href="{% url 'industries' %}">All industries</a>
+    <a class="mob-sub" href="{% url 'industry_detail' slug='real-estate' %}">Real estate</a>
+    <a class="mob-sub" href="{% url 'industry_detail' slug='travel' %}">Travel &amp; tourism</a>
+    <a class="mob-sub" href="{% url 'industry_detail' slug='ecommerce' %}">E-commerce</a>
+    <a class="mob-sub" href="{% url 'industry_detail' slug='education' %}">Education</a>
+    <a class="mob-sub" href="{% url 'industry_detail' slug='healthcare' %}">Healthcare</a>
+    <a class="mob-sub" href="{% url 'industry_detail' slug='professional-services' %}">Professional services</a>
+    <a class="mob-sub" href="{% url 'industry_detail' slug='hospitality' %}">Hospitality</a>
+
+    <div class="mob-group-label">Resources</div>
+    <a class="mob-sub" href="{% url 'blog' %}">Blog</a>
+    <a class="mob-sub" href="{% url 'guide' %}">LiftBot guide</a>
+    <a class="mob-sub" href="{% url 'use_cases' %}">Use cases</a>
+    <a class="mob-sub" href="{% url 'customers' %}">Customer stories</a>
+    <a class="mob-sub" href="{% url 'pricing' %}">Pricing</a>
+    <a class="mob-sub" href="{% url 'support' %}">Support</a>
+    <a class="mob-sub" href="{% url 'faq' %}">FAQ</a>
+    <a class="mob-sub" href="{% url 'security' %}">Security</a>
+    
+
     <a href="{% url 'about' %}">About</a>
     <a href="{% url 'contact' %}">Contact</a>
-    
+
     {% if user.is_authenticated %}
       <a href="{% url 'dashboard' %}">Dashboard</a>
     {% else %}
@@ -77,65 +146,184 @@
       <a class="cta" href="{% url 'signup' %}">Start hiring</a>
     {% endif %}
   </div>
-  
+
   <header>
     <a class="brand" href="{% url 'home' %}">LiftBot</a>
+
     <nav id="navDesktop">
-      <a href="{% url 'ai_employees' %}">AI Employees</a>
-      <a href="{% url 'features' %}">Features</a>
-      <a href="{% url 'how_it_works' %}">How It Works</a>
-      <a href="{% url 'industries' %}">Industries</a>
-      <a href="{% url 'solutions' %}">Solutions</a>
-      <a href="{% url 'about' %}">About</a>
-      <a href="{% url 'contact' %}">Contact</a>
+      <div class="nav-item"><a class="nav-link" href="{% url 'ai_employees' %}">AI Employees</a></div>
+      <div class="nav-item"><a class="nav-link" href="{% url 'features' %}">Features</a></div>
+      <div class="nav-item"><a class="nav-link" href="{% url 'how_it_works' %}">How It Works</a></div>
+      <div class="nav-item"><a class="nav-link" href="{% url 'solutions' %}">Solutions</a></div>
+
+      <div class="nav-item has-dropdown" tabindex="0">
+        <a class="nav-link" href="{% url 'industries' %}">Industries <span class="chev">▾</span></a>
+        <div class="dropdown-panel">
+          <div>
+            <p class="dd-col-label">Industries</p>
+            <div class="dd-grid">
+              <div class="dd-col">
+                <a class="dd-link" href="{% url 'industry_detail' slug='real-estate' %}">Real estate</a>
+                <a class="dd-link" href="{% url 'industry_detail' slug='travel' %}">Travel &amp; tourism</a>
+                <a class="dd-link" href="{% url 'industry_detail' slug='ecommerce' %}">E-commerce</a>
+                <a class="dd-link" href="{% url 'industry_detail' slug='education' %}">Education</a>
+              </div>
+              <div class="dd-col">
+                <a class="dd-link" href="{% url 'industry_detail' slug='healthcare' %}">Healthcare</a>
+                <a class="dd-link" href="{% url 'industry_detail' slug='professional-services' %}">Professional services</a>
+                <a class="dd-link" href="{% url 'industry_detail' slug='hospitality' %}">Hospitality</a>
+              </div>
+            </div>
+            <a class="dd-viewall" href="{% url 'industries' %}">View all industries →</a>
+          </div>
+          <div class="dd-divider">
+            <p class="dd-col-label">Popular roles</p>
+            <div class="dd-col">
+              <a class="dd-link" href="{% url 'industry_detail' slug='real-estate' %}">AI Sales Employee</a>
+              <a class="dd-link" href="{% url 'solutions' %}">AI Customer Support</a>
+              <a class="dd-link" href="{% url 'industry_detail' slug='healthcare' %}">AI Receptionist</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-item has-dropdown single" tabindex="0">
+        <a class="nav-link" href="{% url 'resources' %}">Resources <span class="chev">▾</span></a>
+        <div class="dropdown-panel">
+          <div class="dd-col">
+            <p class="dd-col-label">Resources</p>
+            <a class="dd-link" href="{% url 'blog' %}">Blog</a>
+            <a class="dd-link" href="{% url 'guide' %}">LiftBot guide</a>
+            <a class="dd-link" href="{% url 'use_cases' %}">Use cases</a>
+            <a class="dd-link" href="{% url 'customers' %}">Customer stories</a>
+            <a class="dd-link" href="{% url 'pricing' %}">Pricing</a>
+            <a class="dd-link" href="{% url 'support' %}">Support</a>
+            <a class="dd-link" href="{% url 'faq' %}">FAQ</a>
+            <a class="dd-link" href="{% url 'security' %}">Security</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-item"><a class="nav-link" href="{% url 'about' %}">About</a></div>
+      <div class="nav-item"><a class="nav-link" href="{% url 'contact' %}">Contact</a></div>
+
       {% if user.is_authenticated %}
-        <a href="{% url 'dashboard' %}">Dashboard</a>
+        <div class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></div>
       {% else %}
-        <a href="{% url 'login' %}">Log in</a>
+        <div class="nav-item"><a class="nav-link" href="{% url 'login' %}">Log in</a></div>
         <a class="cta" href="{% url 'signup' %}">Start hiring</a>
       {% endif %}
     </nav>
+
     <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">☰</button>
   </header>
-  
+
   {% if messages %}
   <main style="padding-bottom:0;">
     {% for message in messages %}<div class="flash">{{ message }}</div>{% endfor %}
   </main>
   {% endif %}
+
   <main>{% block content %}{% endblock %}</main>
-  
+
+  <footer class="lb-footer">
+    <div class="lb-footer-inner">
+      <div class="lb-footer-top">
+        <div class="lb-footer-brand">
+          <a class="brand" href="{% url 'home' %}">LiftBot</a>
+          <p>AI Employees for Modern Businesses.</p>
+          <p>Create AI employees that help your business communicate, qualify, support and automate.</p>
+        </div>
+
+        <div class="lb-footer-cols">
+          <div class="lb-footer-col">
+            <h4>Product</h4>
+            <a href="{% url 'ai_employees' %}">AI Employees</a>
+            <a href="{% url 'features' %}">Features</a>
+            <a href="{% url 'how_it_works' %}">How It Works</a>
+            <a href="{% url 'solutions' %}">Solutions</a>
+            <a href="{% url 'pricing' %}">Pricing</a>
+            <a href="{% url 'demo' %}">Demo</a>
+          </div>
+          <div class="lb-footer-col">
+            <h4>Solutions</h4>
+            <a href="{% url 'industry_detail' slug='real-estate' %}">AI Sales Employee</a>
+            <a href="{% url 'solutions' %}">AI Customer Support</a>
+            <a href="{% url 'industry_detail' slug='healthcare' %}">AI Receptionist</a>
+            <a href="{% url 'solutions' %}">AI Lead Qualification</a>
+            <a href="{% url 'industry_detail' slug='healthcare' %}">AI Appointment Assistant</a>
+          </div>
+          <div class="lb-footer-col">
+            <h4>Industries</h4>
+            <a href="{% url 'industry_detail' slug='real-estate' %}">Real Estate</a>
+            <a href="{% url 'industry_detail' slug='travel' %}">Travel</a>
+            <a href="{% url 'industry_detail' slug='ecommerce' %}">E-commerce</a>
+            <a href="{% url 'industry_detail' slug='education' %}">Education</a>
+            <a href="{% url 'industry_detail' slug='healthcare' %}">Healthcare</a>
+            <a href="{% url 'industry_detail' slug='professional-services' %}">Professional Services</a>
+          </div>
+          <div class="lb-footer-col">
+            <h4>Resources</h4>
+            <a href="{% url 'blog' %}">Blog</a>
+            <a href="{% url 'resources' %}">Guides</a>
+            <a href="{% url 'customers' %}">Customer Stories</a>
+            <a href="{% url 'guide' %}">LiftBot Guide</a>
+            <a href="{% url 'support' %}">Support</a>
+            <a href="{% url 'faq' %}">FAQ</a>
+          </div>
+          <div class="lb-footer-col">
+            <h4>Company</h4>
+            <a href="{% url 'about' %}">About</a>
+            <a href="{% url 'contact' %}">Contact</a>
+            <a href="https://brandinglift.com" target="_blank" rel="noopener">Brandinglift</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="lb-footer-bottom">
+        <span>LiftBot is a product by Brandinglift.</span>
+        <div class="lb-footer-bottom-links">
+          <a href="{% url 'privacy' %}">Privacy</a>
+          <a href="{% url 'terms' %}">Terms</a>
+          <a href="{% url 'cookies' %}">Cookies</a>
+          <a href="{% url 'security' %}">Security</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
   <script>
     (function () {
       var toggle = document.getElementById('navToggle');
       var close = document.getElementById('navClose');
       var overlay = document.getElementById('navOverlay');
       var navMobile = document.getElementById('navMobile');
-      
+
       function openMenu() {
         navMobile.classList.add('open');
         overlay.classList.add('open');
         document.body.style.overflow = 'hidden';
       }
-      
+
       function closeMenu() {
         navMobile.classList.remove('open');
         overlay.classList.remove('open');
         document.body.style.overflow = '';
       }
-      
+
       if (toggle) toggle.addEventListener('click', openMenu);
       if (close) close.addEventListener('click', closeMenu);
       if (overlay) overlay.addEventListener('click', closeMenu);
-      
+
       navMobile.querySelectorAll('a').forEach(function (a) {
         a.addEventListener('click', closeMenu);
       });
-      
+
       window.addEventListener('resize', function () {
-        if (window.innerWidth > 768) closeMenu();
+        if (window.innerWidth > 1024) closeMenu();
       });
     })();
   </script>
+  {% block extra_js %}{% endblock %}
 </body>
 </html>

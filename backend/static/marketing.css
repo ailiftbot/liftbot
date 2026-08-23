@@ -526,12 +526,21 @@ color: white; background: black;
   padding: 32px;
   border: 1px solid var(--paper-line);
 }
-.lb__split-card--ai { background: var(--signal-dim); border-color: rgba(31, 206, 122, 0.28); }
-.lb__split-card--human { background: #fff; }
+.lb__split-card--ai { background: var(--signal-dim); border-color: rgba(31, 206, 122, 0.28); color: var(--ink); }
+.lb__split-card--human { background: #fff; color: var(--ink); }
 .lb__split-head { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
 .lb__split-dot { width: 9px; height: 9px; border-radius: 50%; }
 .lb__split-card--ai .lb__split-dot { background: var(--signal-deep); }
 .lb__split-card--human .lb__split-dot { background: var(--ink); }
+/* Both split-card variants use light backgrounds, so when this component sits
+   inside a .lb__section--ink (dark) section, force dark text back on — the
+   section's default white text would otherwise be unreadable on these cards. */
+.lb__section--ink .lb__split-card--ai,
+.lb__section--ink .lb__split-card--human { color: var(--ink); }
+.lb__section--ink .lb__split-card--ai .lb__split-list li,
+.lb__section--ink .lb__split-card--human .lb__split-list li { color: var(--ink-soft); border-top-color: rgba(21, 22, 27, 0.06); }
+.lb__section--ink .lb__split-card--ai strong,
+.lb__section--ink .lb__split-card--human strong { color: var(--ink); }
 .lb__split-list li {
   display: flex;
   align-items: flex-start;
@@ -576,6 +585,12 @@ color: white; background: black;
 .lb__footer-links { display: flex; gap: 22px; font-size: 0.88rem; color: var(--ink-soft); }
 .lb__footer-links a:hover { color: var(--ink); }
 .lb__footer-copy { font-size: 0.82rem; color: var(--ink-faint); }
+
+.lb__split-card--human { background: #fff; color: var(--ink); }
+.lb__split-card--human .lb__split-dot { background: var(--ink); }
+.lb__section--ink .lb__split-card--human { color: var(--ink); }
+.lb__section--ink .lb__split-card--human .lb__split-list li { color: var(--ink-soft); border-top-color: rgba(21, 22, 27, 0.06); }
+.lb__section--ink .lb__split-card--human strong { color: var(--ink); }
 
 #lastbtn {background-color: white !important; color:black !important;}
 

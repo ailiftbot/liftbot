@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}FAQ | LiftBot{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'marketing.css' %}">
+<link rel="stylesheet" href="{% static 'faq.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="lb">
+
+  {# ── HERO ── #}
+  <section class="faq-hero">
+    <div class="faq-hero__noise" aria-hidden="true"></div>
+    <div class="faq-hero__glow" aria-hidden="true"></div>
+    <div class="faq-hero__inner">
+      <div class="faq-hero__badge">FAQ</div>
+      <h1 class="faq-hero__h1">Questions, <em>answered.</em></h1>
+      <p class="faq-hero__sub">
+        Everything you need to know about LiftBot and AI employees.
+      </p>
+    </div>
+  </section>
+
+  {# ── ACCORDION ── #}
+  <section class="faq-list-section">
+    <div class="faq-list-section__inner">
+
+      <div class="faq-list" data-reveal>
+
+        <div class="faq-item">
+          <button class="faq-item__q" type="button" aria-expanded="false">
+            <span>What is LiftBot?</span>
+            <span class="faq-item__icon" aria-hidden="true"></span>
+          </button>
+          <div class="faq-item__a">
+            <p>LiftBot is an AI employee platform designed to help businesses automate customer conversations, capture leads, provide support and assist with repetitive business workflows.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-item__q" type="button" aria-expanded="false">
+            <span>Is LiftBot just a chatbot?</span>
+            <span class="faq-item__icon" aria-hidden="true"></span>
+          </button>
+          <div class="faq-item__a">
+            <p>No. LiftBot is built around the concept of role-based AI employees. Each employee can be configured around a specific responsibility, business knowledge and instructions.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-item__q" type="button" aria-expanded="false">
+            <span>What is an AI employee?</span>
+            <span class="faq-item__icon" aria-hidden="true"></span>
+          </button>
+          <div class="faq-item__a">
+            <p>An AI employee is an AI-powered digital worker designed to perform a defined business role.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-item__q" type="button" aria-expanded="false">
+            <span>Can I create different AI employees?</span>
+            <span class="faq-item__icon" aria-hidden="true"></span>
+          </button>
+          <div class="faq-item__a">
+            <p>LiftBot is designed to support different AI employee roles, allowing businesses to create employees around different business requirements.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-item__q" type="button" aria-expanded="false">
+            <span>Can I train my AI employee?</span>
+            <span class="faq-item__icon" aria-hidden="true"></span>
+          </button>
+          <div class="faq-item__a">
+            <p>You can provide your AI employee with relevant business knowledge and instructions so it can operate around your business context.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-item__q" type="button" aria-expanded="false">
+            <span>Can LiftBot capture leads?</span>
+            <span class="faq-item__icon" aria-hidden="true"></span>
+          </button>
+          <div class="faq-item__a">
+            <p>Yes. Lead capture and qualification are key LiftBot use cases.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-item__q" type="button" aria-expanded="false">
+            <span>Can a human take over?</span>
+            <span class="faq-item__icon" aria-hidden="true"></span>
+          </button>
+          <div class="faq-item__a">
+            <p>Yes. LiftBot is designed to allow human involvement when a conversation requires your team's attention.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-item__q" type="button" aria-expanded="false">
+            <span>Does LiftBot work 24/7?</span>
+            <span class="faq-item__icon" aria-hidden="true"></span>
+          </button>
+          <div class="faq-item__a">
+            <p>LiftBot is designed for continuous availability, including outside normal working hours.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-item__q" type="button" aria-expanded="false">
+            <span>What businesses can use LiftBot?</span>
+            <span class="faq-item__icon" aria-hidden="true"></span>
+          </button>
+          <div class="faq-item__a">
+            <p>LiftBot can be configured for industries including real estate, travel, e-commerce, education, healthcare, hospitality and professional services.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-item__q" type="button" aria-expanded="false">
+            <span>Is LiftBot available?</span>
+            <span class="faq-item__icon" aria-hidden="true"></span>
+          </button>
+          <div class="faq-item__a">
+            <p>LiftBot is currently in development and testing. Businesses can join the early-access program.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  {# ── FINAL CTA ── #}
+  <section class="faq-cta">
+    <div class="faq-cta__inner" data-reveal>
+      <span class="lb__eyebrow" style="color:#cfe9ff; background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.16);">Still have questions?</span>
+      <h2 class="faq-cta__h2">We're happy to talk it through.</h2>
+      <p class="faq-cta__sub">Reach out and we'll walk you through how LiftBot could work for your business.</p>
+      <div class="faq-cta__actions">
+        <a href="{% url 'contact' %}" class="lb__btn" style="background:#fff; color:#15161b;">Talk to Us</a>
+        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--outline" style="color:#fff; border-color:rgba(255,255,255,0.3);">Get Early Access</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="{% static 'faq.js' %}" defer></script>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Resources | LiftBot{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'marketing.css' %}">
+<link rel="stylesheet" href="{% static 'resources.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="lb">
+
+  {# ── HERO ── #}
+  <section class="res-hero">
+    <div class="res-hero__noise" aria-hidden="true"></div>
+    <div class="res-hero__glow" aria-hidden="true"></div>
+    <div class="res-hero__inner">
+      <div class="res-hero__badge">Resources</div>
+      <h1 class="res-hero__h1">Learn how AI can work for <em>your business.</em></h1>
+      <p class="res-hero__sub">
+        Practical resources for business owners, sales teams and operators exploring AI employees and automation.
+      </p>
+    </div>
+  </section>
+
+  {# ── EXPLORE GRID ── #}
+  <section class="res-grid-section">
+    <div class="res-grid-section__inner">
+
+      <div class="res-grid-section__header" data-reveal>
+        <span class="lb__eyebrow">Explore</span>
+        <h2 class="lb__h2" style="margin-top:16px;">Start wherever you are.</h2>
+        <p class="lb__lede" style="margin-inline:auto; text-align:center;">
+          Whether you're just curious about AI employees or ready to automate a workflow, start here.
+        </p>
+      </div>
+
+      <div class="res-grid" data-reveal>
+
+        <a href="{% url 'blog' %}" class="res-card">
+          <div class="res-card__icon res-card__icon--1">01</div>
+          <h3 class="res-card__title">AI Employee Guides</h3>
+          <p class="res-card__desc">Learn what AI employees are and how they work.</p>
+          <span class="res-card__cta">Explore guides →</span>
+        </a>
+
+        <a href="{% url 'blog' %}" class="res-card">
+          <div class="res-card__icon res-card__icon--2">02</div>
+          <h3 class="res-card__title">Business Automation</h3>
+          <p class="res-card__desc">Discover repetitive processes that may be suitable for AI.</p>
+          <span class="res-card__cta">Explore automation →</span>
+        </a>
+
+        <a href="{% url 'blog' %}" class="res-card">
+          <div class="res-card__icon res-card__icon--3">03</div>
+          <h3 class="res-card__title">Sales &amp; Lead Generation</h3>
+          <p class="res-card__desc">Explore how AI can support lead capture and qualification.</p>
+          <span class="res-card__cta">Explore sales →</span>
+        </a>
+
+        <a href="{% url 'blog' %}" class="res-card">
+          <div class="res-card__icon res-card__icon--4">04</div>
+          <h3 class="res-card__title">Customer Experience</h3>
+          <p class="res-card__desc">Learn how businesses can improve responsiveness with AI.</p>
+          <span class="res-card__cta">Explore CX →</span>
+        </a>
+
+        <a href="{% url 'industries' %}" class="res-card">
+          <div class="res-card__icon res-card__icon--5">05</div>
+          <h3 class="res-card__title">Industry Resources</h3>
+          <p class="res-card__desc">Explore AI use cases specific to different industries.</p>
+          <span class="res-card__cta">Explore industries →</span>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  {# ── FINAL CTA ── #}
+  <section class="res-cta">
+    <div class="res-cta__inner" data-reveal>
+      <span class="lb__eyebrow" style="color:#cfe9ff; background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.16);">Keep exploring</span>
+      <h2 class="res-cta__h2">Want ideas built for your business specifically?</h2>
+      <p class="res-cta__sub">Join early access and we'll help you find the right AI employee for your workflow.</p>
+      <div class="res-cta__actions">
+        <a href="{% url 'early_access' %}" class="lb__btn" style="background:#fff; color:#15161b;">Join Early Access</a>
+        <a href="{% url 'blog' %}" class="lb__btn lb__btn--outline" style="color:#fff; border-color:rgba(255,255,255,0.3);">Visit the blog &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="{% static 'resources.js' %}" defer></script>
+{% endblock %}

@@ -20,10 +20,11 @@
     <div class="ind-hero__glow" aria-hidden="true"></div>
     <div class="ind-hero__inner">
       <div class="ind-hero__badge">{{ industry.name|upper }}</div>
-      <h1 class="ind-hero__h1">{{ industry.tagline }}</h1>
-      <p class="ind-hero__sub">{{ industry.intro }}</p>
+      <h1 class="ind-hero__h1">Your {{ industry.role }}.</h1>
+      <p class="ind-hero__sub">{{ industry.hero_line1 }}</p>
+      <p class="ind-hero__sub">{{ industry.hero_line2 }}</p>
       <div class="ind-hero__cta">
-        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">Get Early Access</a>
+        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">{{ industry.cta_text }}</a>
         <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline">Book a demo →</a>
       </div>
     </div>
@@ -34,13 +35,13 @@
     <div class="lb__knowledge">
       <div>
         <span class="lb__eyebrow">{{ industry.role }}</span>
-        <h2 class="lb__h2" style="margin-top:16px;">How LiftBot helps {{ industry.name|lower }} businesses.</h2>
+        <h2 class="lb__h2" style="margin-top:16px;">Your AI employee can help with:</h2>
         <ul class="feature-block__list" style="margin-top:24px;">
-          {% for point in industry.helps_with %}
+          {% for point in industry.capabilities %}
           <li>{{ point }}</li>
           {% endfor %}
         </ul>
-        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">Get Early Access</a>
+        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">{{ industry.cta_text }}</a>
       </div>
 
       <div class="lb__knowledge-visual">
@@ -61,7 +62,7 @@
   {# ── EXAMPLE CONVERSATION ── #}
   <section class="lb__section lb__section--dim lb__container" data-reveal>
     <div class="lb__section-head" style="display:block; text-align:center; margin-bottom:40px;">
-      <span class="lb__eyebrow">See it in action</span>
+      <span class="lb__eyebrow">Example</span>
       <h2 class="lb__h2" style="margin-top:16px;">An example conversation.</h2>
     </div>
     <div class="lb__demo-card" style="max-width:480px; margin-inline:auto;">
@@ -72,14 +73,12 @@
         </div>
         <span class="lb__demo-online">Online</span>
       </div>
-      {% for message in industry.conversation %}
-        {% if message.from == "customer" %}
-          <div class="lb__bubble lb__bubble--in">{{ message.text }}</div>
-        {% else %}
-          <div class="lb__bubble lb__bubble--out">{{ message.text }}</div>
-        {% endif %}
-      {% endfor %}
+      <div class="lb__bubble lb__bubble--in">{{ industry.example_customer }}</div>
+      <div class="lb__bubble lb__bubble--out">{{ industry.example_bot }}</div>
     </div>
+    <p style="text-align:center; margin-top:28px; font-weight:600; color:var(--ink);">
+      That's the difference between answering and engaging.
+    </p>
   </section>
 
   {# ── FINAL CTA ── #}
@@ -90,7 +89,7 @@
         Start with one AI employee configured around your industry — and grow from there.
       </p>
       <div class="lb__cta-actions">
-        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary" id="lastbtn">Get Early Access</a>
+        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary" id="lastbtn">{{ industry.cta_text }}</a>
         <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline">Book a Demo →</a>
       </div>
       <p style="margin-top:24px;">

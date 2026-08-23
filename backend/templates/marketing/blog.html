@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Blog | LiftBot{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'marketing.css' %}">
+<link rel="stylesheet" href="{% static 'blog.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="lb">
+
+  {# ── HERO ── #}
+  <section class="blg-hero">
+    <div class="blg-hero__noise" aria-hidden="true"></div>
+    <div class="blg-hero__glow" aria-hidden="true"></div>
+    <div class="blg-hero__inner">
+      <div class="blg-hero__badge">LiftBot Blog</div>
+      <h1 class="blg-hero__h1">Ideas for building a <em>smarter business.</em></h1>
+      <p class="blg-hero__sub">
+        Practical thinking on AI employees, automation and how businesses can put AI to work — without the hype.
+      </p>
+    </div>
+  </section>
+
+  {# ── CATEGORIES ── #}
+  <section class="blg-cats">
+    <div class="blg-cats__inner" data-reveal>
+      <span class="blg-cats__pill">AI Employees</span>
+      <span class="blg-cats__pill">Business Automation</span>
+      <span class="blg-cats__pill">Sales</span>
+      <span class="blg-cats__pill">Customer Support</span>
+      <span class="blg-cats__pill">AI for Industries</span>
+      <span class="blg-cats__pill">Product Updates</span>
+    </div>
+  </section>
+
+  {# ── UPCOMING ARTICLES ── #}
+  <section class="blg-articles">
+    <div class="blg-articles__inner">
+
+      <div class="blg-articles__header" data-reveal>
+        <span class="lb__eyebrow">Coming soon</span>
+        <h2 class="lb__h2" style="margin-top:16px;">Articles we're working on.</h2>
+        <p class="lb__lede" style="margin-inline:auto; text-align:center;">
+          We're writing our first set of articles as LiftBot moves toward launch. Here's what's on the way.
+        </p>
+      </div>
+
+      <div class="blg-grid" data-reveal>
+
+        <div class="blg-card">
+          <span class="blg-card__tag">AI Employees</span>
+          <h3 class="blg-card__title">What Is an AI Employee?</h3>
+          <span class="blg-card__soon">Coming soon</span>
+        </div>
+
+        <div class="blg-card">
+          <span class="blg-card__tag">AI Employees</span>
+          <h3 class="blg-card__title">AI Employee vs AI Chatbot: What's the Difference?</h3>
+          <span class="blg-card__soon">Coming soon</span>
+        </div>
+
+        <div class="blg-card">
+          <span class="blg-card__tag">Business Automation</span>
+          <h3 class="blg-card__title">How to Know If Your Business Needs an AI Employee</h3>
+          <span class="blg-card__soon">Coming soon</span>
+        </div>
+
+        <div class="blg-card">
+          <span class="blg-card__tag">Business Automation</span>
+          <h3 class="blg-card__title">10 Business Tasks You Can Automate With AI</h3>
+          <span class="blg-card__soon">Coming soon</span>
+        </div>
+
+        <div class="blg-card">
+          <span class="blg-card__tag">Sales</span>
+          <h3 class="blg-card__title">How AI Can Qualify Website Leads</h3>
+          <span class="blg-card__soon">Coming soon</span>
+        </div>
+
+        <div class="blg-card">
+          <span class="blg-card__tag">AI for Industries</span>
+          <h3 class="blg-card__title">How Real Estate Businesses Can Use AI Employees</h3>
+          <span class="blg-card__soon">Coming soon</span>
+        </div>
+
+        <div class="blg-card">
+          <span class="blg-card__tag">AI for Industries</span>
+          <h3 class="blg-card__title">How Travel Agencies Can Automate Customer Enquiries</h3>
+          <span class="blg-card__soon">Coming soon</span>
+        </div>
+
+        <div class="blg-card">
+          <span class="blg-card__tag">Customer Support</span>
+          <h3 class="blg-card__title">AI Customer Support: What Should You Automate?</h3>
+          <span class="blg-card__soon">Coming soon</span>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  {# ── FINAL CTA ── #}
+  <section class="blg-cta">
+    <div class="blg-cta__inner" data-reveal>
+      <span class="lb__eyebrow" style="color:#cfe9ff; background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.16);">Don't miss the first post</span>
+      <h2 class="blg-cta__h2">Be the first to know when we publish.</h2>
+      <p class="blg-cta__sub">Join early access and we'll keep you posted as new articles and product updates go live.</p>
+      <div class="blg-cta__actions">
+        <a href="{% url 'early_access' %}" class="lb__btn" style="background:#fff; color:#15161b;">Join Early Access</a>
+        <a href="{% url 'resources' %}" class="lb__btn lb__btn--outline" style="color:#fff; border-color:rgba(255,255,255,0.3);">Browse resources &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="{% static 'blog.js' %}" defer></script>
+{% endblock %}

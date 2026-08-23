@@ -1,362 +1,191 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}About LiftBot — AI Employees for Modern Businesses{% endblock %}
+{% block title %}About LiftBot | Building AI Employees for Modern Businesses{% endblock %}
 
-{% block content %}
+{% block extra_css %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{% static 'marketing.css' %}">
+<link rel="stylesheet" href="{% static 'about.css' %}">
+{% endblock %}
 
-<style>
-  .lb { max-width: none; }
-
-  /* ── Page hero ── */
-  .about-hero {
-    background: #fff; padding: 100px 24px 80px;
-    border-bottom: 1px solid #e7e5de;
-    text-align: center; position: relative; overflow: hidden;
-  }
-  .about-hero__glow {
-    position: absolute; inset: -20% -10% auto;
-    height: 500px; pointer-events: none;
-    background:
-      radial-gradient(400px 300px at 25% 20%, rgba(75,58,255,0.1), transparent 70%),
-      radial-gradient(300px 250px at 80% 10%, rgba(255,77,141,0.09), transparent 70%);
-    filter: blur(12px);
-  }
-  .about-hero__inner { position: relative; z-index: 1; max-width: 680px; margin-inline: auto; }
-  .about-hero__eyebrow {
-    display: inline-flex; align-items: center; gap: 8px;
-    font-family: "IBM Plex Mono", monospace; font-size: 11px;
-    letter-spacing: 0.09em; text-transform: uppercase;
-    color: #4b3aff; background: #eeecff;
-    border: 1px solid rgba(75,58,255,0.2); padding: 5px 14px;
-    border-radius: 999px; margin-bottom: 24px;
-  }
-  .about-hero__h1 {
-    font-family: "Space Grotesk", sans-serif; font-weight: 700;
-    font-size: clamp(2.4rem, 5vw, 4rem);
-    letter-spacing: -0.03em; line-height: 1.07;
-    margin: 0 0 20px; color: #15161b;
-  }
-  .about-hero__sub {
-    font-size: clamp(1rem, 1.5vw, 1.2rem);
-    color: #53555f; line-height: 1.65; margin: 0;
-  }
-
-  /* ── Mission ── */
-  .about-mission {
-    max-width: 860px; margin: 0 auto;
-    padding: 100px 24px;
-    display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: center;
-  }
-  @media (max-width: 720px) { .about-mission { grid-template-columns: 1fr; gap: 44px; padding: 64px 24px; } }
-  .about-mission__eyebrow {
-    font-family: "IBM Plex Mono", monospace; font-size: 11px;
-    letter-spacing: 0.09em; text-transform: uppercase; color: #4b3aff;
-    display: block; margin-bottom: 16px;
-  }
-  .about-mission__h2 {
-    font-family: "Space Grotesk", sans-serif; font-weight: 700;
-    font-size: clamp(1.7rem, 2.5vw, 2.4rem); letter-spacing: -0.02em;
-    line-height: 1.15; margin: 0 0 16px; color: #15161b;
-  }
-  .about-mission__p { font-size: 1.02rem; color: #53555f; line-height: 1.7; margin: 0 0 16px; }
-  .about-mission__quote {
-    border-left: 3px solid #4b3aff; padding-left: 18px;
-    font-family: "Space Grotesk", sans-serif; font-weight: 600;
-    font-size: 1.05rem; color: #15161b; line-height: 1.5;
-    margin: 24px 0 0;
-  }
-  .about-mission__visual {
-    background: #f3f2ee; border: 1px solid #e7e5de;
-    border-radius: 20px; padding: 32px;
-    display: flex; flex-direction: column; gap: 16px;
-  }
-  .about-stat {
-    background: #fff; border: 1px solid #e7e5de; border-radius: 14px;
-    padding: 20px 22px; display: flex; align-items: center; gap: 16px;
-  }
-  .about-stat__num {
-    font-family: "Space Grotesk", sans-serif; font-weight: 700;
-    font-size: 1.9rem; letter-spacing: -0.03em; color: #4b3aff; flex-shrink: 0;
-  }
-  .about-stat__label { font-size: 0.88rem; color: #53555f; line-height: 1.4; }
-
-  /* ── Values ── */
-  .about-values {
-    background: #f3f2ee; border-top: 1px solid #e7e5de;
-    border-bottom: 1px solid #e7e5de; padding: 100px 24px;
-  }
-  .about-values__inner { max-width: 1100px; margin-inline: auto; }
-  .about-values__header { text-align: center; max-width: 560px; margin: 0 auto 56px; }
-  .values-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
-  }
-  @media (max-width: 860px) { .values-grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 560px) { .values-grid { grid-template-columns: 1fr; } }
-  .value-card {
-    background: #fff; border: 1px solid #e7e5de; border-radius: 18px;
-    padding: 28px; transition: border-color 0.18s, transform 0.18s;
-  }
-  .value-card:hover { border-color: #4b3aff; transform: translateY(-2px); }
-  .value-card__icon {
-    width: 44px; height: 44px; border-radius: 12px;
-    margin-bottom: 18px; font-size: 20px;
-    display: flex; align-items: center; justify-content: center;
-    background: linear-gradient(135deg, #eeecff, #ffeaf2);
-  }
-  .value-card__title {
-    font-family: "Space Grotesk", sans-serif; font-weight: 700;
-    font-size: 1.05rem; margin: 0 0 8px; color: #15161b;
-  }
-  .value-card__desc { font-size: 0.9rem; color: #53555f; line-height: 1.6; margin: 0; }
-
-  /* ── Story timeline ── */
-  .about-story {
-    background: #15161b; color: #fff; padding: 100px 24px;
-  }
-  .about-story__inner { max-width: 780px; margin-inline: auto; }
-  .about-story__header { text-align: center; margin-bottom: 64px; }
-  .story-timeline { position: relative; padding-left: 30px; }
-  .story-timeline::before {
-    content: ""; position: absolute; left: 5px; top: 6px; bottom: 6px;
-    width: 1px; background: rgba(255,255,255,0.12);
-  }
-  .story-event { position: relative; padding-bottom: 44px; }
-  .story-event:last-child { padding-bottom: 0; }
-  .story-event__dot {
-    position: absolute; left: -29px; top: 5px;
-    width: 11px; height: 11px; border-radius: 50%;
-    background: #4b3aff; border: 2px solid #15161b;
-    box-shadow: 0 0 0 3px rgba(75,58,255,0.3);
-  }
-  .story-event__year {
-    font-family: "IBM Plex Mono", monospace; font-size: 11px;
-    letter-spacing: 0.08em; text-transform: uppercase; color: #4b3aff;
-    margin-bottom: 6px;
-  }
-  .story-event__title {
-    font-family: "Space Grotesk", sans-serif; font-weight: 700;
-    font-size: 1.15rem; color: #fff; margin: 0 0 6px;
-  }
-  .story-event__desc { font-size: 0.92rem; color: rgba(255,255,255,0.55); line-height: 1.65; margin: 0; }
-
-  /* ── CTA ── */
-  .about-cta {
-    background: #fdfdfb; padding: 100px 24px;
-    border-top: 1px solid #e7e5de; text-align: center;
-  }
-  .about-cta__inner { max-width: 600px; margin-inline: auto; }
-  .about-cta__h2 {
-    font-family: "Space Grotesk", sans-serif; font-weight: 700;
-    font-size: clamp(2rem, 3.5vw, 3rem); letter-spacing: -0.02em;
-    color: #15161b; margin: 16px 0 16px;
-  }
-  .about-cta__sub { color: #53555f; font-size: 1.05rem; margin: 0 0 36px; }
-
-  /* ── Footer ── */
-  .about-footer {
-    background: #0e0f12; color: rgba(255,255,255,0.45);
-    padding: 56px 24px 40px;
-  }
-  .about-footer__inner {
-    max-width: 1180px; margin-inline: auto;
-    display: flex; align-items: center; justify-content: space-between;
-    flex-wrap: wrap; gap: 20px;
-  }
-  .about-footer__logo {
-    display: inline-flex; align-items: center; gap: 9px;
-    font-family: "Space Grotesk", sans-serif; font-weight: 700;
-    font-size: 1rem; color: #fff; text-decoration: none;
-  }
-  .about-footer__logo-mark {
-    width: 26px; height: 26px; border-radius: 8px;
-    background: linear-gradient(135deg, #4b3aff, #ff4d8d);
-    display: grid; place-items: center; color: #fff; font-size: 13px; font-weight: 700;
-  }
-  .about-footer__nav { display: flex; gap: 22px; font-size: 0.88rem; }
-  .about-footer__nav a { color: rgba(255,255,255,0.5); text-decoration: none; transition: color 0.2s; }
-  .about-footer__nav a:hover { color: #fff; }
-  .about-footer__copy { font-size: 0.8rem; color: rgba(255,255,255,0.3); }
-</style>
-
+{% block content %}
 <div class="lb">
 
   {# ── HERO ── #}
-  <section class="about-hero">
-    <div class="about-hero__glow" aria-hidden="true"></div>
-    <div class="about-hero__inner">
-      <span class="about-hero__eyebrow">Our story</span>
-      <h1 class="about-hero__h1">We built the employee<br>businesses were missing.</h1>
-      <p class="about-hero__sub">
-        LiftBot was born from a simple observation: small and medium-sized businesses lose thousands of enquiries every year because they can't always be available. We set out to change that.
+  <section class="abt-hero">
+    <div class="abt-hero__noise" aria-hidden="true"></div>
+    <div class="abt-hero__glow" aria-hidden="true"></div>
+    <div class="abt-hero__inner">
+      <div class="abt-hero__badge">About LiftBot</div>
+      <h1 class="abt-hero__h1">We're building a new way for businesses to <em>work with AI.</em></h1>
+      <p class="abt-hero__sub">
+        AI is becoming a bigger part of how businesses operate. But for many business owners, getting started still feels complicated.
       </p>
     </div>
   </section>
 
+  {# ── ORIGIN STORY ── #}
+  <section class="abt-origin">
+    <div class="abt-origin__inner">
+      <div class="abt-origin__quote" data-reveal>
+        <p class="abt-origin__q">"What if a business could simply hire an AI employee and give it a job?"</p>
+        <p class="abt-origin__q-sub">That's where LiftBot started.</p>
+      </div>
+
+      <div class="abt-origin__body" data-reveal>
+        <p>There are countless AI tools, chatbots and automation platforms available. Yet the real question for us was much simpler than any of them.</p>
+        <p>We are building LiftBot to make AI more practical for everyday businesses — not just something impressive to experiment with, but something that can actually become part of the team.</p>
+      </div>
+
+      <div class="abt-origin__what" data-reveal>
+        <span class="lb__eyebrow">So, what is LiftBot?</span>
+        <p class="abt-origin__what-lede">LiftBot is an AI employee platform that helps businesses create digital employees for specific roles.</p>
+        <p class="abt-origin__what-sub">An AI employee can be configured around a business's knowledge, instructions, responsibilities and way of communicating. It can help with things like:</p>
+        <div class="abt-tag-cloud">
+          <span class="abt-tag">Customer conversations</span>
+          <span class="abt-tag">Lead capture</span>
+          <span class="abt-tag">Lead qualification</span>
+          <span class="abt-tag">Customer support</span>
+          <span class="abt-tag">FAQs</span>
+          <span class="abt-tag">Initial enquiries</span>
+          <span class="abt-tag">Repetitive business tasks</span>
+        </div>
+        <p class="abt-origin__idea">Give AI a role. Give it the right knowledge. Let it help your team.</p>
+      </div>
+    </div>
+  </section>
+
+  {# ── WHY WE STARTED ── #}
+  <section class="abt-why">
+    <div class="abt-why__inner" data-reveal>
+      <span class="lb__eyebrow" style="color:#cfe9ff; background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.16);">Why we started building it</span>
+      <h2 class="abt-why__h2">The same problem, again and again.</h2>
+      <p class="abt-why__p">We work closely with businesses and have seen it repeat itself. Businesses spend a lot of time answering the same questions, following up with enquiries, responding to customers and handling repetitive tasks — while customers expect a fast response.</p>
+      <p class="abt-why__p">We believe AI can help with this. But we don't think businesses need another complicated AI tool that requires a technical team to operate. We want to make the experience much simpler.</p>
+      <p class="abt-why__line">Create an AI employee. Train it around your business. Put it to work.</p>
+    </div>
+  </section>
+
+  {# ── OUR APPROACH: AI + PEOPLE (reuses marketing.css split component) ── #}
+  <section class="lb__section">
+    <div class="lb__container">
+      <div class="lb__section-head" data-reveal>
+        <div>
+          <span class="lb__eyebrow">Our approach to AI</span>
+          <h2 class="lb__h2" style="margin-top:16px;">AI + people. Not AI instead of people.</h2>
+        </div>
+        <p class="lb__lede">We don't believe AI should replace the people who make a business special. We believe it should support them.</p>
+      </div>
+
+      <div class="lb__split" data-reveal>
+        <div class="lb__split-card lb__split-card--ai">
+          <div class="lb__split-head">
+            <span class="lb__split-dot"></span>
+            <strong>Where AI helps</strong>
+          </div>
+          <ul class="lb__split-list">
+            <li>Conversations AI can handle very well</li>
+            <li>Repetitive, routine work</li>
+            <li>Initial questions and information requests</li>
+          </ul>
+        </div>
+        <div class="lb__split-card lb__split-card--human">
+          <div class="lb__split-head">
+            <span class="lb__split-dot"></span>
+            <strong>Where people are better</strong>
+          </div>
+          <ul class="lb__split-list">
+            <li>Customers, decisions and relationships</li>
+            <li>Conversations where a human will always be better</li>
+            <li>Parts of the business that need human judgment</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# ── BUILT FOR REAL BUSINESSES ── #}
+  <section class="abt-real">
+    <div class="abt-real__inner" data-reveal>
+      <span class="lb__eyebrow">Built for real businesses</span>
+      <h2 class="lb__h2" style="margin-top:16px;">Not built only in a lab.</h2>
+      <p class="lb__lede" style="margin-inline:auto; text-align:center;">
+        We're testing LiftBot with real websites, real customer questions and real business scenarios — learning from what actually happens when customers interact with an AI employee, including where it works well, where it needs improvement, and where a human should step in.
+      </p>
+      <p class="abt-real__line">Our goal isn't an AI employee that looks impressive in a demo. We want to build one that is genuinely useful.</p>
+    </div>
+  </section>
+
+  {# ── FROM ONE EMPLOYEE TO A WORKFORCE (reuses marketing.css timeline component) ── #}
+  <section class="lb__section lb__section--dim">
+    <div class="lb__container">
+      <div class="lb__center" data-reveal style="margin-bottom:48px;">
+        <span class="lb__eyebrow">The bigger vision</span>
+        <h2 class="lb__h2" style="margin-top:16px;">From one AI employee to an AI workforce.</h2>
+        <p class="lb__lede" style="margin-inline:auto;">A business might start with one employee — then grow its digital workforce around the roles it actually needs.</p>
+      </div>
+
+      <div class="lb__timeline" data-reveal>
+        <div class="lb__step">
+          <div class="lb__step-num">01</div>
+          <div class="lb__step-body">
+            <span class="lb__step-tag">Start with</span>
+            <p>AI Sales Employee</p>
+          </div>
+        </div>
+        <div class="lb__step">
+          <div class="lb__step-num">02</div>
+          <div class="lb__step-body">
+            <span class="lb__step-tag">Then add</span>
+            <p>AI Customer Support Employee</p>
+          </div>
+        </div>
+        <div class="lb__step">
+          <div class="lb__step-num">03</div>
+          <div class="lb__step-body">
+            <span class="lb__step-tag">Then</span>
+            <p>AI Receptionist</p>
+          </div>
+        </div>
+        <div class="lb__step">
+          <div class="lb__step-num">04</div>
+          <div class="lb__step-body">
+            <span class="lb__step-tag">Then</span>
+            <p>AI Lead Qualification Employee</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   {# ── MISSION ── #}
-  <div style="background:#fff; border-bottom:1px solid #e7e5de;">
-    <div class="about-mission" data-reveal>
-      <div>
-        <span class="about-mission__eyebrow">Our mission</span>
-        <h2 class="about-mission__h2">Make every business always-on.</h2>
-        <p class="about-mission__p">
-          The businesses we work with are great at what they do — trades, professional services, healthcare, retail. What they're not always great at is being available 24 hours a day to answer the same questions, capture the same lead details, or route enquiries to the right person.
-        </p>
-        <p class="about-mission__p">
-          That's not a failure of the business. It's just the reality of running a team. LiftBot gives those businesses a digital team member who never needs a day off.
-        </p>
-        <div class="about-mission__quote">
-          "We want every business — regardless of size — to have access to the kind of AI that was previously only available to enterprise."
-        </div>
-      </div>
-      <div class="about-mission__visual">
-        <div class="about-stat">
-          <div class="about-stat__num">24/7</div>
-          <div class="about-stat__label">Customer availability — every conversation covered, around the clock.</div>
-        </div>
-        <div class="about-stat">
-          <div class="about-stat__num">3×</div>
-          <div class="about-stat__label">More leads captured compared to contact forms alone.</div>
-        </div>
-        <div class="about-stat">
-          <div class="about-stat__num">&lt;5m</div>
-          <div class="about-stat__label">Average time to set up and deploy your first AI employee.</div>
-        </div>
-        <div class="about-stat">
-          <div class="about-stat__num">UK</div>
-          <div class="about-stat__label">Built and supported in the United Kingdom, for UK businesses.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  {# ── VALUES ── #}
-  <section class="about-values">
-    <div class="about-values__inner">
-      <div class="about-values__header" data-reveal>
-        <span class="lb__eyebrow">How we work</span>
-        <h2 class="lb__h2" style="margin-top:16px; text-align:center;">The values behind LiftBot.</h2>
-        <p class="lb__lede" style="text-align:center; margin-inline:auto;">
-          We're a team that believes good technology should feel invisible, honest and genuinely useful.
-        </p>
-      </div>
-      <div class="values-grid" data-reveal>
-        <div class="value-card">
-          <div class="value-card__icon">🎯</div>
-          <h3 class="value-card__title">Purpose-built</h3>
-          <p class="value-card__desc">Every AI employee is configured for a specific role. We don't sell generic chatbots — we build digital team members with real jobs to do.</p>
-        </div>
-        <div class="value-card">
-          <div class="value-card__icon">🤝</div>
-          <h3 class="value-card__title">Human-first</h3>
-          <p class="value-card__desc">AI should make your team more effective, not replace them. We design LiftBot to hand off to your people at exactly the right moment.</p>
-        </div>
-        <div class="value-card">
-          <div class="value-card__icon">🔒</div>
-          <h3 class="value-card__title">Trustworthy</h3>
-          <p class="value-card__desc">Your business data is yours. We're transparent about how LiftBot uses information, and we never train models on your business content.</p>
-        </div>
-        <div class="value-card">
-          <div class="value-card__icon">⚡</div>
-          <h3 class="value-card__title">Practical</h3>
-          <p class="value-card__desc">We obsess over simplicity. Getting your first AI employee live shouldn't require a developer, a lengthy onboarding or a large budget.</p>
-        </div>
-        <div class="value-card">
-          <div class="value-card__icon">🌱</div>
-          <h3 class="value-card__title">Built to grow</h3>
-          <p class="value-card__desc">Start with one AI employee. As your business grows, your AI workforce grows with it — new roles, new knowledge, new capabilities.</p>
-        </div>
-        <div class="value-card">
-          <div class="value-card__icon">💬</div>
-          <h3 class="value-card__title">Always improving</h3>
-          <p class="value-card__desc">We listen to the businesses that use LiftBot every day. Their feedback directly shapes what we build next.</p>
-        </div>
-      </div>
+  <section class="abt-mission">
+    <div class="abt-mission__inner" data-reveal>
+      <span class="lb__eyebrow" style="color:#cfe9ff; background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.16);">Our mission</span>
+      <h2 class="abt-mission__h2">Make AI employees practical for everyday businesses.</h2>
+      <p class="abt-mission__p">We want businesses of different sizes to use AI without needing to become AI experts themselves. Technology should make business simpler — not more complicated.</p>
+      <p class="abt-mission__p">We're not trying to build another chatbot. We're building a platform where businesses can create AI employees that actually have a role, understand the business they're working for, and work alongside the people behind it.</p>
+      <p class="abt-mission__tagline">That's the idea behind LiftBot. And we're just getting started.</p>
+      <p class="abt-mission__brand">LiftBot — AI Employees for Modern Businesses</p>
     </div>
   </section>
 
-  {# ── STORY / TIMELINE ── #}
-  <section class="about-story">
-    <div class="about-story__inner">
-      <div class="about-story__header" data-reveal>
-        <span class="lb__eyebrow" style="color:#a09eff; background:rgba(75,58,255,0.15); border-color:rgba(75,58,255,0.3);">Our journey</span>
-        <h2 class="lb__h2" style="color:#fff; margin-top:16px; text-align:center;">How we got here.</h2>
-      </div>
-      <div class="story-timeline" data-reveal>
-        <div class="story-event">
-          <div class="story-event__dot"></div>
-          <div class="story-event__year">2022</div>
-          <div class="story-event__title">The idea</div>
-          <p class="story-event__desc">Founder Arham noticed that the businesses he consulted for kept losing enquiries outside business hours. A simple idea: what if they had a team member who never logged off? or The business problem of losing after-hours customer enquiries sparked a simple solution: introducing a virtual team member who never logs off.</p>
-        </div>
-        <div class="story-event">
-          <div class="story-event__dot"></div>
-          <div class="story-event__year">Early 2023</div>
-          <div class="story-event__title">First prototype</div>
-          <p class="story-event__desc">We built a rough prototype and tested it with three local businesses. Within two weeks, each had captured leads they would otherwise have missed. We knew we were on to something.</p>
-        </div>
-        <div class="story-event">
-          <div class="story-event__dot"></div>
-          <div class="story-event__year">Mid 2023</div>
-          <div class="story-event__title">Brandinglift launches LiftBot</div>
-          <p class="story-event__desc">LiftBot becomes the flagship product of Brandinglift — a marketing technology company focused on helping UK businesses grow smarter. The first 20 customers go live.</p>
-        </div>
-        <div class="story-event">
-          <div class="story-event__dot"></div>
-          <div class="story-event__year">2024</div>
-          <div class="story-event__title">Multi-role AI employees</div>
-          <p class="story-event__desc">We expanded beyond a single AI chatbot to support multiple distinct employee roles — Sales, Support, Reception, Lead Qualification and Appointments — all configurable from one platform.</p>
-        </div>
-        <div class="story-event">
-          <div class="story-event__dot" style="background:#1fce7a;"></div>
-          <div class="story-event__year">Today</div>
-          <div class="story-event__title">Growing the AI workforce</div>
-          <p class="story-event__desc">LiftBot is live across dozens of UK businesses. We're continuing to build the platform, deepen integrations and explore what it means to give every business a full AI workforce.</p>
-        </div>
+  {# ── FINAL CTA ── #}
+  <section class="abt-cta">
+    <div class="abt-cta__inner" data-reveal>
+      <h2 class="abt-cta__h2">Want to help us build it?</h2>
+      <p class="abt-cta__sub">Join early access and be one of the first businesses to put an AI employee to work.</p>
+      <div class="abt-cta__actions">
+        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">Get Early Access</a>
+        <a href="{% url 'contact' %}" class="lb__btn lb__btn--outline">Contact Us</a>
       </div>
     </div>
   </section>
-
-  {# ── CTA ── #}
-  <section class="about-cta">
-    <div class="about-cta__inner" data-reveal>
-      <span class="lb__eyebrow">Join us</span>
-      <h2 class="about-cta__h2">Give your business its first AI employee.</h2>
-      <p class="about-cta__sub">Set up takes minutes. Start with one role. Scale when you're ready.</p>
-      <div style="display:flex; gap:14px; justify-content:center; flex-wrap:wrap;">
-        <a href="{% url 'signup' %}" class="lb__btn lb__btn--primary">Get started free</a>
-        <a href="{% url 'contact' %}" class="lb__btn lb__btn--outline">Book a demo →</a>
-      </div>
-    </div>
-  </section>
-
-  {# ── FOOTER ── #}
-  <footer class="about-footer">
-    <div class="about-footer__inner">
-      <a href="{% url 'home' %}" class="about-footer__logo">
-        <span class="about-footer__logo-mark">L</span>
-        LiftBot
-      </a>
-      <nav class="about-footer__nav">
-        <a href="{% url 'home' %}">Home</a>
-        <a href="{% url 'about' %}">About</a>
-        <a href="{% url 'contact' %}">Contact</a>
-        {% if user.is_authenticated %}
-          <a href="{% url 'dashboard' %}">Dashboard</a>
-        {% else %}
-          <a href="{% url 'login' %}">Log in</a>
-          <a href="{% url 'signup' %}">Sign up</a>
-        {% endif %}
-      </nav>
-      <span class="about-footer__copy">© {% now "Y" %} LiftBot, a Brandinglift product.</span>
-    </div>
-  </footer>
 
 </div>
 
-<script src="{% static 'marketing.js' %}" defer></script>
+<script src="{% static 'about.js' %}" defer></script>
 {% endblock %}

@@ -183,44 +183,6 @@ main:has(.lb) {
 .feat-cta__sub { font-size: 1.05rem; color: rgba(255,255,255,0.6); margin: 0 0 38px; }
 .feat-cta__actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
 
-/* ── Footer ── */
-.feat-footer {
-  background: #0e0f12; color: rgba(255,255,255,0.45);
-  padding: 56px 24px 40px;
-}
-.feat-footer__inner {
-  max-width: 1180px; margin-inline: auto;
-  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px;
-}
-@media (max-width: 860px) { .feat-footer__inner { grid-template-columns: 1fr 1fr; gap: 36px; } }
-@media (max-width: 560px) { .feat-footer__inner { grid-template-columns: 1fr; } }
-.feat-footer__logo {
-  display: inline-flex; align-items: center; gap: 9px;
-  font-family: "Space Grotesk", sans-serif; font-weight: 700;
-  font-size: 1rem; color: #fff; text-decoration: none;
-}
-.feat-footer__logo-mark {
-  width: 26px; height: 26px; border-radius: 8px;
-  background: linear-gradient(135deg, #4b3aff, #ff4d8d);
-  display: grid; place-items: center; color: #fff;
-  font-size: 13px; font-weight: 700;
-}
-.feat-footer__tagline { font-size: 0.85rem; color: rgba(255,255,255,0.35); margin-top: 8px; }
-.feat-footer__col-title {
-  font-family: "IBM Plex Mono", monospace; font-size: 10px;
-  letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.35);
-  margin-bottom: 16px;
-}
-.feat-footer__links { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
-.feat-footer__links a { font-size: 0.88rem; color: rgba(255,255,255,0.5); text-decoration: none; transition: color 0.2s; }
-.feat-footer__links a:hover { color: #fff; }
-.feat-footer__bottom {
-  max-width: 1180px; margin: 40px auto 0;
-  border-top: 1px solid rgba(255,255,255,0.07);
-  padding-top: 24px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
-  font-size: 0.8rem; color: rgba(255,255,255,0.3);
-}
-
 @keyframes lb-pulse-feat {
   0%, 100% { box-shadow: 0 0 0 0 rgba(31,206,122,0.5); }
   50% { box-shadow: 0 0 0 4px rgba(31,206,122,0); }

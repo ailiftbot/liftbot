@@ -3,13 +3,15 @@
 
 {% block title %}How LiftBot Works | Create and Deploy an AI Employee{% endblock %}
 
-{% block content %}
+{% block extra_css %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{% static 'marketing.css' %}">
 <link rel="stylesheet" href="{% static 'how_it_works.css' %}">
+{% endblock %}
 
+{% block content %}
 <div class="lb">
 
   {# ── HERO ── #}
@@ -25,8 +27,8 @@
         You don&rsquo;t need to build an AI system from scratch.
       </p>
       <div class="hiw-hero__cta">
-        <a href="{% url 'signup' %}" class="lb__btn lb__btn--primary">Create Your AI Employee &rarr;</a>
-        <a href="{% url 'contact' %}" class="lb__btn lb__btn--outline">Book a demo &rarr;</a>
+        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">Create Your AI Employee &rarr;</a>
+        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline">Book a demo &rarr;</a>
       </div>
     </div>
   </section>
@@ -126,58 +128,11 @@
       <h2 class="hiw-cta__h2">Create your AI employee in minutes.</h2>
       <p class="hiw-cta__sub">You don&rsquo;t need to build an AI system from scratch. LiftBot gives you everything you need.</p>
       <div class="hiw-cta__actions">
-        <a href="{% url 'signup' %}" class="lb__btn" style="background:#fff; color:#15161b;">Create Your AI Employee &rarr;</a>
-        <a href="{% url 'contact' %}" class="lb__btn lb__btn--outline" style="color:#fff; border-color:rgba(255,255,255,0.3);">Book a demo &rarr;</a>
+        <a href="{% url 'early_access' %}" class="lb__btn" style="background:#fff; color:#15161b;">Create Your AI Employee &rarr;</a>
+        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline" style="color:#fff; border-color:rgba(255,255,255,0.3);">Book a demo &rarr;</a>
       </div>
     </div>
   </section>
-
-  {# ── FOOTER ── #}
-  <footer class="hiw-footer">
-    <div class="hiw-footer__inner">
-      <div>
-        <a href="{% url 'home' %}" class="hiw-footer__logo">
-          <span class="hiw-footer__logo-mark">L</span>
-          LiftBot
-        </a>
-        <p class="hiw-footer__tagline">AI employees for modern businesses.</p>
-      </div>
-      <div>
-        <div class="hiw-footer__col-title">Product</div>
-        <ul class="hiw-footer__links">
-          <li><a href="{% url 'home' %}">Overview</a></li>
-          <li><a href="{% url 'ai_employees' %}">AI Employees</a></li>
-          <li><a href="{% url 'features' %}">Features</a></li>
-          <li><a href="{% url 'how_it_works' %}">How It Works</a></li>
-          <li><a href="{% url 'industries' %}">Industries</a></li>
-          <li><a href="{% url 'solutions' %}">Solutions</a></li>
-        </ul>
-      </div>
-      <div>
-        <div class="hiw-footer__col-title">Company</div>
-        <ul class="hiw-footer__links">
-          <li><a href="{% url 'about' %}">About us</a></li>
-          <li><a href="{% url 'contact' %}">Contact</a></li>
-          <li><a href="{% url 'contact' %}">Book a demo</a></li>
-        </ul>
-      </div>
-      <div>
-        <div class="hiw-footer__col-title">Account</div>
-        <ul class="hiw-footer__links">
-          {% if user.is_authenticated %}
-            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
-          {% else %}
-            <li><a href="{% url 'login' %}">Log in</a></li>
-            <li><a href="{% url 'signup' %}">Sign up free</a></li>
-          {% endif %}
-        </ul>
-      </div>
-    </div>
-    <div class="hiw-footer__bottom">
-      <span>&copy; {% now "Y" %} LiftBot, a Brandinglift product. All rights reserved.</span>
-      <span>Made in the UK &#127468;&#127463;</span>
-    </div>
-  </footer>
 
 </div>
 

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Support | LiftBot{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'marketing.css' %}">
+<link rel="stylesheet" href="{% static 'support.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="lb">
+
+  {# ── HERO ── #}
+  <section class="sup-hero">
+    <div class="sup-hero__noise" aria-hidden="true"></div>
+    <div class="sup-hero__glow" aria-hidden="true"></div>
+    <div class="sup-hero__inner">
+      <div class="sup-hero__badge">Support</div>
+      <h1 class="sup-hero__h1">We're here to <em>help.</em></h1>
+      <p class="sup-hero__sub">
+        Whether you're setting up LiftBot or troubleshooting an issue, our support team is here to help you get back on track.
+      </p>
+    </div>
+  </section>
+
+  {# ── TOPICS GRID ── #}
+  <section class="sup-topics">
+    <div class="sup-topics__inner">
+
+      <div class="sup-topics__header" data-reveal>
+        <span class="lb__eyebrow">Choose a topic</span>
+        <h2 class="lb__h2" style="margin-top:16px;">What do you need help with?</h2>
+      </div>
+
+      <div class="sup-grid" data-reveal>
+
+        <a href="{% url 'contact' %}" class="sup-card">
+          <div class="sup-card__icon sup-card__icon--1">01</div>
+          <h3 class="sup-card__title">Getting Started</h3>
+          <p class="sup-card__desc">Setup and onboarding help.</p>
+        </a>
+
+        <a href="{% url 'ai_employees' %}" class="sup-card">
+          <div class="sup-card__icon sup-card__icon--2">02</div>
+          <h3 class="sup-card__title">AI Employees</h3>
+          <p class="sup-card__desc">Roles, instructions and configuration.</p>
+        </a>
+
+        <a href="{% url 'guide' %}" class="sup-card">
+          <div class="sup-card__icon sup-card__icon--3">03</div>
+          <h3 class="sup-card__title">Knowledge</h3>
+          <p class="sup-card__desc">Adding and managing business information.</p>
+        </a>
+
+        <a href="{% url 'guide' %}" class="sup-card">
+          <div class="sup-card__icon sup-card__icon--4">04</div>
+          <h3 class="sup-card__title">Website</h3>
+          <p class="sup-card__desc">Installing and managing the LiftBot widget.</p>
+        </a>
+
+        <a href="{% url 'guide' %}" class="sup-card">
+          <div class="sup-card__icon sup-card__icon--5">05</div>
+          <h3 class="sup-card__title">Conversations</h3>
+          <p class="sup-card__desc">Managing customer interactions.</p>
+        </a>
+
+        <a href="{% url 'guide' %}" class="sup-card">
+          <div class="sup-card__icon sup-card__icon--6">06</div>
+          <h3 class="sup-card__title">Leads</h3>
+          <p class="sup-card__desc">Lead capture and qualification.</p>
+        </a>
+
+        <a href="{% url 'contact' %}" class="sup-card">
+          <div class="sup-card__icon sup-card__icon--7">07</div>
+          <h3 class="sup-card__title">Integrations</h3>
+          <p class="sup-card__desc">Connecting supported platforms.</p>
+        </a>
+
+        <a href="{% url 'pricing' %}" class="sup-card">
+          <div class="sup-card__icon sup-card__icon--8">08</div>
+          <h3 class="sup-card__title">Billing</h3>
+          <p class="sup-card__desc">Plans, invoices and subscriptions.</p>
+        </a>
+
+        <a href="{% url 'contact' %}" class="sup-card">
+          <div class="sup-card__icon sup-card__icon--9">09</div>
+          <h3 class="sup-card__title">Technical Support</h3>
+          <p class="sup-card__desc">Report an issue or unexpected behaviour.</p>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  {# ── FINAL CTA ── #}
+  <section class="sup-cta">
+    <div class="sup-cta__inner" data-reveal>
+      <span class="lb__eyebrow" style="color:#cfe9ff; background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.16);">Still stuck?</span>
+      <h2 class="sup-cta__h2">Our team is ready to help.</h2>
+      <p class="sup-cta__sub">Reach out and we'll get back to you as soon as we can.</p>
+      <div class="sup-cta__actions">
+        <a href="{% url 'contact' %}" class="lb__btn" style="background:#fff; color:#15161b;">Contact Support</a>
+        <a href="{% url 'faq' %}" class="lb__btn lb__btn--outline" style="color:#fff; border-color:rgba(255,255,255,0.3);">Browse FAQ &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="{% static 'support.js' %}" defer></script>
+{% endblock %}

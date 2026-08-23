@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Talk to an AI Employee | LiftBot Demo{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'marketing.css' %}">
+<link rel="stylesheet" href="{% static 'demo.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="lb">
+
+  {# ── HERO ── #}
+  <section class="dem-hero">
+    <div class="dem-hero__noise" aria-hidden="true"></div>
+    <div class="dem-hero__glow" aria-hidden="true"></div>
+    <div class="dem-hero__inner">
+      <div class="dem-hero__badge">Live Demo</div>
+      <h1 class="dem-hero__h1">Don't just read about an AI employee.<br><em>Talk to one.</em></h1>
+      <p class="dem-hero__sub">
+        Choose a business scenario and experience LiftBot in action.
+      </p>
+    </div>
+  </section>
+
+  {# ── SCENARIO PICKER ── #}
+  <section class="dem-scenarios">
+    <div class="dem-scenarios__inner">
+
+      <div class="dem-scenarios__header" data-reveal>
+        <span class="lb__eyebrow">Try it out</span>
+        <h2 class="lb__h2" style="margin-top:16px;">Pick a scenario to try.</h2>
+        <p class="lb__lede" style="margin-inline:auto; text-align:center;">
+          Each scenario shows how an AI employee handles a real conversation for that kind of business.
+        </p>
+      </div>
+
+      <div class="dem-scenario-grid" data-reveal>
+
+        <button type="button" class="dem-scenario-card" data-scenario="sales">
+          <div class="dem-scenario-card__icon dem-scenario-card__icon--1">&#128188;</div>
+          <h3 class="dem-scenario-card__title">AI Sales Employee</h3>
+          <p class="dem-scenario-card__desc">See how LiftBot engages a potential customer and moves them toward the next step.</p>
+          <span class="dem-scenario-card__cta">Try this scenario &rarr;</span>
+        </button>
+
+        <button type="button" class="dem-scenario-card" data-scenario="travel">
+          <div class="dem-scenario-card__icon dem-scenario-card__icon--2">&#9992;&#65039;</div>
+          <h3 class="dem-scenario-card__title">AI Travel Consultant</h3>
+          <p class="dem-scenario-card__desc">See how LiftBot answers travel questions and understands trip requirements.</p>
+          <span class="dem-scenario-card__cta">Try this scenario &rarr;</span>
+        </button>
+
+        <button type="button" class="dem-scenario-card" data-scenario="shopping">
+          <div class="dem-scenario-card__icon dem-scenario-card__icon--3">&#128722;</div>
+          <h3 class="dem-scenario-card__title">AI Shopping Assistant</h3>
+          <p class="dem-scenario-card__desc">See how LiftBot helps customers discover products and answers questions.</p>
+          <span class="dem-scenario-card__cta">Try this scenario &rarr;</span>
+        </button>
+
+        <button type="button" class="dem-scenario-card" data-scenario="support">
+          <div class="dem-scenario-card__icon dem-scenario-card__icon--4">&#128172;</div>
+          <h3 class="dem-scenario-card__title">AI Customer Support</h3>
+          <p class="dem-scenario-card__desc">See how LiftBot handles common questions and first-level assistance.</p>
+          <span class="dem-scenario-card__cta">Try this scenario &rarr;</span>
+        </button>
+
+      </div>
+    </div>
+  </section>
+
+  {# ── PRE-LAUNCH PANEL (revealed on scenario click) ── #}
+  <section class="dem-prelaunch" id="demo-panel" data-reveal>
+    <div class="dem-prelaunch__inner">
+      <div class="dem-prelaunch__icon">&#128274;</div>
+      <h2 class="dem-prelaunch__h2">LiftBot is currently available through early access.</h2>
+      <p class="dem-prelaunch__sub">Join the program to learn about availability and upcoming plans.</p>
+      <div class="dem-prelaunch__actions">
+        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">Request Early Access</a>
+      </div>
+    </div>
+  </section>
+
+  {# ── AFTER INTERACTION / BENEFITS ── #}
+  <section class="dem-benefits">
+    <div class="dem-benefits__inner">
+      <div data-reveal>
+        <span class="lb__eyebrow">Imagine this working for your business</span>
+        <h2 class="lb__h2" style="margin-top:16px;">This is what an AI employee could do for you.</h2>
+      </div>
+      <div class="dem-benefits__grid" data-reveal>
+        <div class="dem-benefit">
+          <div class="dem-benefit__icon">&#9889;</div>
+          <p class="dem-benefit__text">Your customers get faster responses.</p>
+        </div>
+        <div class="dem-benefit">
+          <div class="dem-benefit__icon">&#128260;</div>
+          <p class="dem-benefit__text">Your team gets fewer repetitive conversations.</p>
+        </div>
+        <div class="dem-benefit">
+          <div class="dem-benefit__icon">&#128336;</div>
+          <p class="dem-benefit__text">Your business stays available longer.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# ── FINAL CTA ── #}
+  <section class="dem-cta">
+    <div class="dem-cta__inner" data-reveal>
+      <span class="lb__eyebrow" style="color:#cfe9ff; background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.16);">Pre-launch</span>
+      <h2 class="dem-cta__h2">Get early access to LiftBot.</h2>
+      <p class="dem-cta__sub">LiftBot is currently available through early access. Join the program to learn about availability and upcoming plans.</p>
+      <div class="dem-cta__actions">
+        <a href="{% url 'early_access' %}" class="lb__btn" style="background:#fff; color:#15161b;">Request Early Access</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="{% static 'demo.js' %}" defer></script>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}AI Use Cases | LiftBot{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'marketing.css' %}">
+<link rel="stylesheet" href="{% static 'usecases.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="lb">
+
+  {# ── HERO ── #}
+  <section class="uc-hero">
+    <div class="uc-hero__noise" aria-hidden="true"></div>
+    <div class="uc-hero__glow" aria-hidden="true"></div>
+    <div class="uc-hero__inner">
+      <div class="uc-hero__badge">Use Cases</div>
+      <h1 class="uc-hero__h1">Give AI <em>a job to do.</em></h1>
+      <p class="uc-hero__sub">
+        Instead of asking <span class="uc-hero__strike">&ldquo;What can AI do?&rdquo;</span> — ask <strong>&ldquo;What should my AI employee do?&rdquo;</strong>
+      </p>
+      <div class="uc-hero__cta">
+        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">Get Early Access</a>
+        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline">Book a demo &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  {# ── USE CASES GRID ── #}
+  <section class="uc-grid-section">
+    <div class="uc-grid-section__inner">
+
+      <div class="uc-grid-section__header" data-reveal>
+        <span class="lb__eyebrow">Roles</span>
+        <h2 class="lb__h2" style="margin-top:16px;">Pick the role your AI employee should play.</h2>
+        <p class="lb__lede" style="margin-inline:auto; text-align:center;">
+          Every AI employee starts with one job. Choose the role that matches what's costing your business the most time today.
+        </p>
+      </div>
+
+      <div class="uc-grid" data-reveal>
+
+        <div class="uc-card">
+          <div class="uc-card__icon uc-card__icon--1">&#128188;</div>
+          <h3 class="uc-card__title">AI Sales Employee</h3>
+          <p class="uc-card__desc">Engage potential customers and support the first stage of your sales process.</p>
+          <a href="{% url 'demo' %}" class="uc-card__cta">Try this role &rarr;</a>
+        </div>
+
+        <div class="uc-card">
+          <div class="uc-card__icon uc-card__icon--2">&#128172;</div>
+          <h3 class="uc-card__title">AI Customer Support</h3>
+          <p class="uc-card__desc">Handle common questions and first-level customer assistance.</p>
+          <a href="{% url 'demo' %}" class="uc-card__cta">Try this role &rarr;</a>
+        </div>
+
+        <div class="uc-card">
+          <div class="uc-card__icon uc-card__icon--3">&#128075;</div>
+          <h3 class="uc-card__title">AI Receptionist</h3>
+          <p class="uc-card__desc">Welcome visitors and guide them toward the right information or team.</p>
+          <a href="{% url 'demo' %}" class="uc-card__cta">Try this role &rarr;</a>
+        </div>
+
+        <div class="uc-card">
+          <div class="uc-card__icon uc-card__icon--4">&#127919;</div>
+          <h3 class="uc-card__title">AI Lead Qualification</h3>
+          <p class="uc-card__desc">Collect requirements and help identify potential opportunities.</p>
+          <a href="{% url 'demo' %}" class="uc-card__cta">Try this role &rarr;</a>
+        </div>
+
+        <div class="uc-card">
+          <div class="uc-card__icon uc-card__icon--5">&#128197;</div>
+          <h3 class="uc-card__title">AI Appointment Assistant</h3>
+          <p class="uc-card__desc">Help customers move toward appointments and scheduling.</p>
+          <a href="{% url 'demo' %}" class="uc-card__cta">Try this role &rarr;</a>
+        </div>
+
+        <div class="uc-card">
+          <div class="uc-card__icon uc-card__icon--6">&#9881;&#65039;</div>
+          <h3 class="uc-card__title">AI Business Assistant</h3>
+          <p class="uc-card__desc">Support repetitive customer and business workflows.</p>
+          <a href="{% url 'demo' %}" class="uc-card__cta">Try this role &rarr;</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  {# ── FINAL CTA ── #}
+  <section class="uc-cta">
+    <div class="uc-cta__inner" data-reveal>
+      <span class="lb__eyebrow" style="color:#cfe9ff; background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.16);">One role. One AI employee.</span>
+      <h2 class="uc-cta__h2">Explore AI use cases and find the right role.</h2>
+      <p class="uc-cta__sub">Start with one job for your AI employee. Then grow your digital workforce from there.</p>
+      <div class="uc-cta__actions">
+        <a href="{% url 'early_access' %}" class="lb__btn" style="background:#fff; color:#15161b;">Get Early Access</a>
+        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline" style="color:#fff; border-color:rgba(255,255,255,0.3);">Book a demo &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="{% static 'usecases.js' %}" defer></script>
+{% endblock %}

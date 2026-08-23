@@ -1,9 +1,16 @@
 /* ============================================================
-   solutions.css  |  LiftBot Solutions page
-   Prefix: sol-
+   LiftBot — pricing.css
+   Prefix: pr-
    ============================================================ */
 
-/* ── Custom properties ── */
+/* ── Full-width override ── */
+main:has(.lb) {
+  max-width: none;
+  width: 100%;
+  padding: 0;
+}
+
+/* ── Design tokens ── */
 :root {
   --brand:      #4b3aff;
   --signal:     #1fce7a;
@@ -11,13 +18,6 @@
   --ink:        #15161b;
   --paper-dim:  #f3f2ee;
   --paper-line: #e7e5de;
-}
-
-/* ── Full-width override ── */
-main:has(.lb) {
-  max-width: none;
-  width: 100%;
-  padding: 0;
 }
 
 /* ============================================================
@@ -34,7 +34,7 @@ main:has(.lb) {
 }
 
 /* ============================================================
-   PULSE KEYFRAME
+   KEYFRAMES
    ============================================================ */
 @keyframes lb-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
@@ -44,9 +44,9 @@ main:has(.lb) {
 /* ============================================================
    HERO
    ============================================================ */
-.sol-hero {
+.pr-hero {
   position: relative;
-  min-height: 84vh;
+  min-height: 70vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -56,7 +56,7 @@ main:has(.lb) {
   padding: 120px 24px 100px;
 }
 
-.sol-hero__noise {
+.pr-hero__noise {
   position: absolute;
   inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
@@ -66,7 +66,7 @@ main:has(.lb) {
   z-index: 0;
 }
 
-.sol-hero__glow {
+.pr-hero__glow {
   position: absolute;
   top: -160px;
   left: 50%;
@@ -78,14 +78,14 @@ main:has(.lb) {
   z-index: 0;
 }
 
-.sol-hero__inner {
+.pr-hero__inner {
   position: relative;
   z-index: 1;
-  max-width: 780px;
+  max-width: 640px;
   margin: 0 auto;
 }
 
-.sol-hero__badge {
+.pr-hero__badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -102,7 +102,7 @@ main:has(.lb) {
   margin-bottom: 32px;
 }
 
-.sol-hero__badge::before {
+.pr-hero__badge::before {
   content: '';
   display: inline-block;
   width: 7px;
@@ -112,34 +112,26 @@ main:has(.lb) {
   animation: lb-pulse 2s ease-in-out infinite;
 }
 
-.sol-hero__h1 {
+.pr-hero__h1 {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(2.4rem, 5.5vw, 4.2rem);
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
   font-weight: 700;
-  line-height: 1.12;
+  line-height: 1.15;
   color: #fff;
   margin: 0 0 24px;
   letter-spacing: -0.02em;
 }
 
-.sol-hero__h1 em {
-  font-style: normal;
-  background: linear-gradient(90deg, #a78bfa 0%, #60a5fa 50%, var(--signal) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.sol-hero__sub {
+.pr-hero__sub {
   font-family: 'Inter', sans-serif;
-  font-size: clamp(1rem, 1.8vw, 1.2rem);
+  font-size: clamp(1rem, 1.8vw, 1.15rem);
   color: rgba(255,255,255,0.65);
   line-height: 1.65;
-  max-width: 580px;
+  max-width: 520px;
   margin: 0 auto 40px;
 }
 
-.sol-hero__cta {
+.pr-hero__cta {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -147,95 +139,73 @@ main:has(.lb) {
   flex-wrap: wrap;
 }
 
-/* ── Button overrides for dark hero background ── */
-.sol-hero .lb__btn--primary {
+.pr-hero .lb__btn--primary {
   background: #fff !important;
   color: #15161b !important;
   border-color: #fff !important;
 }
-.sol-hero .lb__btn--primary:hover {
+.pr-hero .lb__btn--primary:hover {
   background: #e8e6ff !important;
   border-color: #e8e6ff !important;
 }
-.sol-hero .lb__btn--outline {
+.pr-hero .lb__btn--outline {
   background: transparent !important;
   color: #fff !important;
   border-color: rgba(255,255,255,0.35) !important;
 }
-.sol-hero .lb__btn--outline:hover {
+.pr-hero .lb__btn--outline:hover {
   border-color: #fff !important;
 }
 
 /* ============================================================
-   SOLUTIONS GRID SECTION
+   WHAT TO EXPECT
    ============================================================ */
-.sol-grid-section {
+.pr-expect {
   background: var(--paper-dim);
   padding: 100px 24px;
 }
 
-.sol-grid-section__inner {
-  max-width: 1160px;
+.pr-expect__inner {
+  max-width: 1000px;
   margin: 0 auto;
 }
 
-.sol-grid-section__header {
+.pr-expect__header {
   text-align: center;
-  margin-bottom: 60px;
+  margin-bottom: 56px;
 }
 
-.sol-grid {
+.pr-expect__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 }
 
-@media (max-width: 900px) {
-  .sol-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 540px) {
-  .sol-grid {
+@media (max-width: 780px) {
+  .pr-expect__grid {
     grid-template-columns: 1fr;
   }
 }
 
-/* ── Solution Card ── */
-.sol-card {
+.pr-expect-card {
   background: #fff;
   border: 1px solid var(--paper-line);
   border-radius: 18px;
-  padding: 28px;
+  padding: 30px 26px;
   transition: transform 0.22s ease, box-shadow 0.22s ease;
 }
 
-.sol-card:hover {
+.pr-expect-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 16px 44px rgba(21,22,27,0.09);
 }
 
-.sol-card__icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.35rem;
-  margin-bottom: 18px;
-  flex-shrink: 0;
+.pr-expect-card__icon {
+  font-size: 1.5rem;
+  margin-bottom: 16px;
 }
 
-.sol-card__icon--capture    { background: #e6fbf0; }
-.sol-card__icon--qualify    { background: #eeecff; }
-.sol-card__icon--support    { background: #ffeaf2; }
-.sol-card__icon--repetitive { background: #fff8e5; }
-.sol-card__icon--responsive { background: #f0f4ff; }
-.sol-card__icon--experience { background: #f5f0ff; }
-
-.sol-card__title {
+.pr-expect-card__title {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 1.05rem;
   font-weight: 700;
@@ -244,142 +214,18 @@ main:has(.lb) {
   line-height: 1.3;
 }
 
-.sol-card__desc {
+.pr-expect-card__desc {
   font-family: 'Inter', sans-serif;
-  font-size: 0.93rem;
+  font-size: 0.92rem;
   color: #52535a;
   line-height: 1.65;
   margin: 0;
 }
 
 /* ============================================================
-   STATEMENT SECTION
+   FINAL CTA
    ============================================================ */
-.sol-statement {
-  background: #fff;
-  padding: 100px 24px;
-}
-
-.sol-statement__inner {
-  max-width: 1160px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 72px;
-  align-items: center;
-}
-
-@media (max-width: 860px) {
-  .sol-statement__inner {
-    grid-template-columns: 1fr;
-    gap: 48px;
-  }
-}
-
-.sol-statement__eyebrow {
-  display: inline-block;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--brand);
-  background: rgba(75,58,255,0.07);
-  border: 1px solid rgba(75,58,255,0.2);
-  border-radius: 100px;
-  padding: 5px 14px;
-  margin-bottom: 20px;
-}
-
-.sol-statement__h2 {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(1.7rem, 3vw, 2.6rem);
-  font-weight: 700;
-  color: var(--ink);
-  line-height: 1.2;
-  margin: 0 0 20px;
-  letter-spacing: -0.01em;
-}
-
-.sol-statement__p {
-  font-family: 'Inter', sans-serif;
-  font-size: 1rem;
-  color: #52535a;
-  line-height: 1.7;
-  margin: 0 0 28px;
-}
-
-.sol-statement__list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 36px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.sol-statement__list li {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.96rem;
-  color: var(--ink);
-  padding-left: 24px;
-  position: relative;
-  line-height: 1.5;
-}
-
-.sol-statement__list li::before {
-  content: '→';
-  position: absolute;
-  left: 0;
-  color: var(--brand);
-  font-weight: 700;
-}
-
-/* ── Statement Visual (dark card) ── */
-.sol-statement__visual {
-  background: var(--ink);
-  border-radius: 20px;
-  padding: 36px 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.sol-pill {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 100px;
-  padding: 10px 18px;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.9rem;
-  color: rgba(255,255,255,0.88);
-  transition: background 0.2s ease;
-}
-
-.sol-pill:hover {
-  background: rgba(255,255,255,0.1);
-}
-
-.sol-pill__check {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: rgba(31,206,122,0.18);
-  color: var(--signal);
-  font-size: 0.78rem;
-  flex-shrink: 0;
-}
-
-/* ============================================================
-   FINAL CTA SECTION
-   ============================================================ */
-.sol-cta {
+.pr-cta {
   background: var(--ink);
   padding: 100px 24px;
   text-align: center;
@@ -387,7 +233,7 @@ main:has(.lb) {
   overflow: hidden;
 }
 
-.sol-cta::before {
+.pr-cta::before {
   content: '';
   position: absolute;
   top: -120px;
@@ -399,16 +245,16 @@ main:has(.lb) {
   pointer-events: none;
 }
 
-.sol-cta__inner {
+.pr-cta__inner {
   position: relative;
   z-index: 1;
-  max-width: 700px;
+  max-width: 640px;
   margin: 0 auto;
 }
 
-.sol-cta__h2 {
+.pr-cta__h2 {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(1.9rem, 3.5vw, 3rem);
+  font-size: clamp(1.9rem, 3.5vw, 2.8rem);
   font-weight: 700;
   color: #fff;
   margin: 20px 0 16px;
@@ -416,15 +262,15 @@ main:has(.lb) {
   line-height: 1.15;
 }
 
-.sol-cta__sub {
+.pr-cta__sub {
   font-family: 'Inter', sans-serif;
-  font-size: 1.05rem;
+  font-size: 1.02rem;
   color: rgba(255,255,255,0.6);
   line-height: 1.65;
   margin: 0 0 40px;
 }
 
-.sol-cta__actions {
+.pr-cta__actions {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -436,12 +282,11 @@ main:has(.lb) {
    RESPONSIVE UTILITIES
    ============================================================ */
 @media (max-width: 640px) {
-  .sol-hero {
+  .pr-hero {
     padding: 100px 20px 80px;
   }
-  .sol-grid-section,
-  .sol-statement,
-  .sol-cta {
+  .pr-expect,
+  .pr-cta {
     padding: 72px 20px;
   }
 }

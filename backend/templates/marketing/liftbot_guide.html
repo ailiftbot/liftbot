@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}LiftBot Guide | Learn LiftBot{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'marketing.css' %}">
+<link rel="stylesheet" href="{% static 'guide.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="lb">
+
+  {# ── HERO ── #}
+  <section class="gd-hero">
+    <div class="gd-hero__noise" aria-hidden="true"></div>
+    <div class="gd-hero__glow" aria-hidden="true"></div>
+    <div class="gd-hero__inner">
+      <div class="gd-hero__badge">LiftBot Guide</div>
+      <h1 class="gd-hero__h1">Learn <em>LiftBot.</em></h1>
+      <p class="gd-hero__sub">
+        Everything you need to create, train, deploy and manage your AI employees.
+      </p>
+    </div>
+  </section>
+
+  {# ── DOCS LAYOUT ── #}
+  <section class="gd-docs">
+    <div class="gd-docs__inner">
+
+      {# ── SIDEBAR NAV ── #}
+      <aside class="gd-nav" data-reveal>
+        <p class="gd-nav__label">On this page</p>
+        <a href="#getting-started" class="gd-nav__link">Getting Started</a>
+        <a href="#employee-setup" class="gd-nav__link">AI Employee Setup</a>
+        <a href="#knowledge" class="gd-nav__link">Knowledge</a>
+        <a href="#deployment" class="gd-nav__link">Deployment</a>
+        <a href="#conversations" class="gd-nav__link">Conversations</a>
+        <a href="#leads" class="gd-nav__link">Leads</a>
+        <a href="#analytics" class="gd-nav__link">Analytics</a>
+      </aside>
+
+      {# ── CONTENT ── #}
+      <div class="gd-content">
+
+        <div class="gd-group" id="getting-started" data-reveal>
+          <span class="gd-group__num">01</span>
+          <h2 class="gd-group__title">Getting Started</h2>
+          <div class="gd-item">
+            <h3 class="gd-item__title">Create your account</h3>
+            <p class="gd-item__desc">Set up your LiftBot workspace.</p>
+          </div>
+          <div class="gd-item">
+            <h3 class="gd-item__title">Create your first AI employee</h3>
+            <p class="gd-item__desc">Choose a role and configure your employee.</p>
+          </div>
+          <div class="gd-item">
+            <h3 class="gd-item__title">Understand your dashboard</h3>
+            <p class="gd-item__desc">Learn where everything lives.</p>
+          </div>
+        </div>
+
+        <div class="gd-group" id="employee-setup" data-reveal>
+          <span class="gd-group__num">02</span>
+          <h2 class="gd-group__title">AI Employee Setup</h2>
+          <div class="gd-item">
+            <h3 class="gd-item__title">Choose a role</h3>
+            <p class="gd-item__desc">Define what your employee is responsible for.</p>
+          </div>
+          <div class="gd-item">
+            <h3 class="gd-item__title">Set personality</h3>
+            <p class="gd-item__desc">Choose how your employee communicates.</p>
+          </div>
+          <div class="gd-item">
+            <h3 class="gd-item__title">Add instructions</h3>
+            <p class="gd-item__desc">Tell your AI employee how it should operate.</p>
+          </div>
+          <div class="gd-item">
+            <h3 class="gd-item__title">Define business rules</h3>
+            <p class="gd-item__desc">Set boundaries and escalation behaviour.</p>
+          </div>
+        </div>
+
+        <div class="gd-group" id="knowledge" data-reveal>
+          <span class="gd-group__num">03</span>
+          <h2 class="gd-group__title">Knowledge</h2>
+          <div class="gd-item">
+            <h3 class="gd-item__title">Add business information</h3>
+            <p class="gd-item__desc">Provide the information your AI employee needs.</p>
+          </div>
+          <div class="gd-item">
+            <h3 class="gd-item__title">Manage knowledge</h3>
+            <p class="gd-item__desc">Keep your information organized and up to date.</p>
+          </div>
+          <div class="gd-item">
+            <h3 class="gd-item__title">Test your knowledge</h3>
+            <p class="gd-item__desc">Check how your AI employee responds.</p>
+          </div>
+        </div>
+
+        <div class="gd-group" id="deployment" data-reveal>
+          <span class="gd-group__num">04</span>
+          <h2 class="gd-group__title">Deployment</h2>
+          <div class="gd-item">
+            <h3 class="gd-item__title">Connect your website</h3>
+            <p class="gd-item__desc">Install your LiftBot widget.</p>
+          </div>
+          <div class="gd-item">
+            <h3 class="gd-item__title">Customize</h3>
+            <p class="gd-item__desc">Configure the appearance and behaviour of the experience.</p>
+          </div>
+          <div class="gd-item">
+            <h3 class="gd-item__title">Test</h3>
+            <p class="gd-item__desc">Run conversations before going live.</p>
+          </div>
+          <div class="gd-item">
+            <h3 class="gd-item__title">Launch</h3>
+            <p class="gd-item__desc">Make your AI employee available to customers.</p>
+          </div>
+        </div>
+
+        <div class="gd-group" id="conversations" data-reveal>
+          <span class="gd-group__num">05</span>
+          <h2 class="gd-group__title">Conversations</h2>
+          <ul class="gd-simple-list">
+            <li>View conversations.</li>
+            <li>Search interactions.</li>
+            <li>Review customer questions.</li>
+            <li>Take over when necessary.</li>
+          </ul>
+        </div>
+
+        <div class="gd-group" id="leads" data-reveal>
+          <span class="gd-group__num">06</span>
+          <h2 class="gd-group__title">Leads</h2>
+          <ul class="gd-simple-list">
+            <li>Capture leads.</li>
+            <li>Review lead information.</li>
+            <li>Qualify enquiries.</li>
+            <li>Manage lead status.</li>
+          </ul>
+        </div>
+
+        <div class="gd-group" id="analytics" data-reveal>
+          <span class="gd-group__num">07</span>
+          <h2 class="gd-group__title">Analytics</h2>
+          <ul class="gd-simple-list">
+            <li>Monitor conversations.</li>
+            <li>Review available metrics.</li>
+            <li>Understand customer interactions.</li>
+            <li>Track performance.</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  {# ── FINAL CTA ── #}
+  <section class="gd-cta">
+    <div class="gd-cta__inner" data-reveal>
+      <span class="lb__eyebrow" style="color:#cfe9ff; background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.16);">Ready to start?</span>
+      <h2 class="gd-cta__h2">Create your first AI employee.</h2>
+      <p class="gd-cta__sub">Follow this guide step by step, or reach out if you need a hand getting set up.</p>
+      <div class="gd-cta__actions">
+        <a href="{% url 'early_access' %}" class="lb__btn" style="background:#fff; color:#15161b;">Get Early Access</a>
+        <a href="{% url 'support' %}" class="lb__btn lb__btn--outline" style="color:#fff; border-color:rgba(255,255,255,0.3);">Visit Support &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="{% static 'guide.js' %}" defer></script>
+{% endblock %}

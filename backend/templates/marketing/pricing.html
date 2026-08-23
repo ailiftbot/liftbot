@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Pricing | LiftBot{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'marketing.css' %}">
+<link rel="stylesheet" href="{% static 'pricing.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="lb">
+
+  {# ── HERO / PRE-LAUNCH PANEL ── #}
+  <section class="pr-hero">
+    <div class="pr-hero__noise" aria-hidden="true"></div>
+    <div class="pr-hero__glow" aria-hidden="true"></div>
+    <div class="pr-hero__inner">
+      <div class="pr-hero__badge">Pricing</div>
+      <h1 class="pr-hero__h1">Pricing is on its way.</h1>
+      <p class="pr-hero__sub">
+        LiftBot is currently available through early access. Join the program to learn about availability and upcoming plans.
+      </p>
+      <div class="pr-hero__cta">
+        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">Request Early Access</a>
+        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline">Book a demo &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  {# ── WHAT TO EXPECT ── #}
+  <section class="pr-expect">
+    <div class="pr-expect__inner">
+      <div class="pr-expect__header" data-reveal>
+        <span class="lb__eyebrow">What to expect</span>
+        <h2 class="lb__h2" style="margin-top:16px;">Built to grow with your business.</h2>
+        <p class="lb__lede" style="margin-inline:auto; text-align:center;">
+          Every AI employee starts with one job — pricing will follow that same idea. Start small, and only pay for what your business actually needs.
+        </p>
+      </div>
+
+      <div class="pr-expect__grid" data-reveal>
+        <div class="pr-expect-card">
+          <div class="pr-expect-card__icon">&#127919;</div>
+          <h3 class="pr-expect-card__title">Start with one role</h3>
+          <p class="pr-expect-card__desc">Pick one AI employee for the problem costing you the most time today.</p>
+        </div>
+        <div class="pr-expect-card">
+          <div class="pr-expect-card__icon">&#128200;</div>
+          <h3 class="pr-expect-card__title">Grow as you need</h3>
+          <p class="pr-expect-card__desc">Add more roles or capabilities as your business scales — no need to commit upfront.</p>
+        </div>
+        <div class="pr-expect-card">
+          <div class="pr-expect-card__icon">&#129309;</div>
+          <h3 class="pr-expect-card__title">Early access pricing</h3>
+          <p class="pr-expect-card__desc">Early access members will be the first to know about plans and pricing before public launch.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# ── FINAL CTA ── #}
+  <section class="pr-cta">
+    <div class="pr-cta__inner" data-reveal>
+      <span class="lb__eyebrow" style="color:#cfe9ff; background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.16);">Pre-launch</span>
+      <h2 class="pr-cta__h2">Be the first to know when pricing goes live.</h2>
+      <p class="pr-cta__sub">Join early access to learn about availability and upcoming plans before anyone else.</p>
+      <div class="pr-cta__actions">
+        <a href="{% url 'early_access' %}" class="lb__btn" style="background:#fff; color:#15161b;">Request Early Access</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="{% static 'pricing.js' %}" defer></script>
+{% endblock %}

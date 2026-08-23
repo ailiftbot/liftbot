@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Get Early Access | LiftBot{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'marketing.css' %}">
+<link rel="stylesheet" href="{% static 'early_access.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="lb">
+
+  {# ── HERO ── #}
+  <section class="ea-hero">
+    <div class="ea-hero__noise" aria-hidden="true"></div>
+    <div class="ea-hero__glow" aria-hidden="true"></div>
+    <div class="ea-hero__inner">
+      <div class="ea-hero__badge">Early Access</div>
+      <h1 class="ea-hero__h1">Your first AI employee could be closer than you think.</h1>
+      <p class="ea-hero__sub">
+        LiftBot is currently being prepared for wider availability. We're working with early businesses to test real-world use cases and improve the platform before public launch.
+      </p>
+    </div>
+  </section>
+
+  {# ── FORM SECTION ── #}
+  <section class="ea-form-section">
+    <div class="ea-form-section__inner">
+
+      {% if submitted %}
+        {# ── SUCCESS STATE ── #}
+        <div class="ea-success" data-reveal>
+          <div class="ea-success__icon">&#9989;</div>
+          <h2 class="ea-success__h2">You're on the list.</h2>
+          <p class="ea-success__sub">Thanks for your interest in LiftBot. Our team will review your information and contact you about the next steps.</p>
+          <a href="{% url 'home' %}" class="lb__btn lb__btn--primary">Back to Home</a>
+        </div>
+      {% else %}
+        {# ── FORM STATE ── #}
+        <div class="ea-form-card" data-reveal>
+          <span class="lb__eyebrow">Tell us what you need</span>
+          <h2 class="ea-form-card__h2">Tell us about your business.</h2>
+
+          <form method="post" action="{% url 'early_access' %}" class="ea-form" novalidate>
+            {% csrf_token %}
+
+            <div class="ea-form__row">
+              <label class="ea-form__label" for="id_full_name">Full Name</label>
+              <input class="ea-form__input" type="text" id="id_full_name" name="full_name" required>
+            </div>
+
+            <div class="ea-form__row">
+              <label class="ea-form__label" for="id_business_name">Business Name</label>
+              <input class="ea-form__input" type="text" id="id_business_name" name="business_name" required>
+            </div>
+
+            <div class="ea-form__grid">
+              <div class="ea-form__row">
+                <label class="ea-form__label" for="id_work_email">Work Email</label>
+                <input class="ea-form__input" type="email" id="id_work_email" name="work_email" required>
+              </div>
+              <div class="ea-form__row">
+                <label class="ea-form__label" for="id_phone">Phone</label>
+                <input class="ea-form__input" type="tel" id="id_phone" name="phone">
+              </div>
+            </div>
+
+            <div class="ea-form__row">
+              <label class="ea-form__label" for="id_website">Website</label>
+              <input class="ea-form__input" type="url" id="id_website" name="website" placeholder="https://">
+            </div>
+
+            <div class="ea-form__grid">
+              <div class="ea-form__row">
+                <label class="ea-form__label" for="id_industry">Industry</label>
+                <select class="ea-form__input" id="id_industry" name="industry" required>
+                  <option value="" disabled selected>Select your industry</option>
+                  <option value="real-estate">Real Estate</option>
+                  <option value="travel">Travel &amp; Tourism</option>
+                  <option value="ecommerce">E-commerce</option>
+                  <option value="education">Education</option>
+                  <option value="healthcare">Healthcare</option>
+                  <option value="professional-services">Professional Services</option>
+                  <option value="hospitality">Hospitality</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="ea-form__row">
+                <label class="ea-form__label" for="id_company_size">Company Size</label>
+                <select class="ea-form__input" id="id_company_size" name="company_size" required>
+                  <option value="" disabled selected>Select company size</option>
+                  <option value="1-10">1–10 employees</option>
+                  <option value="11-50">11–50 employees</option>
+                  <option value="51-200">51–200 employees</option>
+                  <option value="200+">200+ employees</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="ea-form__row">
+              <label class="ea-form__label" for="id_help_with">What would you like your AI employee to help with?</label>
+              <textarea class="ea-form__input ea-form__textarea" id="id_help_with" name="help_with" rows="4"></textarea>
+            </div>
+
+            <button type="submit" class="lb__btn lb__btn--primary ea-form__submit">Request Early Access</button>
+          </form>
+        </div>
+      {% endif %}
+
+    </div>
+  </section>
+
+</div>
+
+<script src="{% static 'early_access.js' %}" defer></script>
+{% endblock %}

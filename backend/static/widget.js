@@ -130,14 +130,12 @@
     // !important resets, etc.) overriding our positioning.
     var guard = document.createElement('style');
     guard.textContent =
-      '#' + id + '{all:revert;position:fixed!important;z-index:2147483647!important;' +
+      '#' + id + '{position:fixed!important;z-index:2147483647!important;' +
       'margin:0!important;padding:0!important;border:0!important;background:transparent!important;' +
-      'pointer-events:none!important;overflow:visible!important;' +
-      'box-sizing:content-box!important;max-width:none!important;max-height:none!important;' +
-      'transition:width .18s ease,height .18s ease,top .18s ease,left .18s ease,right .18s ease,bottom .18s ease!important;}' +
+      'pointer-events:none!important;overflow:visible!important;display:block!important;' +
+      'box-sizing:content-box!important;max-width:none!important;max-height:none!important;}' +
       '#' + id + ' > iframe{width:100%!important;height:100%!important;border:0!important;display:block!important;' +
-      'background:transparent!important;pointer-events:auto!important;border-radius:inherit!important;' +
-      'color-scheme:normal!important;}';
+      'background:transparent!important;pointer-events:auto!important;border-radius:inherit!important;}';
     document.head.appendChild(guard);
 
     var iframe = document.createElement('iframe');
@@ -145,15 +143,32 @@
     iframe.setAttribute('scrolling', 'no');
     iframe.setAttribute('allowTransparency', 'true');
     iframe.style.background = 'transparent';
-    iframe.style.colorScheme = 'normal';
     iframe.style.borderRadius = 'inherit';
     container.appendChild(iframe);
     document.body.appendChild(container);
 
+    function cssName(k) {
+      return k.replace(/[A-Z]/g, function (m) { return '-' + m.toLowerCase(); });
+    }
+
     return {
       container: container,
       iframe: iframe,
-      place: function (rect) { Object.assign(container.style, rect); },
+      place: function (rect) {
+        ['top', 'right', 'bottom', 'left'].forEach(function (side) {
+          container.style.removeProperty(side);
+        });
+        Object.keys(rect).forEach(function (key) {
+          var val = rect[key];
+          if (val == null || val === 'auto') {
+            container.style.removeProperty(cssName(key));
+            return;
+          }
+          var important = (key === 'top' || key === 'right' || key === 'bottom' || key === 'left' ||
+            key === 'width' || key === 'height') ? 'important' : '';
+          container.style.setProperty(cssName(key), String(val), important);
+        });
+      },
       write: function (html) {
         var doc = iframe.contentWindow.document;
         doc.open();
@@ -181,23 +196,14 @@
     var shell = createShell('liftbot-shell-' + token);
     var open = false;
     var fabSize = function () { return isMobileViewport() ? 56 : 60; };
-    var bottomCss = function (extra) {
-      extra = extra || 0;
-      return 'calc(' + (offsetY + extra) + 'px + env(safe-area-inset-bottom, 0px))';
-    };
 
     function closedRect() {
       var size = fabSize();
-      // Shadow lives on this circular host shell (not inside the iframe).
-      // An iframe is a square; a launcher box-shadow inside it gets clipped
-      // into a square halo behind the round button.
+      // Shadow on the circular host shell — not inside the square iframe.
       return anchorStyle({
         width: size + 'px',
         height: size + 'px',
-        bottom: bottomCss(0),
-        top: 'auto',
-        left: 'auto',
-        right: 'auto',
+        bottom: offsetY + 'px',
         borderRadius: '50%',
         boxShadow: '0 8px 24px rgba(15,23,42,.22)',
         overflow: 'visible',
@@ -207,9 +213,7 @@
     function openRect() {
       var reset = { borderRadius: '16px', boxShadow: 'none', overflow: 'visible' };
       if (isMobileViewport()) {
-        // Card above the launcher — never a full-screen sheet.
-        var vv = window.visualViewport;
-        var vh = vv ? vv.height : window.innerHeight;
+        var vh = window.innerHeight;
         var fab = fabSize();
         var gap = 10;
         var inset = 12;
@@ -218,18 +222,14 @@
           left: inset + 'px',
           right: inset + 'px',
           width: 'auto',
-          top: 'auto',
-          bottom: bottomCss(0),
+          bottom: offsetY + 'px',
           height: (panelH + gap + fab) + 'px',
         }, reset);
       }
       return anchorStyle(Object.assign({
         width: '380px',
         height: '600px',
-        bottom: bottomCss(68),
-        top: 'auto',
-        left: 'auto',
-        right: 'auto',
+        bottom: (offsetY + 68) + 'px',
       }, reset));
     }
 
@@ -441,12 +441,15 @@
           left: '12px',
           right: '12px',
           width: 'auto',
-          bottom: 'calc(' + offsetY + 'px + env(safe-area-inset-bottom, 0px))',
-          top: 'auto',
+          bottom: offsetY + 'px',
           height: Math.min(window.innerHeight * 0.5, 320) + 'px',
         });
       } else {
-        shell.place(anchorStyle({ width: '320px', bottom: offsetY + 'px', top: 'auto', left: 'auto', right: 'auto', height: Math.min(window.innerHeight - 40, 60 + roster.employees.length * 62) + 'px' }));
+        shell.place(anchorStyle({
+          width: '320px',
+          bottom: offsetY + 'px',
+          height: Math.min(window.innerHeight - 40, 60 + roster.employees.length * 62) + 'px',
+        }));
       }
     }
     reposition();

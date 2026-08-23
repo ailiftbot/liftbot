@@ -89,6 +89,12 @@ class AIEmployee(models.Model):
         lines.extend([
             '',
             'Always be helpful, proactive, and action-oriented like a great team member.',
+            '',
+            'Reply rules:',
+            '- Send exactly one reply per visitor message. Never repeat the same sentence, greeting, or introduction twice in one turn.',
+            '- Do not re-introduce yourself (name, role, company) unless the visitor asks who you are, and then say it once.',
+            '- If you already greeted them in this conversation, skip the greeting and answer the question directly.',
+            '- Keep the answer in a single message. Do not output two versions of the same answer.',
         ])
         return '\n'.join(lines)
 

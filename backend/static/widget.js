@@ -122,6 +122,8 @@
       margin: '0',
       padding: '0',
       border: '0',
+      pointerEvents: 'none',
+      overflow: 'visible',
     });
 
     // Hard-guard against aggressive host stylesheets (global "*" rules,
@@ -130,15 +132,21 @@
     guard.textContent =
       '#' + id + '{all:revert;position:fixed!important;z-index:2147483647!important;' +
       'margin:0!important;padding:0!important;border:0!important;background:transparent!important;' +
+      'pointer-events:none!important;overflow:visible!important;' +
       'box-sizing:content-box!important;max-width:none!important;max-height:none!important;' +
       'transition:width .18s ease,height .18s ease,top .18s ease,left .18s ease,right .18s ease,bottom .18s ease!important;}' +
       '#' + id + ' > iframe{width:100%!important;height:100%!important;border:0!important;display:block!important;' +
-      'background:transparent!important;}';
+      'background:transparent!important;pointer-events:auto!important;border-radius:inherit!important;' +
+      'color-scheme:normal!important;}';
     document.head.appendChild(guard);
 
     var iframe = document.createElement('iframe');
     iframe.setAttribute('title', 'Chat widget');
     iframe.setAttribute('scrolling', 'no');
+    iframe.setAttribute('allowTransparency', 'true');
+    iframe.style.background = 'transparent';
+    iframe.style.colorScheme = 'normal';
+    iframe.style.borderRadius = 'inherit';
     container.appendChild(iframe);
     document.body.appendChild(container);
 
@@ -169,30 +177,60 @@
     var token = cfg._token;
     var color = cfg.brand_color || '#7C3AED';
     var sessionId = localStorage.getItem('liftbot_session_' + sessionKeyPrefix + '_' + token) || null;
+    if (document.getElementById('liftbot-shell-' + token)) return;
     var shell = createShell('liftbot-shell-' + token);
     var open = false;
+    var fabSize = function () { return isMobileViewport() ? 56 : 60; };
+    var bottomCss = function (extra) {
+      extra = extra || 0;
+      return 'calc(' + (offsetY + extra) + 'px + env(safe-area-inset-bottom, 0px))';
+    };
 
     function closedRect() {
-      var size = isMobileViewport() ? 56 : 60;
-      return anchorStyle({ width: size + 'px', height: size + 'px', bottom: offsetY + 'px', top: 'auto', left: 'auto', right: 'auto' });
+      var size = fabSize();
+      // Shadow lives on this circular host shell (not inside the iframe).
+      // An iframe is a square; a launcher box-shadow inside it gets clipped
+      // into a square halo behind the round button.
+      return anchorStyle({
+        width: size + 'px',
+        height: size + 'px',
+        bottom: bottomCss(0),
+        top: 'auto',
+        left: 'auto',
+        right: 'auto',
+        borderRadius: '50%',
+        boxShadow: '0 8px 24px rgba(15,23,42,.22)',
+        overflow: 'visible',
+      });
     }
 
     function openRect() {
+      var reset = { borderRadius: '16px', boxShadow: 'none', overflow: 'visible' };
       if (isMobileViewport()) {
-        // Use the *visual* viewport, not vh units, so the panel sits
-        // just above the on-screen keyboard instead of jumping and
-        // covering most of the screen.
+        // Card above the launcher — never a full-screen sheet.
         var vv = window.visualViewport;
         var vh = vv ? vv.height : window.innerHeight;
-        var vTop = vv ? vv.offsetTop : 0;
-        var panelH = Math.min(vh - 16, Math.round(vh * 0.9));
-        return {
-          left: '8px', right: '8px', width: 'auto',
-          top: Math.round(vTop + vh - panelH - 8) + 'px', bottom: 'auto',
-          height: panelH + 'px',
-        };
+        var fab = fabSize();
+        var gap = 10;
+        var inset = 12;
+        var panelH = Math.min(480, Math.round(vh * 0.58));
+        return Object.assign({
+          left: inset + 'px',
+          right: inset + 'px',
+          width: 'auto',
+          top: 'auto',
+          bottom: bottomCss(0),
+          height: (panelH + gap + fab) + 'px',
+        }, reset);
       }
-      return anchorStyle({ width: '380px', height: '600px', bottom: (offsetY + 68) + 'px', top: 'auto', left: 'auto', right: 'auto' });
+      return anchorStyle(Object.assign({
+        width: '380px',
+        height: '600px',
+        bottom: bottomCss(68),
+        top: 'auto',
+        left: 'auto',
+        right: 'auto',
+      }, reset));
     }
 
     function reposition() { shell.place(open ? openRect() : closedRect()); }
@@ -217,15 +255,20 @@
       '<meta name="viewport" content="width=device-width,initial-scale=1">' +
       '<style>' +
       '*{box-sizing:border-box}' +
-      'html,body{margin:0;height:100%;width:100%;overflow:hidden;font-family:"Plus Jakarta Sans",system-ui,sans-serif;}' +
-      'body{display:flex}' +
+      'html,body{margin:0;height:100%;width:100%;overflow:hidden;font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:transparent!important;pointer-events:none;color-scheme:normal;}' +
+      'body{display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-end;}' +
+      '.lb-launcher,.lb-panel{pointer-events:auto}' +
       '.lb-launcher{all:unset;display:flex;align-items:center;justify-content:center;width:100%;height:100%;' +
-      'border-radius:999px;cursor:pointer;color:#fff;font-size:15px;font-weight:700;' +
-      'box-shadow:0 8px 24px rgba(0,0,0,.18);background:' + color + ';}' +
+      'border-radius:50%;cursor:pointer;color:#fff;font-size:15px;font-weight:700;pointer-events:auto;' +
+      'box-shadow:none;background:' + color + ';}' +
       '.lb-panel{display:none;flex-direction:column;width:100%;height:100%;background:#fff;border-radius:16px;' +
       'overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.22);}' +
-      'body.open .lb-launcher{display:none}' +
-      'body.open .lb-panel{display:flex}' +
+      'body.open:not(.mobile){align-items:stretch}' +
+      'body.open:not(.mobile) .lb-launcher{display:none}' +
+      'body.open:not(.mobile) .lb-panel{display:flex;flex:1;min-height:0;height:auto}' +
+      'body.open.mobile{align-items:stretch}' +
+      'body.open.mobile .lb-launcher{width:56px;height:56px;flex-shrink:0;align-self:flex-end}' +
+      'body.open.mobile .lb-panel{display:flex;flex:1;min-height:0;height:auto;margin-bottom:10px}' +
       '.lb-header{background:' + color + ';color:#fff;padding:14px 16px;display:flex;gap:10px;align-items:center;flex-shrink:0;}' +
       '.lb-header img{width:40px;height:40px;border-radius:999px;object-fit:cover;}' +
       '.lb-name{font-weight:700;}' +
@@ -240,10 +283,10 @@
       '.lb-bubble{display:inline-block;max-width:85%;padding:8px 12px;border-radius:16px;font-size:14px;line-height:1.4;' +
       'border:1px solid #e5e7eb;background:#fff;color:#0B1220;}' +
       '.lb-actions{padding:8px 10px;border-top:1px solid #E5E7EB;display:flex;flex-wrap:wrap;gap:6px;background:#fff;flex-shrink:0;}' +
-      '.lb-form{display:flex;gap:8px;padding:10px;padding-bottom:calc(10px + env(safe-area-inset-bottom));' +
+      '.lb-form{display:flex;align-items:center;gap:8px;padding:10px;' +
       'border-top:1px solid #e5e7eb;background:#fff;flex-shrink:0;}' +
-      '.lb-input{flex:1;border:1px solid #d1d5db;border-radius:999px;padding:10px 14px;outline:none;font-size:16px;}' +
-      '.lb-send{border:0;border-radius:999px;background:' + color + ';color:#fff;padding:0 16px;cursor:pointer;flex-shrink:0;}' +
+      '.lb-input{flex:1;min-width:0;border:1px solid #d1d5db;border-radius:999px;padding:10px 14px;outline:none;font-size:16px;}' +
+      '.lb-send{border:0;border-radius:999px;background:' + color + ';color:#fff;padding:0 16px;min-height:40px;cursor:pointer;flex-shrink:0;}' +
       '.lb-pill{border-radius:999px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600;font-family:inherit;}' +
       '.lb-pill-solid{border:0;background:' + color + ';color:#fff;}' +
       '.lb-pill-outline{border:1px solid #C4B5FD;background:#fff;color:#5B21B6;}' +
@@ -271,7 +314,7 @@
       '</form>' +
       '</div>' +
       '<script>window.__LB__=' + safeJSON({
-        cfg: cfg, token: token, apiBase: apiBase, visitorId: visitorId,
+        cfg: cfg, token: token, apiBase: apiBase, visitorId: visitorId, color: color,
         sessionKey: 'liftbot_session_' + sessionKeyPrefix + '_' + token, sessionId: sessionId,
       }) + ';<\/script>' +
       '<script>' + employeeInnerScript() + '<\/script>' +
@@ -282,25 +325,34 @@
   function employeeInnerScript() {
     return '(function(){' +
       'var D=window.__LB__,cfg=D.cfg,token=D.token,apiBase=D.apiBase,visitorId=D.visitorId,sessionKey=D.sessionKey;' +
-      'var sessionId=D.sessionId,humanMode=false,lastMsgId=0,pollTimer=null;' +
+      'var sessionId=D.sessionId,humanMode=false,lastMsgId=0,pollTimer=null,sending=false,seenIds={};' +
       'var messages=document.getElementById("lbMessages"),actions=document.getElementById("lbActions");' +
       'var statusEl=document.getElementById("lbStatus"),launcher=document.getElementById("lbLauncher");' +
       'var closeBtn=document.getElementById("lbClose"),form=document.getElementById("lbForm"),input=document.getElementById("lbInput");' +
+      'var sendBtn=document.getElementById("lbSend");' +
+
+      'function isMobile(){try{return window.parent.matchMedia("(max-width:640px)").matches;}catch(e){return window.matchMedia("(max-width:640px)").matches;}}' +
+      'function syncChrome(){var open=document.body.classList.contains("open");' +
+      'document.body.className=(open?"open":"closed")+(isMobile()?" mobile":"");}' +
+      'syncChrome();window.addEventListener("resize",syncChrome);' +
+      'try{if(window.parent&&window.parent.visualViewport){window.parent.visualViewport.addEventListener("resize",syncChrome);}}catch(e){}' +
 
       'function fetchJson(url,opts){return fetch(url,Object.assign({mode:"cors",credentials:"omit"},opts||{})).then(function(r){' +
       'return r.json().then(function(data){if(!r.ok)throw new Error((data&&data.error)||("HTTP "+r.status));return data;});});}' +
 
-      'function setOpen(v){document.body.className=v?"open":"closed";' +
-      'window.frameElement.dispatchEvent(new CustomEvent("lb-toggle",{detail:{open:v}}));' +
-      'if(v){input.focus();if(humanMode||sessionId)startPolling();}}' +
+      'function setOpen(v){document.body.classList.toggle("open",!!v);document.body.classList.toggle("closed",!v);syncChrome();' +
+      'window.frameElement.dispatchEvent(new CustomEvent("lb-toggle",{detail:{open:!!v}}));' +
+      'if(v){input.focus();if(humanMode)startPolling();}}' +
       'launcher.addEventListener("click",function(){setOpen(true);});' +
       'closeBtn.addEventListener("click",function(){setOpen(false);});' +
 
       'function addMsg(kind,text){var mine=kind==="you",sys=kind==="system",human=kind==="human";' +
+      'var last=messages.lastElementChild&&messages.lastElementChild.querySelector(".lb-bubble");' +
+      'if(!mine&&last&&last.textContent===text)return last;' +
       'var row=document.createElement("div");row.className="lb-row";row.style.textAlign=mine?"right":"left";' +
       'var b=document.createElement("div");b.className="lb-bubble";b.textContent=text;' +
-      'b.style.background=mine?"' + '"+"' + '":sys?"#FEF3C7":human?"#DBEAFE":"#fff";' +
-      'if(mine){b.style.background=window.__LB__.color||"#7C3AED";b.style.color="#fff";b.style.border="0";}' +
+      'b.style.background=sys?"#FEF3C7":human?"#DBEAFE":"#fff";' +
+      'if(mine){b.style.background=D.color||"#7C3AED";b.style.color="#fff";b.style.border="0";}' +
       'row.appendChild(b);messages.appendChild(row);messages.scrollTop=messages.scrollHeight;return b;}' +
 
       'function pill(solid){return "lb-pill "+(solid?"lb-pill-solid":"lb-pill-outline");}' +
@@ -344,19 +396,22 @@
       'function startPolling(){if(pollTimer)return;pollTimer=setInterval(function(){if(!sessionId)return;' +
       'fetchJson(apiBase+"/poll/?token="+encodeURIComponent(token)+"&session_id="+sessionId+"&after_id="+lastMsgId)' +
       '.then(function(data){humanMode=!!data.human_mode;if(humanMode)statusEl.textContent="Talking with a teammate";' +
-      '(data.messages||[]).forEach(function(m){lastMsgId=Math.max(lastMsgId,m.id);' +
+      '(data.messages||[]).forEach(function(m){lastMsgId=Math.max(lastMsgId,m.id);if(seenIds[m.id])return;seenIds[m.id]=1;' +
       'var kind=m.role==="human"?"human":(m.role==="system"?"system":"them");addMsg(kind,m.content);});})' +
       '.catch(function(){});},2500);}' +
 
-      'function sendMessage(text,continueLast){if(!text)return;addMsg("you",text);var node=addMsg("them","…");' +
+      'function sendMessage(text,continueLast){if(!text||sending)return;sending=true;if(sendBtn)sendBtn.disabled=true;' +
+      'addMsg("you",text);var node=addMsg("them","…");' +
       'fetchJson(apiBase+"/message/",{method:"POST",headers:{"Content-Type":"application/json"},' +
       'body:JSON.stringify({token:token,message:text,visitor_id:visitorId,session_id:sessionId,stream:false,continue_last:!!continueLast})})' +
       '.then(function(data){if(data.session_id){sessionId=data.session_id;localStorage.setItem(sessionKey,sessionId);}' +
+      'if(data.message_id){lastMsgId=Math.max(lastMsgId,data.message_id);seenIds[data.message_id]=1;}' +
       'if(data.human_mode){humanMode=true;node.textContent=data.message||"A teammate will reply shortly.";' +
       'statusEl.textContent="Talking with a teammate";startPolling();return;}' +
       'node.textContent=data.reply||"No reply.";' +
       'if(data.actions&&data.actions.tasks_created&&data.actions.tasks_created.length)addMsg("system","✓ "+data.actions.tasks_created[0].title);})' +
-      '.catch(function(){node.textContent="Sorry, I could not reply right now.";});}' +
+      '.catch(function(){node.textContent="Sorry, I could not reply right now.";})' +
+      '.then(function(){sending=false;if(sendBtn)sendBtn.disabled=false;});}' +
 
       'var resumeEl=document.getElementById("lbResume");' +
       'if(resumeEl&&cfg.returning_visitor&&cfg.resume_message){resumeEl.textContent=cfg.resume_message;' +
@@ -382,7 +437,14 @@
 
     function reposition() {
       if (isMobileViewport()) {
-        shell.place({ left: '12px', right: '12px', width: 'auto', bottom: '12px', top: 'auto', height: Math.min(window.innerHeight - 24, 420) + 'px' });
+        shell.place({
+          left: '12px',
+          right: '12px',
+          width: 'auto',
+          bottom: 'calc(' + offsetY + 'px + env(safe-area-inset-bottom, 0px))',
+          top: 'auto',
+          height: Math.min(window.innerHeight * 0.5, 320) + 'px',
+        });
       } else {
         shell.place(anchorStyle({ width: '320px', bottom: offsetY + 'px', top: 'auto', left: 'auto', right: 'auto', height: Math.min(window.innerHeight - 40, 60 + roster.employees.length * 62) + 'px' }));
       }

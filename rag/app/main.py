@@ -77,6 +77,7 @@ def chat(body: ChatRequest):
         f'{body.system_prompt}\n\n'
         f'Context from training materials:\n{context}\n\n'
         'Answer as a proactive AI Employee. Take action when appropriate — qualify, collect details, offer scheduling, confirm team handoff.\n'
+        'Write a single reply only. Never repeat the same greeting, introduction, or paragraph twice.\n'
         'If the context does not contain the answer, say you will note it and follow up — do not invent facts.'
     )
     history = [m.model_dump() for m in body.history]

@@ -1,0 +1,371 @@
+/* ============================================================
+   LiftBot — about.css
+   Prefix: abt-
+   (Reuses lb__split, lb__timeline, lb__section from marketing.css)
+   ============================================================ */
+
+main:has(.lb) {
+  max-width: none;
+  width: 100%;
+  padding: 0;
+}
+
+:root {
+  --brand:      #4b3aff;
+  --signal:     #1fce7a;
+  --pop:        #ff4d8d;
+  --ink:        #15161b;
+  --paper-dim:  #f3f2ee;
+  --paper-line: #e7e5de;
+}
+
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes lb-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.85); }
+}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.abt-hero {
+  position: relative;
+  background: var(--ink);
+  color: #fff;
+  overflow: hidden;
+  padding: 120px 24px 90px;
+  text-align: center;
+}
+.abt-hero__noise {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 220px 220px;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+.abt-hero__glow {
+  position: absolute;
+  top: -160px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 820px;
+  height: 540px;
+  background: radial-gradient(ellipse at center, rgba(75,58,255,0.28) 0%, transparent 72%);
+  pointer-events: none;
+  z-index: 0;
+}
+.abt-hero__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 740px;
+  margin: 0 auto;
+}
+.abt-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #a8b5ff;
+  background: rgba(75,58,255,0.14);
+  border: 1px solid rgba(75,58,255,0.32);
+  border-radius: 100px;
+  padding: 6px 16px;
+  margin-bottom: 30px;
+}
+.abt-hero__badge::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--signal);
+  animation: lb-pulse 2s ease-in-out infinite;
+}
+.abt-hero__h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2.3rem, 5vw, 3.6rem);
+  font-weight: 700;
+  line-height: 1.18;
+  color: #fff;
+  margin: 0 0 22px;
+  letter-spacing: -0.02em;
+}
+.abt-hero__h1 em {
+  font-style: normal;
+  background: linear-gradient(90deg, #a78bfa 0%, #60a5fa 50%, var(--signal) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.abt-hero__sub {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(1rem, 1.8vw, 1.15rem);
+  color: rgba(255,255,255,0.65);
+  line-height: 1.65;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+/* ============================================================
+   ORIGIN STORY
+   ============================================================ */
+.abt-origin {
+  background: #fff;
+  padding: 100px 24px;
+}
+.abt-origin__inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+.abt-origin__quote {
+  text-align: center;
+  margin-bottom: 56px;
+  padding-bottom: 48px;
+  border-bottom: 1px solid var(--paper-line);
+}
+.abt-origin__q {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  margin: 0 0 14px;
+}
+.abt-origin__q-sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--brand);
+  margin: 0;
+}
+.abt-origin__body {
+  margin-bottom: 56px;
+}
+.abt-origin__body p {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: #3a3b42;
+  margin: 0 0 20px;
+}
+.abt-origin__what {
+  background: var(--paper-dim);
+  border: 1px solid var(--paper-line);
+  border-radius: 20px;
+  padding: 40px 36px;
+}
+.abt-origin__what-lede {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.4;
+  margin: 16px 0 12px;
+}
+.abt-origin__what-sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.98rem;
+  color: #52535a;
+  line-height: 1.65;
+  margin: 0 0 22px;
+}
+.abt-tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 26px;
+}
+.abt-tag {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: 100px;
+  padding: 8px 16px;
+}
+.abt-origin__idea {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+
+/* ============================================================
+   WHY WE STARTED
+   ============================================================ */
+.abt-why {
+  background: var(--ink);
+  padding: 100px 24px;
+  text-align: center;
+}
+.abt-why__inner {
+  max-width: 680px;
+  margin: 0 auto;
+}
+.abt-why__h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  font-weight: 700;
+  color: #fff;
+  margin: 18px 0 24px;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.abt-why__p {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.02rem;
+  line-height: 1.75;
+  color: rgba(255,255,255,0.65);
+  margin: 0 0 18px;
+}
+.abt-why__line {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--signal);
+  margin: 28px 0 0;
+}
+
+/* ============================================================
+   BUILT FOR REAL BUSINESSES
+   ============================================================ */
+.abt-real {
+  background: var(--paper-dim);
+  padding: 100px 24px;
+  text-align: center;
+}
+.abt-real__inner {
+  max-width: 700px;
+  margin: 0 auto;
+}
+.abt-real__line {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 24px 0 0;
+}
+
+/* ============================================================
+   MISSION
+   ============================================================ */
+.abt-mission {
+  background: var(--ink);
+  padding: 110px 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.abt-mission::before {
+  content: '';
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 700px;
+  height: 400px;
+  background: radial-gradient(ellipse at center, rgba(75,58,255,0.22) 0%, transparent 70%);
+  pointer-events: none;
+}
+.abt-mission__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 680px;
+  margin: 0 auto;
+}
+.abt-mission__h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.9rem, 3.5vw, 2.7rem);
+  font-weight: 700;
+  color: #fff;
+  margin: 18px 0 24px;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.abt-mission__p {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: rgba(255,255,255,0.65);
+  margin: 0 0 18px;
+}
+.abt-mission__tagline {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--signal);
+  margin: 28px 0 8px;
+}
+.abt-mission__brand {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.45);
+  margin: 0;
+}
+
+/* ============================================================
+   FINAL CTA
+   ============================================================ */
+.abt-cta {
+  background: #fff;
+  padding: 100px 24px;
+  text-align: center;
+}
+.abt-cta__inner {
+  max-width: 560px;
+  margin: 0 auto;
+}
+.abt-cta__h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.7rem, 3vw, 2.3rem);
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 14px;
+  letter-spacing: -0.01em;
+}
+.abt-cta__sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  color: #52535a;
+  line-height: 1.65;
+  margin: 0 0 30px;
+}
+.abt-cta__actions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 640px) {
+  .abt-hero { padding: 100px 20px 72px; }
+  .abt-origin,
+  .abt-why,
+  .abt-real,
+  .abt-mission,
+  .abt-cta { padding: 72px 20px; }
+  .abt-origin__what { padding: 28px 22px; }
+}

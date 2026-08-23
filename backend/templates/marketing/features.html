@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}LiftBot Features | AI Employee Platform for Business{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'marketing.css' %}">
+<link rel="stylesheet" href="{% static 'features.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="lb">
+
+  {# ── HERO ── #}
+  <section class="feat-hero">
+    <div class="feat-hero__noise" aria-hidden="true"></div>
+    <div class="feat-hero__glow" aria-hidden="true"></div>
+    <div class="feat-hero__inner">
+      <div class="feat-hero__badge">LiftBot Platform</div>
+      <h1 class="feat-hero__h1">
+        Everything your<br><em>AI employee needs.</em>
+      </h1>
+      <p class="feat-hero__sub">
+        LiftBot combines conversational AI with business knowledge and practical business workflows — so your AI employees can actually get things done.
+      </p>
+      <div class="feat-hero__cta">
+        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">Get Early Access</a>
+        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline">Book a demo →</a>
+      </div>
+    </div>
+  </section>
+
+  {# ── FEATURES GRID ── #}
+  <section class="feat-grid-section">
+    <div class="feat-grid-section__inner">
+      <div class="feat-grid-section__header" data-reveal>
+        <span class="lb__eyebrow">Platform capabilities</span>
+        <h2 class="lb__h2" style="margin-top:16px;">Every feature your business needs.</h2>
+        <p class="lb__lede" style="margin-inline:auto; text-align:center;">
+          Explore everything LiftBot has to offer — from conversational AI and lead capture to analytics and team management.
+        </p>
+      </div>
+      <div class="feat-grid" data-reveal>
+
+        <div class="feat-card">
+          <div class="feat-card__icon feat-card__icon--1">💬</div>
+          <h3 class="feat-card__title">AI Conversations</h3>
+          <p class="feat-card__desc">Let customers communicate naturally with your AI employee. No scripts, no rigid menus — just intelligent, fluent conversations.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-card__icon feat-card__icon--2">🧠</div>
+          <h3 class="feat-card__title">Business Knowledge</h3>
+          <p class="feat-card__desc">Give your AI employee access to approved information about your business — products, services, FAQs, policies and more.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-card__icon feat-card__icon--3">📋</div>
+          <h3 class="feat-card__title">Lead Capture</h3>
+          <p class="feat-card__desc">Collect customer information directly through conversations. Every enquiry becomes a structured lead, ready for your team.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-card__icon feat-card__icon--4">🎯</div>
+          <h3 class="feat-card__title">Lead Qualification</h3>
+          <p class="feat-card__desc">Ask relevant questions and understand potential customer requirements. Your team receives qualified leads — not raw enquiries.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-card__icon feat-card__icon--5">🤝</div>
+          <h3 class="feat-card__title">Human Handoff</h3>
+          <p class="feat-card__desc">Bring your team into conversations when AI isn't enough. Handoffs are smooth, with full conversation context passed across.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-card__icon feat-card__icon--6">🌐</div>
+          <h3 class="feat-card__title">Website Widget</h3>
+          <p class="feat-card__desc">Place your AI employee directly on your website with a lightweight, customisable chat widget. No developer required.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-card__icon feat-card__icon--7">📁</div>
+          <h3 class="feat-card__title">Conversation Management</h3>
+          <p class="feat-card__desc">Review customer interactions from one workspace. Search, filter and follow up on any conversation your AI employee has handled.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-card__icon feat-card__icon--8">⚙️</div>
+          <h3 class="feat-card__title">AI Employee Configuration</h3>
+          <p class="feat-card__desc">Define roles, instructions, personality and business rules for each AI employee. Full control over how they behave and respond.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-card__icon feat-card__icon--9">📊</div>
+          <h3 class="feat-card__title">Analytics</h3>
+          <p class="feat-card__desc">Understand how customers interact with your AI employees. Track conversation volumes, outcomes and areas for improvement.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-card__icon feat-card__icon--10">📚</div>
+          <h3 class="feat-card__title">Knowledge Management</h3>
+          <p class="feat-card__desc">Keep the information your AI employee uses organised and updated. Add, edit and manage knowledge entries from one place.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-card__icon feat-card__icon--11">👥</div>
+          <h3 class="feat-card__title">Team Management</h3>
+          <p class="feat-card__desc">Give the right people access to the right parts of your workspace. Manage roles and permissions across your team.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  {# ── BUILT FOR PRACTICAL BUSINESS USE ── #}
+  <section class="feat-statement">
+    <div class="feat-statement__inner">
+      <div data-reveal>
+        <span class="feat-statement__eyebrow">Built for practical business use</span>
+        <h2 class="feat-statement__h2">LiftBot focuses on capabilities that help businesses communicate, qualify, support and automate.</h2>
+        <p class="feat-statement__p">
+          Every feature in LiftBot is designed around how businesses actually work — not what looks good in a product demo. Practical tools for real outcomes.
+        </p>
+        <ul class="feat-statement__list">
+          <li>Communicate naturally with customers around the clock</li>
+          <li>Qualify and capture every lead without manual effort</li>
+          <li>Support customers at scale without growing your team</li>
+          <li>Automate repetitive work so your team adds real value</li>
+        </ul>
+        <a href="{% url 'how_it_works' %}" class="lb__btn lb__btn--outline">See How LiftBot Works →</a>
+      </div>
+      <div class="feat-statement__visual" data-reveal>
+        <span class="feat-pill">AI Conversations</span>
+        <span class="feat-pill">Business Knowledge</span>
+        <span class="feat-pill">Lead Capture</span>
+        <span class="feat-pill">Lead Qualification</span>
+        <span class="feat-pill">Human Handoff</span>
+        <span class="feat-pill">Website Widget</span>
+        <span class="feat-pill">Conversation Management</span>
+        <span class="feat-pill">Analytics</span>
+        <span class="feat-pill">Team Management</span>
+      </div>
+    </div>
+  </section>
+
+  {# ── FINAL CTA ── #}
+  <section class="feat-cta">
+    <div class="feat-cta__inner" data-reveal>
+      <span class="lb__eyebrow" style="color:#cfe9ff; background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.16);">Ready when you are</span>
+      <h2 class="feat-cta__h2">Everything you need to hire your first AI employee.</h2>
+      <p class="feat-cta__sub">Get access to the full LiftBot platform and start building your AI workforce today.</p>
+      <div class="feat-cta__actions">
+        <a href="{% url 'early_access' %}" class="lb__btn" style="background:#fff; color:#15161b;">Get Early Access</a>
+        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline" style="color:#fff; border-color:rgba(255,255,255,0.3);">Book a demo →</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="{% static 'features.js' %}" defer></script>
+{% endblock %}

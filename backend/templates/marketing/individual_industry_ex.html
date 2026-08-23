@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ industry.role }} | AI Employees for {{ industry.name }} | LiftBot{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'marketing.css' %}">
+<link rel="stylesheet" href="{% static 'industries.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="lb">
+
+  {# ── HERO ── #}
+  <section class="ind-hero">
+    <div class="ind-hero__noise" aria-hidden="true"></div>
+    <div class="ind-hero__glow" aria-hidden="true"></div>
+    <div class="ind-hero__inner">
+      <div class="ind-hero__badge">{{ industry.name|upper }}</div>
+      <h1 class="ind-hero__h1">{{ industry.tagline }}</h1>
+      <p class="ind-hero__sub">{{ industry.intro }}</p>
+      <div class="ind-hero__cta">
+        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">Get Early Access</a>
+        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline">Book a demo →</a>
+      </div>
+    </div>
+  </section>
+
+  {# ── ROLE + HELPS WITH ── #}
+  <section class="lb__section lb__container" data-reveal>
+    <div class="lb__knowledge">
+      <div>
+        <span class="lb__eyebrow">{{ industry.role }}</span>
+        <h2 class="lb__h2" style="margin-top:16px;">How LiftBot helps {{ industry.name|lower }} businesses.</h2>
+        <ul class="feature-block__list" style="margin-top:24px;">
+          {% for point in industry.helps_with %}
+          <li>{{ point }}</li>
+          {% endfor %}
+        </ul>
+        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">Get Early Access</a>
+      </div>
+
+      <div class="lb__knowledge-visual">
+        <div class="lb__employee-card">
+          <div class="lb__avatar lb__avatar--1">
+            {{ industry.icon }}
+            <span class="lb__avatar-dot"></span>
+          </div>
+          <div>
+            <div class="lb__employee-name">{{ industry.role }}</div>
+            <div class="lb__employee-role">Configured for {{ industry.name }} · Online now</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# ── EXAMPLE CONVERSATION ── #}
+  <section class="lb__section lb__section--dim lb__container" data-reveal>
+    <div class="lb__section-head" style="display:block; text-align:center; margin-bottom:40px;">
+      <span class="lb__eyebrow">See it in action</span>
+      <h2 class="lb__h2" style="margin-top:16px;">An example conversation.</h2>
+    </div>
+    <div class="lb__demo-card" style="max-width:480px; margin-inline:auto;">
+      <div class="lb__demo-head">
+        <div class="lb__demo-who">
+          <span class="lb__avatar lb__avatar--1" style="width:28px;height:28px;font-size:11px;">{{ industry.icon }}</span>
+          {{ industry.role }}
+        </div>
+        <span class="lb__demo-online">Online</span>
+      </div>
+      {% for message in industry.conversation %}
+        {% if message.from == "customer" %}
+          <div class="lb__bubble lb__bubble--in">{{ message.text }}</div>
+        {% else %}
+          <div class="lb__bubble lb__bubble--out">{{ message.text }}</div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </section>
+
+  {# ── FINAL CTA ── #}
+  <section class="lb__section lb__section--ink lb__container">
+    <div class="lb__cta-band" data-reveal>
+      <h2 class="lb__h2" style="color:#fff;">Ready for an AI employee built for {{ industry.name|lower }}?</h2>
+      <p class="lb__lede" style="color:rgba(255,255,255,0.72);">
+        Start with one AI employee configured around your industry — and grow from there.
+      </p>
+      <div class="lb__cta-actions">
+        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary" id="lastbtn">Get Early Access</a>
+        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline">Book a Demo →</a>
+      </div>
+      <p style="margin-top:24px;">
+        <a href="{% url 'industries' %}" class="lb__link-arrow" style="color:#fff; border-color:rgba(255,255,255,0.3);">← Back to all industries</a>
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<script src="{% static 'marketing.js' %}" defer></script>
+{% endblock %}

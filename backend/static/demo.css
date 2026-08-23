@@ -1,0 +1,410 @@
+/* ============================================================
+   LiftBot — demo.css
+   Prefix: dem-
+   ============================================================ */
+
+/* ── Full-width override ── */
+main:has(.lb) {
+  max-width: none;
+  width: 100%;
+  padding: 0;
+}
+
+/* ── Design tokens ── */
+:root {
+  --brand:      #4b3aff;
+  --signal:     #1fce7a;
+  --pop:        #ff4d8d;
+  --ink:        #15161b;
+  --paper-dim:  #f3f2ee;
+  --paper-line: #e7e5de;
+}
+
+/* ============================================================
+   SCROLL REVEAL
+   ============================================================ */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================================
+   KEYFRAMES
+   ============================================================ */
+@keyframes lb-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.85); }
+}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.dem-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--ink);
+  text-align: center;
+  padding: 120px 24px 80px;
+}
+
+.dem-hero__noise {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dem-hero__glow {
+  position: absolute;
+  top: -160px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 860px;
+  height: 560px;
+  background: radial-gradient(ellipse at center, rgba(75,58,255,0.28) 0%, transparent 72%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dem-hero__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.dem-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #a8b5ff;
+  background: rgba(75,58,255,0.14);
+  border: 1px solid rgba(75,58,255,0.32);
+  border-radius: 100px;
+  padding: 6px 16px;
+  margin-bottom: 32px;
+}
+
+.dem-hero__badge::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--signal);
+  animation: lb-pulse 2s ease-in-out infinite;
+}
+
+.dem-hero__h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  font-weight: 700;
+  line-height: 1.18;
+  color: #fff;
+  margin: 0 0 24px;
+  letter-spacing: -0.02em;
+}
+
+.dem-hero__h1 em {
+  font-style: normal;
+  background: linear-gradient(90deg, #a78bfa 0%, #60a5fa 50%, var(--signal) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dem-hero__sub {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(1rem, 1.8vw, 1.2rem);
+  color: rgba(255,255,255,0.65);
+  line-height: 1.65;
+  max-width: 580px;
+  margin: 0 auto;
+}
+
+/* ============================================================
+   SCENARIO PICKER
+   ============================================================ */
+.dem-scenarios {
+  background: var(--paper-dim);
+  padding: 80px 24px 100px;
+}
+
+.dem-scenarios__inner {
+  max-width: 1160px;
+  margin: 0 auto;
+}
+
+.dem-scenarios__header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+.dem-scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 980px) {
+  .dem-scenario-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 540px) {
+  .dem-scenario-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Scenario Card (as a button) ── */
+.dem-scenario-card {
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: 18px;
+  padding: 26px;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.dem-scenario-card:hover,
+.dem-scenario-card:focus-visible {
+  transform: translateY(-5px);
+  border-color: var(--brand);
+  box-shadow: 0 16px 44px rgba(21,22,27,0.09);
+  outline: none;
+}
+
+.dem-scenario-card.is-active {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px rgba(75,58,255,0.25);
+}
+
+.dem-scenario-card__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+
+.dem-scenario-card__icon--1 { background: #eeecff; }
+.dem-scenario-card__icon--2 { background: #e6fbf0; }
+.dem-scenario-card__icon--3 { background: #ffeaf2; }
+.dem-scenario-card__icon--4 { background: #fff8e5; }
+
+.dem-scenario-card__title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 8px;
+  line-height: 1.3;
+}
+
+.dem-scenario-card__desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.87rem;
+  color: #52535a;
+  line-height: 1.6;
+  margin: 0 0 16px;
+  flex: 1;
+}
+
+.dem-scenario-card__cta {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--brand);
+}
+
+/* ============================================================
+   PRE-LAUNCH PANEL
+   ============================================================ */
+.dem-prelaunch {
+  background: #fff;
+  border-top: 1px solid var(--paper-line);
+  border-bottom: 1px solid var(--paper-line);
+  padding: 72px 24px;
+  text-align: center;
+  scroll-margin-top: 100px;
+}
+
+.dem-prelaunch__inner {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.dem-prelaunch__icon {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.dem-prelaunch__h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.3;
+  margin: 0 0 14px;
+  letter-spacing: -0.01em;
+}
+
+.dem-prelaunch__sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  color: #52535a;
+  line-height: 1.65;
+  margin: 0 0 28px;
+}
+
+.dem-prelaunch__actions {
+  display: flex;
+  justify-content: center;
+}
+
+/* ============================================================
+   BENEFITS
+   ============================================================ */
+.dem-benefits {
+  background: var(--paper-dim);
+  padding: 100px 24px;
+}
+
+.dem-benefits__inner {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.dem-benefits__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 48px;
+}
+
+@media (max-width: 720px) {
+  .dem-benefits__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dem-benefit {
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: 16px;
+  padding: 32px 24px;
+}
+
+.dem-benefit__icon {
+  font-size: 1.6rem;
+  margin-bottom: 14px;
+}
+
+.dem-benefit__text {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ============================================================
+   FINAL CTA
+   ============================================================ */
+.dem-cta {
+  background: var(--ink);
+  padding: 100px 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.dem-cta::before {
+  content: '';
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 700px;
+  height: 400px;
+  background: radial-gradient(ellipse at center, rgba(75,58,255,0.22) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.dem-cta__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.dem-cta__h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.9rem, 3.5vw, 2.8rem);
+  font-weight: 700;
+  color: #fff;
+  margin: 20px 0 16px;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.dem-cta__sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.02rem;
+  color: rgba(255,255,255,0.6);
+  line-height: 1.65;
+  margin: 0 0 40px;
+}
+
+.dem-cta__actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* ============================================================
+   RESPONSIVE UTILITIES
+   ============================================================ */
+@media (max-width: 640px) {
+  .dem-hero {
+    padding: 100px 20px 64px;
+  }
+  .dem-scenarios {
+    padding: 64px 20px 80px;
+  }
+  .dem-prelaunch,
+  .dem-benefits,
+  .dem-cta {
+    padding: 72px 20px;
+  }
+}

@@ -1,0 +1,305 @@
+/* ============================================================
+   LiftBot — individual_industry.css
+   Prefix: iid-
+   Loaded together with industries.css (shares tokens + keyframes:
+   --brand, --signal, --ink, --paper-dim, --paper-line, lb-pulse,
+   ind-glow-drift). Do not redefine them here.
+   ============================================================ */
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.iid-hero {
+  position: relative;
+  background: var(--ink);
+  color: #fff;
+  overflow: hidden;
+  padding: 100px 24px 90px;
+  text-align: center;
+}
+
+.iid-hero__noise {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.iid-hero__glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(75,58,255,0.28) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  animation: ind-glow-drift 8s ease-in-out infinite;
+}
+
+.iid-hero__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.iid-hero__breadcrumb {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.55);
+  text-decoration: none;
+  margin-bottom: 28px;
+  transition: color 0.2s ease;
+}
+
+.iid-hero__breadcrumb:hover {
+  color: #fff;
+}
+
+.iid-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.75);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 100px;
+  padding: 6px 14px 6px 6px;
+  margin-bottom: 28px;
+}
+
+.iid-hero__icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: #fff;
+}
+
+.iid-hero__h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2.2rem, 5.5vw, 3.6rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: #fff;
+  margin: 0 0 20px;
+}
+
+.iid-hero__sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.08rem;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.65);
+  max-width: 600px;
+  margin: 0 auto 10px;
+}
+
+.iid-hero__sub:last-of-type {
+  margin-bottom: 32px;
+}
+
+.iid-hero__cta {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ============================================================
+   CAPABILITIES
+   ============================================================ */
+.iid-cap {
+  background: var(--paper-dim);
+  padding: 80px 24px;
+}
+
+.iid-cap__inner {
+  max-width: 880px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.iid-cap__h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.5rem, 3.2vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0 0 36px;
+}
+
+.iid-cap__grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.iid-cap__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: 100px;
+  padding: 10px 18px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.iid-cap__check {
+  color: var(--signal);
+  font-weight: 700;
+}
+
+/* ============================================================
+   EXAMPLE CONVERSATION
+   ============================================================ */
+.iid-example {
+  background: #fff;
+  padding: 90px 24px;
+}
+
+.iid-example__inner {
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.iid-example__inner .lb__eyebrow {
+  margin-bottom: 28px;
+}
+
+.iid-example__chat {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: left;
+  margin-bottom: 32px;
+}
+
+.iid-example__bubble {
+  border-radius: 16px;
+  padding: 18px 22px;
+  font-family: 'Inter', sans-serif;
+}
+
+.iid-example__bubble p {
+  margin: 6px 0 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+.iid-example__bubble--customer {
+  background: var(--paper-dim);
+  border: 1px solid var(--paper-line);
+  align-self: flex-start;
+  max-width: 90%;
+}
+
+.iid-example__bubble--bot {
+  background: rgba(75,58,255,0.06);
+  border: 1px solid rgba(75,58,255,0.18);
+  align-self: flex-end;
+  max-width: 90%;
+}
+
+.iid-example__label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(21,22,27,0.45);
+}
+
+.iid-example__statement {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+
+/* ============================================================
+   FINAL DARK CTA
+   ============================================================ */
+.iid-cta {
+  background: var(--ink);
+  padding: 100px 24px;
+  text-align: center;
+}
+
+.iid-cta__inner {
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.iid-cta__h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: #fff;
+  margin: 16px 0 16px;
+}
+
+.iid-cta__sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.6);
+  margin: 0 0 36px;
+}
+
+.iid-cta__actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 640px) {
+  .iid-hero {
+    padding: 80px 20px 64px;
+  }
+  .iid-cap {
+    padding: 64px 20px;
+  }
+  .iid-example {
+    padding: 64px 20px;
+  }
+  .iid-cta {
+    padding: 80px 20px;
+  }
+  .iid-example__bubble--customer,
+  .iid-example__bubble--bot {
+    max-width: 100%;
+  }
+}

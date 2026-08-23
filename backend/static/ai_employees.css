@@ -1,0 +1,276 @@
+/* ==========================================================================
+   LiftBot — AI Employees page
+   Extends marketing.css design system.
+   ========================================================================== */
+
+/* Full-width override (same as marketing/home.html) */
+main:has(.lb) {
+  max-width: none;
+  width: 100%;
+  padding: 0;
+}
+
+/* ── Page Hero ── */
+.aie-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 120px 24px 100px;
+  text-align: center;
+  background: #fff;
+}
+.aie-hero__noise {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity: 0.5;
+}
+.aie-hero__glow {
+  position: absolute; inset: -30% -20% auto -20%;
+  height: 700px; pointer-events: none;
+  background:
+    radial-gradient(500px 400px at 30% 20%, rgba(75,58,255,0.12), transparent 70%),
+    radial-gradient(400px 300px at 80% 15%, rgba(255,77,141,0.10), transparent 70%);
+  filter: blur(14px);
+}
+.aie-hero__inner {
+  position: relative; z-index: 1;
+  max-width: 760px; margin-inline: auto;
+}
+.aie-hero__badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; letter-spacing: 0.09em; text-transform: uppercase;
+  color: #4b3aff; background: #eeecff;
+  border: 1px solid rgba(75,58,255,0.2);
+  padding: 5px 14px; border-radius: 999px;
+  margin-bottom: 28px;
+}
+.aie-hero__badge::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%;
+  background: #1fce7a;
+  box-shadow: 0 0 0 2px rgba(31,206,122,0.3);
+  animation: lb-pulse 1.8s ease-in-out infinite;
+}
+.aie-hero__h1 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(2.8rem, 5.5vw, 5rem);
+  font-weight: 700; letter-spacing: -0.03em;
+  line-height: 1.04; margin: 0 0 22px; color: #15161b;
+}
+.aie-hero__h1 em {
+  font-style: normal;
+  background: linear-gradient(135deg, #4b3aff 0%, #ff4d8d 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.aie-hero__sub {
+  font-size: clamp(1rem, 1.6vw, 1.2rem);
+  color: #53555f; max-width: 52ch; margin: 0 auto 16px;
+  line-height: 1.65;
+}
+.aie-hero__tagline {
+  display: flex; flex-direction: column; gap: 4px;
+  font-family: "IBM Plex Mono", monospace; font-size: 0.93rem;
+  color: #4b3aff; margin: 0 auto 36px;
+  align-items: center;
+}
+.aie-hero__tagline span { display: block; }
+.aie-hero__cta {
+  display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+}
+
+/* ── Role Cards section ── */
+.aie-roles {
+  background: #f3f2ee;
+  padding: 100px 24px;
+  border-top: 1px solid #e7e5de;
+  border-bottom: 1px solid #e7e5de;
+}
+.aie-roles__inner { max-width: 1180px; margin-inline: auto; }
+.aie-roles__header { text-align: center; max-width: 600px; margin: 0 auto 56px; }
+.aie-roles__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+@media (max-width: 860px) { .aie-roles__grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .aie-roles__grid { grid-template-columns: 1fr; } }
+
+.aie-role-card {
+  background: #fff; border: 1px solid #e7e5de;
+  border-radius: 18px; padding: 28px;
+  transition: border-color 0.18s, transform 0.18s, box-shadow 0.18s;
+}
+.aie-role-card:hover {
+  border-color: #4b3aff; transform: translateY(-3px);
+  box-shadow: 0 12px 36px -16px rgba(75,58,255,0.22);
+}
+.aie-role-card__icon {
+  width: 46px; height: 46px; border-radius: 13px;
+  display: grid; place-items: center; margin-bottom: 18px;
+  font-weight: 700; font-size: 16px; color: #fff;
+  font-family: "Space Grotesk", sans-serif;
+}
+.aie-role-card__icon--1 { background: #4b3aff; }
+.aie-role-card__icon--2 { background: #0e8f52; }
+.aie-role-card__icon--3 { background: #ff4d8d; }
+.aie-role-card__icon--4 { background: #d9a62e; }
+.aie-role-card__icon--5 { background: #15161b; }
+.aie-role-card__icon--6 { background: linear-gradient(135deg,#4b3aff,#ff4d8d); }
+.aie-role-card__title {
+  font-family: "Space Grotesk", sans-serif; font-weight: 700;
+  font-size: 1.1rem; margin: 0 0 8px; color: #15161b;
+}
+.aie-role-card__desc { font-size: 0.9rem; color: #53555f; line-height: 1.55; margin: 0; }
+.aie-role-card__best {
+  margin-top: 14px; font-size: 0.8rem;
+  font-family: "IBM Plex Mono", monospace;
+  color: #8b8d97;
+}
+
+/* ── "What makes an AI employee different?" section ── */
+.aie-diff {
+  background: #fff;
+  padding: 100px 24px;
+  border-bottom: 1px solid #e7e5de;
+}
+.aie-diff__inner {
+  max-width: 1180px; margin-inline: auto;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 80px; align-items: center;
+}
+@media (max-width: 860px) {
+  .aie-diff__inner { grid-template-columns: 1fr; gap: 48px; }
+}
+.aie-diff__eyebrow {
+  font-family: "IBM Plex Mono", monospace; font-size: 11px;
+  letter-spacing: 0.09em; text-transform: uppercase;
+  color: #4b3aff; margin-bottom: 16px; display: block;
+}
+.aie-diff__h2 {
+  font-family: "Space Grotesk", sans-serif; font-weight: 700;
+  font-size: clamp(1.8rem, 2.8vw, 2.6rem);
+  letter-spacing: -0.02em; line-height: 1.1; margin: 0 0 16px; color: #15161b;
+}
+.aie-diff__sub { color: #53555f; font-size: 1.05rem; line-height: 1.65; margin: 0 0 28px; }
+.aie-diff__visual {
+  background: #15161b; border-radius: 20px;
+  padding: 32px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.aie-diff__vs {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+}
+.aie-diff__col-label {
+  font-family: "IBM Plex Mono", monospace; font-size: 11px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  margin-bottom: 16px; padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.aie-diff__col-label--chatbot { color: rgba(255,255,255,0.4); }
+.aie-diff__col-label--ai { color: #1fce7a; }
+.aie-diff__item {
+  font-size: 0.88rem; color: rgba(255,255,255,0.6);
+  padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.06);
+  display: flex; gap: 8px; align-items: flex-start;
+}
+.aie-diff__item:first-of-type { border-top: none; }
+.aie-diff__item--ai { color: rgba(255,255,255,0.85); }
+.aie-diff__item--ai::before { content: "✓"; color: #1fce7a; flex-shrink: 0; }
+.aie-diff__item--chatbot::before { content: "—"; color: rgba(255,255,255,0.25); flex-shrink: 0; }
+
+/* ── Define section (Role / Knowledge / Instructions etc.) ── */
+.aie-define {
+  background: #f3f2ee;
+  padding: 100px 24px;
+  border-bottom: 1px solid #e7e5de;
+}
+.aie-define__inner { max-width: 1180px; margin-inline: auto; }
+.aie-define__header { text-align: center; max-width: 560px; margin: 0 auto 56px; }
+.aie-define__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+@media (max-width: 860px) { .aie-define__grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .aie-define__grid { grid-template-columns: 1fr; } }
+.aie-define-card {
+  background: #fff; border: 1px solid #e7e5de;
+  border-radius: 18px; padding: 24px 22px;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+.aie-define-card:hover {
+  border-color: #4b3aff;
+  box-shadow: 0 8px 28px -12px rgba(75,58,255,0.18);
+}
+.aie-define-card__num {
+  font-family: "IBM Plex Mono", monospace; font-size: 11px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: #4b3aff; margin-bottom: 14px; display: block;
+}
+.aie-define-card__title {
+  font-family: "Space Grotesk", sans-serif; font-weight: 700;
+  font-size: 1rem; margin: 0 0 8px; color: #15161b;
+}
+.aie-define-card__desc { font-size: 0.88rem; color: #53555f; line-height: 1.55; margin: 0; }
+
+/* ── Final CTA ── */
+.aie-cta {
+  background: #15161b; color: #fff;
+  padding: 120px 24px; text-align: center;
+}
+.aie-cta__inner { max-width: 680px; margin-inline: auto; }
+.aie-cta__h2 {
+  font-family: "Space Grotesk", sans-serif; font-weight: 700;
+  font-size: clamp(2.2rem, 4vw, 3.6rem); letter-spacing: -0.03em;
+  line-height: 1.08; margin: 18px 0 18px; color: #fff;
+}
+.aie-cta__sub { font-size: 1.05rem; color: rgba(255,255,255,0.6); margin: 0 0 38px; }
+.aie-cta__actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+/* ── Footer ── */
+.aie-footer {
+  background: #0e0f12; color: rgba(255,255,255,0.45);
+  padding: 56px 24px 40px;
+}
+.aie-footer__inner {
+  max-width: 1180px; margin-inline: auto;
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px;
+}
+@media (max-width: 860px) { .aie-footer__inner { grid-template-columns: 1fr 1fr; gap: 36px; } }
+@media (max-width: 560px) { .aie-footer__inner { grid-template-columns: 1fr; } }
+.aie-footer__logo {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-family: "Space Grotesk", sans-serif; font-weight: 700;
+  font-size: 1rem; color: #fff; text-decoration: none;
+}
+.aie-footer__logo-mark {
+  width: 26px; height: 26px; border-radius: 8px;
+  background: linear-gradient(135deg, #4b3aff, #ff4d8d);
+  display: grid; place-items: center; color: #fff;
+  font-size: 13px; font-weight: 700;
+}
+.aie-footer__tagline { font-size: 0.85rem; color: rgba(255,255,255,0.35); margin-top: 8px; }
+.aie-footer__col-title {
+  font-family: "IBM Plex Mono", monospace; font-size: 10px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.35);
+  margin-bottom: 16px;
+}
+.aie-footer__links { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.aie-footer__links a { font-size: 0.88rem; color: rgba(255,255,255,0.5); text-decoration: none; transition: color 0.2s; }
+.aie-footer__links a:hover { color: #fff; }
+.aie-footer__bottom {
+  max-width: 1180px; margin: 40px auto 0;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding-top: 24px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  font-size: 0.8rem; color: rgba(255,255,255,0.3);
+}
+
+@keyframes lb-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(31,206,122,0.5); }
+  50% { box-shadow: 0 0 0 4px rgba(31,206,122,0); }
+}
+[data-reveal] { opacity: 0; transform: translateY(16px); transition: opacity 0.5s ease, transform 0.5s ease; }
+[data-reveal].is-visible { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] { opacity: 1; transform: none; transition: none; }
+}

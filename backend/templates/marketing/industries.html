@@ -1,0 +1,144 @@
+﻿{% extends "base.html" %}
+{% load static %}
+
+{% block title %}AI Employees by Industry | LiftBot{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'marketing.css' %}">
+<link rel="stylesheet" href="{% static 'industries.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="lb">
+
+  {# ── HERO ── #}
+  <section class="ind-hero">
+    <div class="ind-hero__noise" aria-hidden="true"></div>
+    <div class="ind-hero__glow" aria-hidden="true"></div>
+    <div class="ind-hero__inner">
+      <div class="ind-hero__badge">AI FOR YOUR INDUSTRY</div>
+      <h1 class="ind-hero__h1">
+        AI employees for <em>real business.</em>
+      </h1>
+      <p class="ind-hero__sub">
+        Different industries have different customers, conversations and workflows. LiftBot can be configured around your industry and business needs.
+      </p>
+      <div class="ind-hero__cta">
+        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">Get Early Access</a>
+        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline">Book a demo →</a>
+      </div>
+    </div>
+  </section>
+
+  {# ── INDUSTRY GRID ── #}
+  <section class="ind-grid-section">
+    <div class="ind-grid-section__inner">
+
+      <div class="ind-grid-section__header" data-reveal>
+        <span class="lb__eyebrow">Industries</span>
+        <h2 class="lb__h2" style="margin-top:16px;">Built for how your industry works.</h2>
+        <p class="lb__lede" style="margin-inline:auto; text-align:center;">
+          Every industry has its own language, workflows and customer needs. LiftBot's AI employees are configured to match.
+        </p>
+      </div>
+
+      <div class="ind-grid" data-reveal>
+
+        {# Card 1 — Real Estate #}
+        <div class="ind-card">
+          <div class="ind-card__icon ind-card__icon--1">RE</div>
+          <span class="ind-card__industry">Real Estate</span>
+          <h3 class="ind-card__role">AI Property Sales Employee</h3>
+          <p class="ind-card__desc">Handle property enquiries, understand buyer requirements, collect lead information and support your sales team.</p>
+          <a href="{% url 'industry_detail' slug='real-estate' %}" class="ind-card__cta">Explore Real Estate →</a>
+        </div>
+
+        {# Card 2 — Travel & Tourism #}
+        <div class="ind-card">
+          <div class="ind-card__icon ind-card__icon--2">TT</div>
+          <span class="ind-card__industry">Travel &amp; Tourism</span>
+          <h3 class="ind-card__role">AI Travel Consultant</h3>
+          <p class="ind-card__desc">Answer travel questions, understand trip requirements and help customers move toward the next step.</p>
+          <a href="{% url 'industry_detail' slug='travel' %}" class="ind-card__cta">Explore Travel →</a>
+        </div>
+
+        {# Card 3 — E-commerce #}
+        <div class="ind-card">
+          <div class="ind-card__icon ind-card__icon--3">EC</div>
+          <span class="ind-card__industry">E-commerce</span>
+          <h3 class="ind-card__role">AI Shopping Assistant</h3>
+          <p class="ind-card__desc">Help customers discover products, answer product questions and provide first-level assistance.</p>
+          <a href="{% url 'industry_detail' slug='ecommerce' %}" class="ind-card__cta">Explore E-commerce →</a>
+        </div>
+
+        {# Card 4 — Education #}
+        <div class="ind-card">
+          <div class="ind-card__icon ind-card__icon--4">ED</div>
+          <span class="ind-card__industry">Education</span>
+          <h3 class="ind-card__role">AI Admissions Assistant</h3>
+          <p class="ind-card__desc">Answer course questions, collect prospective student information and support admission enquiries.</p>
+          <a href="{% url 'industry_detail' slug='education' %}" class="ind-card__cta">Explore Education →</a>
+        </div>
+
+        {# Card 5 — Healthcare #}
+        <div class="ind-card">
+          <div class="ind-card__icon ind-card__icon--5">HC</div>
+          <span class="ind-card__industry">Healthcare</span>
+          <h3 class="ind-card__role">AI Reception Assistant</h3>
+          <p class="ind-card__desc">Handle general enquiries and support approved appointment-related conversations.</p>
+          <a href="{% url 'industry_detail' slug='healthcare' %}" class="ind-card__cta">Explore Healthcare →</a>
+        </div>
+
+        {# Card 6 — Professional Services #}
+        <div class="ind-card">
+          <div class="ind-card__icon ind-card__icon--6">PS</div>
+          <span class="ind-card__industry">Professional Services</span>
+          <h3 class="ind-card__role">AI Client Intake Employee</h3>
+          <p class="ind-card__desc">Understand potential client requirements, capture enquiries and help connect prospects with your team.</p>
+          <a href="{% url 'industry_detail' slug='professional-services' %}" class="ind-card__cta">Explore Professional Services →</a>
+        </div>
+
+        {# Card 7 — Hospitality #}
+        <div class="ind-card">
+          <div class="ind-card__icon ind-card__icon--7">HO</div>
+          <span class="ind-card__industry">Hospitality</span>
+          <h3 class="ind-card__role">AI Guest Assistant</h3>
+          <p class="ind-card__desc">Answer common guest questions and help visitors find the information they need.</p>
+          <a href="{% url 'industry_detail' slug='hospitality' %}" class="ind-card__cta">Explore Hospitality →</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  {# ── CUSTOM INDUSTRY BAND ── #}
+  <section class="ind-custom" data-reveal>
+    <div class="ind-custom__inner">
+      <h2 class="ind-custom__h2">Don't see your industry? Build an AI employee around your business.</h2>
+      <p class="ind-custom__sub">LiftBot can be configured around any industry, role or workflow. Tell us about your business and we'll show you how.</p>
+      <div class="ind-custom__actions">
+        <a href="{% url 'contact' %}" class="lb__btn lb__btn--primary">Talk to LiftBot →</a>
+      </div>
+    </div>
+  </section>
+
+  {# ── FINAL DARK CTA ── #}
+  <section class="ind-cta">
+    <div class="ind-cta__inner" data-reveal>
+      <span class="lb__eyebrow" style="color:#cfe9ff; background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.16);">Your industry. Your AI employee.</span>
+      <h2 class="ind-cta__h2">Start with one AI employee. Then expand.</h2>
+      <p class="ind-cta__sub">Deploy an AI employee configured around your industry today. Start with one role — and grow your digital workforce from there.</p>
+      <div class="ind-cta__actions">
+        <a href="{% url 'early_access' %}" class="lb__btn" style="background:#fff; color:#15161b;">Get Early Access</a>
+        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline" style="color:#fff; border-color:rgba(255,255,255,0.3);">Book a demo →</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="{% static 'industries.js' %}" defer></script>
+{% endblock %}

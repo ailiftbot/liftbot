@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}AI Employees for Business | Create AI Employees with LiftBot{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'marketing.css' %}">
+<link rel="stylesheet" href="{% static 'ai_employees.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="lb">
+
+  {# ── HERO ── #}
+  <section class="aie-hero">
+    <div class="aie-hero__noise" aria-hidden="true"></div>
+    <div class="aie-hero__glow" aria-hidden="true"></div>
+    <div class="aie-hero__inner">
+      <div class="aie-hero__badge">AI EMPLOYEES FOR BUSINESS</div>
+      <h1 class="aie-hero__h1">
+        Hire AI for a job —<br><em>not just a conversation.</em>
+      </h1>
+      <p class="aie-hero__sub">
+        LiftBot lets you create AI employees around specific business roles. Give them a responsibility, give them knowledge, give them instructions — then let them work alongside your team.
+      </p>
+      <div class="aie-hero__tagline">
+        <span>Give them a responsibility.</span>
+        <span>Give them knowledge.</span>
+        <span>Give them instructions.</span>
+        <span>Then let them work alongside your team.</span>
+      </div>
+      <div class="aie-hero__cta">
+        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">Create Your AI Employee</a>
+        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline">Book a demo →</a>
+      </div>
+    </div>
+  </section>
+
+  {# ── CHOOSE A ROLE ── #}
+  <section class="aie-roles">
+    <div class="aie-roles__inner">
+      <div class="aie-roles__header" data-reveal>
+        <span class="lb__eyebrow">Choose a role</span>
+        <h2 class="lb__h2" style="margin-top:16px;">Every AI employee has a job to do.</h2>
+        <p class="lb__lede" style="margin-inline:auto; text-align:center;">
+          Create AI employees configured around a specific role in your business. Start with one. Scale with your needs.
+        </p>
+      </div>
+      <div class="aie-roles__grid" data-reveal>
+
+        <div class="aie-role-card">
+          <div class="aie-role-card__icon aie-role-card__icon--1">S</div>
+          <h3 class="aie-role-card__title">AI Sales Employee</h3>
+          <p class="aie-role-card__desc">Engage potential customers, understand their requirements and help qualify sales opportunities.</p>
+          <p class="aie-role-card__best">Best for: Sales teams, agencies, real estate, services.</p>
+        </div>
+
+        <div class="aie-role-card">
+          <div class="aie-role-card__icon aie-role-card__icon--2">SU</div>
+          <h3 class="aie-role-card__title">AI Customer Support Employee</h3>
+          <p class="aie-role-card__desc">Answer common questions and provide first-level customer assistance.</p>
+          <p class="aie-role-card__best">Best for: E-commerce, SaaS, services and customer-focused businesses.</p>
+        </div>
+
+        <div class="aie-role-card">
+          <div class="aie-role-card__icon aie-role-card__icon--3">R</div>
+          <h3 class="aie-role-card__title">AI Receptionist</h3>
+          <p class="aie-role-card__desc">Welcome visitors, answer basic enquiries and guide customers toward the right next step.</p>
+          <p class="aie-role-card__best">Best for: Clinics, agencies, professional services and local businesses.</p>
+        </div>
+
+        <div class="aie-role-card">
+          <div class="aie-role-card__icon aie-role-card__icon--4">LQ</div>
+          <h3 class="aie-role-card__title">AI Lead Qualification Employee</h3>
+          <p class="aie-role-card__desc">Ask relevant questions and collect information your sales team needs.</p>
+          <p class="aie-role-card__best">Best for: High-value lead generation businesses.</p>
+        </div>
+
+        <div class="aie-role-card">
+          <div class="aie-role-card__icon aie-role-card__icon--5">A</div>
+          <h3 class="aie-role-card__title">AI Appointment Assistant</h3>
+          <p class="aie-role-card__desc">Help customers with appointment-related enquiries and guide them toward scheduling.</p>
+        </div>
+
+        <div class="aie-role-card" style="background:linear-gradient(135deg,#eeecff,#ffeaf2); border-color:rgba(75,58,255,0.2);">
+          <div class="aie-role-card__icon aie-role-card__icon--6" style="font-size:1.3rem;">✦</div>
+          <h3 class="aie-role-card__title">Custom AI Employee</h3>
+          <p class="aie-role-card__desc">Don't see the role you need? Define your own AI employee around your business process.</p>
+        </div>
+
+      </div>
+
+      <div style="text-align:center; margin-top:44px;" data-reveal>
+        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">Create Your AI Employee →</a>
+      </div>
+    </div>
+  </section>
+
+  {# ── WHAT MAKES AN AI EMPLOYEE DIFFERENT? + YOU DEFINE ── #}
+  <section class="aie-define">
+    <div class="aie-define__inner">
+      <div class="aie-define__header" data-reveal>
+        <span class="lb__eyebrow">What makes an AI employee different?</span>
+        <h2 class="lb__h2" style="margin-top:16px;">A chatbot answers. An AI employee has a role.</h2>
+        <p class="lb__lede" style="margin-inline:auto; text-align:center;">
+          Unlike a generic chatbot, LiftBot's AI employees are configured around your specific business. You define what they know, how they behave, and when they involve your human team.
+        </p>
+        <p class="aie-define__you-define">You define:</p>
+      </div>
+      <div class="aie-define__grid" data-reveal>
+
+        <div class="aie-define-card">
+          <span class="aie-define-card__num">01 · Role</span>
+          <h3 class="aie-define-card__title">What job does it perform?</h3>
+          <p class="aie-define-card__desc">Assign a specific business function — sales, support, reception or a custom role built around your exact process.</p>
+        </div>
+
+        <div class="aie-define-card">
+          <span class="aie-define-card__num">02 · Knowledge</span>
+          <h3 class="aie-define-card__title">What does it know?</h3>
+          <p class="aie-define-card__desc">Upload your products, services, FAQs, policies and any other business information your AI employee should use.</p>
+        </div>
+
+        <div class="aie-define-card">
+          <span class="aie-define-card__num">03 · Instructions</span>
+          <h3 class="aie-define-card__title">How should it behave?</h3>
+          <p class="aie-define-card__desc">Define the tone of voice, communication style and the specific behaviours your AI employee should follow.</p>
+        </div>
+
+        <div class="aie-define-card">
+          <span class="aie-define-card__num">04 · Goals</span>
+          <h3 class="aie-define-card__title">What should it help accomplish?</h3>
+          <p class="aie-define-card__desc">Set clear objectives — qualify leads, capture contact details, answer questions, or guide customers toward the next step.</p>
+        </div>
+
+        <div class="aie-define-card">
+          <span class="aie-define-card__num">05 · Rules</span>
+          <h3 class="aie-define-card__title">What should it avoid or escalate?</h3>
+          <p class="aie-define-card__desc">Set guardrails. Tell your AI employee what topics to avoid, what not to say, and what situations always need a human.</p>
+        </div>
+
+        <div class="aie-define-card">
+          <span class="aie-define-card__num">06 · Human Handoff</span>
+          <h3 class="aie-define-card__title">When should your team step in?</h3>
+          <p class="aie-define-card__desc">Define the exact conditions under which the conversation is handed to your team — with a full summary ready to go.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  {# ── FINAL CTA ── #}
+  <section class="aie-cta">
+    <div class="aie-cta__inner" data-reveal>
+      <span class="lb__eyebrow" style="color:#cfe9ff; background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.16);">Your digital workforce starts here</span>
+      <h2 class="aie-cta__h2">Start with one employee. Then expand.</h2>
+      <p class="aie-cta__sub">Start with one employee. Learn what works. Improve it. Then expand.</p>
+      <div class="aie-cta__actions">
+        <a href="{% url 'early_access' %}" class="lb__btn" style="background:#fff; color:#15161b;">Get Started</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="{% static 'ai_employees.js' %}" defer></script>
+{% endblock %}

@@ -1,0 +1,389 @@
+﻿/* ============================================================
+   LiftBot — industries.css
+   Prefix: ind-
+   ============================================================ */
+
+/* ── Full-width override ── */
+main:has(.lb) {
+  max-width: none;
+  width: 100%;
+  padding: 0;
+}
+
+/* ── Design tokens ── */
+:root {
+  --brand:      #4b3aff;
+  --signal:     #1fce7a;
+  --pop:        #ff4d8d;
+  --ink:        #15161b;
+  --paper-dim:  #f3f2ee;
+  --paper-line: #e7e5de;
+}
+
+/* ============================================================
+   SCROLL REVEAL
+   ============================================================ */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================================
+   KEYFRAMES
+   ============================================================ */
+@keyframes lb-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.8); }
+}
+
+@keyframes ind-glow-drift {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50%       { transform: translate(-50%, -50%) scale(1.12); }
+}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.ind-hero {
+  position: relative;
+  background: var(--ink);
+  color: #fff;
+  overflow: hidden;
+  padding: 120px 24px 100px;
+  text-align: center;
+}
+
+.ind-hero__noise {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ind-hero__glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(75,58,255,0.28) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  animation: ind-glow-drift 8s ease-in-out infinite;
+}
+
+.ind-hero__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.ind-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.75);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 100px;
+  padding: 6px 14px;
+  margin-bottom: 28px;
+}
+
+.ind-hero__badge::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--signal);
+  animation: lb-pulse 2s ease-in-out infinite;
+}
+
+.ind-hero__h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  color: #fff;
+  margin: 0 0 24px;
+}
+
+.ind-hero__h1 em {
+  font-style: normal;
+  background: linear-gradient(90deg, #a89dff 0%, #ff8dbf 50%, #1fce7a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.ind-hero__sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.65);
+  max-width: 600px;
+  margin: 0 auto 36px;
+}
+
+.ind-hero__cta {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ============================================================
+   INDUSTRY GRID SECTION
+   ============================================================ */
+.ind-grid-section {
+  background: var(--paper-dim);
+  padding: 96px 24px;
+}
+
+.ind-grid-section__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.ind-grid-section__header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+.ind-grid-section__header .lb__eyebrow {
+  margin-bottom: 16px;
+}
+
+.ind-grid-section__header .lb__h2 {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.ind-grid-section__header .lb__lede {
+  margin-inline: auto;
+  text-align: center;
+}
+
+/* 4-column grid */
+.ind-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .ind-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .ind-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   INDUSTRY CARD
+   ============================================================ */
+.ind-card {
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: 16px;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.ind-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--brand);
+  box-shadow: 0 12px 36px rgba(75,58,255,0.12);
+}
+
+/* Icon — 46×46 rounded square */
+.ind-card__icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #fff;
+  letter-spacing: 0;
+  flex-shrink: 0;
+  margin-bottom: 4px;
+}
+
+/* Icon colour variants */
+.ind-card__icon--1 { background: #4b3aff; }
+.ind-card__icon--2 { background: #0e8f52; }
+.ind-card__icon--3 { background: #ff4d8d; }
+.ind-card__icon--4 { background: #d9a62e; }
+.ind-card__icon--5 { background: #15161b; }
+.ind-card__icon--6 { background: rgba(75,58,255,0.65); }
+.ind-card__icon--7 { background: #8b5cf6; }
+
+.ind-card__industry {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(21,22,27,0.45);
+}
+
+.ind-card__role {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.3;
+  margin: 0;
+}
+
+.ind-card__desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: rgba(21,22,27,0.65);
+  margin: 0;
+  flex: 1;
+}
+
+.ind-card__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--brand);
+  text-decoration: none;
+  margin-top: 6px;
+  transition: gap 0.2s ease;
+}
+
+.ind-card__cta:hover {
+  gap: 8px;
+}
+
+/* ============================================================
+   CUSTOM INDUSTRY BAND
+   ============================================================ */
+.ind-custom {
+  background: #fff;
+  border-top: 1px solid var(--paper-line);
+  border-bottom: 1px solid var(--paper-line);
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.ind-custom__inner {
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.ind-custom__h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0 0 16px;
+}
+
+.ind-custom__sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: rgba(21,22,27,0.6);
+  margin: 0 0 32px;
+}
+
+.ind-custom__actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ============================================================
+   FINAL DARK CTA
+   ============================================================ */
+.ind-cta {
+  background: var(--ink);
+  padding: 100px 24px;
+  text-align: center;
+}
+
+.ind-cta__inner {
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.ind-cta__h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: #fff;
+  margin: 16px 0 16px;
+}
+
+.ind-cta__sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.6);
+  margin: 0 0 36px;
+}
+
+.ind-cta__actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ============================================================
+   RESPONSIVE — Hero
+   ============================================================ */
+@media (max-width: 640px) {
+  .ind-hero {
+    padding: 88px 20px 72px;
+  }
+  .ind-grid-section {
+    padding: 72px 20px;
+  }
+  .ind-custom {
+    padding: 64px 20px;
+  }
+  .ind-cta {
+    padding: 80px 20px;
+  }
+}

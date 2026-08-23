@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Customer Stories | LiftBot{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'marketing.css' %}">
+<link rel="stylesheet" href="{% static 'customers.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="lb">
+
+  {# ── HERO ── #}
+  <section class="cus-hero">
+    <div class="cus-hero__noise" aria-hidden="true"></div>
+    <div class="cus-hero__glow" aria-hidden="true"></div>
+    <div class="cus-hero__inner">
+      <div class="cus-hero__badge">Customer Stories</div>
+      <h1 class="cus-hero__h1">Real businesses. Real conversations.<br><em>Real learning.</em></h1>
+      <p class="cus-hero__sub">
+        LiftBot is being tested in real-world business environments to understand where AI employees create the most value.
+      </p>
+    </div>
+  </section>
+
+  {# ── CASE STUDY LAYOUT PREVIEW ── #}
+  <section class="cus-layout">
+    <div class="cus-layout__inner">
+      <div class="cus-layout__header" data-reveal>
+        <span class="lb__eyebrow">How we document a story</span>
+        <h2 class="lb__h2" style="margin-top:16px;">Every case study follows the same story.</h2>
+        <p class="lb__lede" style="margin-inline:auto; text-align:center;">
+          As early businesses come on board, their stories will be documented here — following this structure.
+        </p>
+      </div>
+
+      <div class="cus-layout__grid" data-reveal>
+
+        <div class="cus-layout-card">
+          <div class="cus-layout-card__num">01</div>
+          <h3 class="cus-layout-card__title">The Business</h3>
+          <p class="cus-layout-card__desc">Who they are.</p>
+        </div>
+
+        <div class="cus-layout-card">
+          <div class="cus-layout-card__num">02</div>
+          <h3 class="cus-layout-card__title">The Challenge</h3>
+          <p class="cus-layout-card__desc">What problem were they facing?</p>
+        </div>
+
+        <div class="cus-layout-card">
+          <div class="cus-layout-card__num">03</div>
+          <h3 class="cus-layout-card__title">The AI Employee</h3>
+          <p class="cus-layout-card__desc">What role did LiftBot perform?</p>
+        </div>
+
+        <div class="cus-layout-card">
+          <div class="cus-layout-card__num">04</div>
+          <h3 class="cus-layout-card__title">The Implementation</h3>
+          <p class="cus-layout-card__desc">How was the employee configured?</p>
+        </div>
+
+        <div class="cus-layout-card">
+          <div class="cus-layout-card__num">05</div>
+          <h3 class="cus-layout-card__title">The Result</h3>
+          <p class="cus-layout-card__desc">What changed?</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  {# ── PRE-LAUNCH PANEL ── #}
+  <section class="cus-prelaunch">
+    <div class="cus-prelaunch__inner" data-reveal>
+      <div class="cus-prelaunch__icon">&#128218;</div>
+      <h2 class="cus-prelaunch__h2">We're currently building our first group of LiftBot customer stories.</h2>
+      <p class="cus-prelaunch__sub">Want to become one of our early businesses?</p>
+      <div class="cus-prelaunch__actions">
+        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">Join Early Access</a>
+      </div>
+    </div>
+  </section>
+
+  {# ── FINAL CTA ── #}
+  <section class="cus-cta">
+    <div class="cus-cta__inner" data-reveal>
+      <span class="lb__eyebrow" style="color:#cfe9ff; background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.16);">Be one of the first</span>
+      <h2 class="cus-cta__h2">Help us write the first LiftBot success story.</h2>
+      <p class="cus-cta__sub">Join early access and get your business's story featured here.</p>
+      <div class="cus-cta__actions">
+        <a href="{% url 'early_access' %}" class="lb__btn" style="background:#fff; color:#15161b;">Join Early Access</a>
+        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline" style="color:#fff; border-color:rgba(255,255,255,0.3);">Book a demo &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="{% static 'customers.js' %}" defer></script>
+{% endblock %}

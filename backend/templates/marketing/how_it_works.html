@@ -1,0 +1,140 @@
+﻿{% extends "base.html" %}
+{% load static %}
+
+{% block title %}How LiftBot Works | Create and Deploy an AI Employee{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'marketing.css' %}">
+<link rel="stylesheet" href="{% static 'how_it_works.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="lb">
+
+  {# ── HERO ── #}
+  <section class="hiw-hero">
+    <div class="hiw-hero__noise" aria-hidden="true"></div>
+    <div class="hiw-hero__glow" aria-hidden="true"></div>
+    <div class="hiw-hero__inner">
+      <div class="hiw-hero__badge">HOW IT WORKS</div>
+      <h1 class="hiw-hero__h1">
+        Create an AI employee in<br><em>a few simple steps.</em>
+      </h1>
+      <p class="hiw-hero__sub">
+        You don&rsquo;t need to build an AI system from scratch.
+      </p>
+      <div class="hiw-hero__cta">
+        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">Create Your AI Employee &rarr;</a>
+        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline">Book a demo &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  {# ── STEPS ── #}
+  <section class="hiw-steps">
+    <div class="hiw-steps__inner">
+
+      <div class="hiw-steps__header" data-reveal>
+        <span class="lb__eyebrow">The process</span>
+        <h2 class="lb__h2" style="margin-top:16px;">Seven steps to your AI employee.</h2>
+        <p class="lb__lede" style="margin-inline:auto; text-align:center;">
+          From setup to continuous improvement &mdash; here&rsquo;s how LiftBot works.
+        </p>
+      </div>
+
+      <div class="hiw-timeline" data-reveal>
+
+        <div class="hiw-step">
+          <div class="hiw-step__num">01</div>
+          <div class="hiw-step__body">
+            <h3 class="hiw-step__title">Create</h3>
+            <p class="hiw-step__desc">Choose your AI employee&rsquo;s role. Give it a name, responsibilities and purpose.</p>
+          </div>
+        </div>
+
+        <div class="hiw-step">
+          <div class="hiw-step__num">02</div>
+          <div class="hiw-step__body">
+            <h3 class="hiw-step__title">Train</h3>
+            <p class="hiw-step__desc">Add your business knowledge. Products, services, FAQs, policies and other approved information.</p>
+          </div>
+        </div>
+
+        <div class="hiw-step">
+          <div class="hiw-step__num">03</div>
+          <div class="hiw-step__body">
+            <h3 class="hiw-step__title">Configure</h3>
+            <p class="hiw-step__desc">Define instructions, communication style and business rules.</p>
+          </div>
+        </div>
+
+        <div class="hiw-step">
+          <div class="hiw-step__num">04</div>
+          <div class="hiw-step__body">
+            <h3 class="hiw-step__title">Test</h3>
+            <p class="hiw-step__desc">Talk to your AI employee before putting it in front of customers.</p>
+          </div>
+        </div>
+
+        <div class="hiw-step">
+          <div class="hiw-step__num">05</div>
+          <div class="hiw-step__body">
+            <h3 class="hiw-step__title">Deploy</h3>
+            <p class="hiw-step__desc">Connect LiftBot to your website and supported channels.</p>
+          </div>
+        </div>
+
+        <div class="hiw-step">
+          <div class="hiw-step__num">06</div>
+          <div class="hiw-step__body">
+            <h3 class="hiw-step__title">Monitor</h3>
+            <p class="hiw-step__desc">Review conversations, leads and available performance information.</p>
+          </div>
+        </div>
+
+        <div class="hiw-step">
+          <div class="hiw-step__num">07</div>
+          <div class="hiw-step__body">
+            <h3 class="hiw-step__title">Improve</h3>
+            <p class="hiw-step__desc">Use real conversations and feedback to make your AI employee better.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  {# ── WORKFLOW BAND ── #}
+  <section class="hiw-workflow">
+    <div class="hiw-workflow__inner" data-reveal>
+      <h2 class="hiw-workflow__h2">Hire. Train. Deploy. Improve.</h2>
+      <p class="hiw-workflow__sub">That&rsquo;s the LiftBot workflow.</p>
+      <div class="hiw-workflow__words">
+        <span class="hiw-workflow__pill hiw-workflow__pill--hire">Hire</span>
+        <span class="hiw-workflow__pill hiw-workflow__pill--train">Train</span>
+        <span class="hiw-workflow__pill hiw-workflow__pill--deploy">Deploy</span>
+        <span class="hiw-workflow__pill hiw-workflow__pill--improve">Improve</span>
+      </div>
+    </div>
+  </section>
+
+  {# ── FINAL CTA ── #}
+  <section class="hiw-cta">
+    <div class="hiw-cta__inner" data-reveal>
+      <span class="lb__eyebrow" style="color:#cfe9ff; background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.16);">Get started today</span>
+      <h2 class="hiw-cta__h2">Create your AI employee in minutes.</h2>
+      <p class="hiw-cta__sub">You don&rsquo;t need to build an AI system from scratch. LiftBot gives you everything you need.</p>
+      <div class="hiw-cta__actions">
+        <a href="{% url 'early_access' %}" class="lb__btn" style="background:#fff; color:#15161b;">Create Your AI Employee &rarr;</a>
+        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline" style="color:#fff; border-color:rgba(255,255,255,0.3);">Book a demo &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="{% static 'how_it_works.js' %}" defer></script>
+{% endblock %}

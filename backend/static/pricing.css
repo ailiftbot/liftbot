@@ -1,0 +1,292 @@
+/* ============================================================
+   LiftBot — pricing.css
+   Prefix: pr-
+   ============================================================ */
+
+/* ── Full-width override ── */
+main:has(.lb) {
+  max-width: none;
+  width: 100%;
+  padding: 0;
+}
+
+/* ── Design tokens ── */
+:root {
+  --brand:      #4b3aff;
+  --signal:     #1fce7a;
+  --pop:        #ff4d8d;
+  --ink:        #15161b;
+  --paper-dim:  #f3f2ee;
+  --paper-line: #e7e5de;
+}
+
+/* ============================================================
+   SCROLL REVEAL
+   ============================================================ */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================================
+   KEYFRAMES
+   ============================================================ */
+@keyframes lb-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.85); }
+}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.pr-hero {
+  position: relative;
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--ink);
+  text-align: center;
+  padding: 120px 24px 100px;
+}
+
+.pr-hero__noise {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.pr-hero__glow {
+  position: absolute;
+  top: -160px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 860px;
+  height: 560px;
+  background: radial-gradient(ellipse at center, rgba(75,58,255,0.28) 0%, transparent 72%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.pr-hero__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.pr-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #a8b5ff;
+  background: rgba(75,58,255,0.14);
+  border: 1px solid rgba(75,58,255,0.32);
+  border-radius: 100px;
+  padding: 6px 16px;
+  margin-bottom: 32px;
+}
+
+.pr-hero__badge::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--signal);
+  animation: lb-pulse 2s ease-in-out infinite;
+}
+
+.pr-hero__h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: #fff;
+  margin: 0 0 24px;
+  letter-spacing: -0.02em;
+}
+
+.pr-hero__sub {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(1rem, 1.8vw, 1.15rem);
+  color: rgba(255,255,255,0.65);
+  line-height: 1.65;
+  max-width: 520px;
+  margin: 0 auto 40px;
+}
+
+.pr-hero__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.pr-hero .lb__btn--primary {
+  background: #fff !important;
+  color: #15161b !important;
+  border-color: #fff !important;
+}
+.pr-hero .lb__btn--primary:hover {
+  background: #e8e6ff !important;
+  border-color: #e8e6ff !important;
+}
+.pr-hero .lb__btn--outline {
+  background: transparent !important;
+  color: #fff !important;
+  border-color: rgba(255,255,255,0.35) !important;
+}
+.pr-hero .lb__btn--outline:hover {
+  border-color: #fff !important;
+}
+
+/* ============================================================
+   WHAT TO EXPECT
+   ============================================================ */
+.pr-expect {
+  background: var(--paper-dim);
+  padding: 100px 24px;
+}
+
+.pr-expect__inner {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.pr-expect__header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+.pr-expect__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 780px) {
+  .pr-expect__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pr-expect-card {
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: 18px;
+  padding: 30px 26px;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.pr-expect-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 44px rgba(21,22,27,0.09);
+}
+
+.pr-expect-card__icon {
+  font-size: 1.5rem;
+  margin-bottom: 16px;
+}
+
+.pr-expect-card__title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 10px;
+  line-height: 1.3;
+}
+
+.pr-expect-card__desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.92rem;
+  color: #52535a;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ============================================================
+   FINAL CTA
+   ============================================================ */
+.pr-cta {
+  background: var(--ink);
+  padding: 100px 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.pr-cta::before {
+  content: '';
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 700px;
+  height: 400px;
+  background: radial-gradient(ellipse at center, rgba(75,58,255,0.22) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.pr-cta__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.pr-cta__h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.9rem, 3.5vw, 2.8rem);
+  font-weight: 700;
+  color: #fff;
+  margin: 20px 0 16px;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.pr-cta__sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.02rem;
+  color: rgba(255,255,255,0.6);
+  line-height: 1.65;
+  margin: 0 0 40px;
+}
+
+.pr-cta__actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* ============================================================
+   RESPONSIVE UTILITIES
+   ============================================================ */
+@media (max-width: 640px) {
+  .pr-hero {
+    padding: 100px 20px 80px;
+  }
+  .pr-expect,
+  .pr-cta {
+    padding: 72px 20px;
+  }
+}

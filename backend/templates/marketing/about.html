@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}About LiftBot | Building AI Employees for Modern Businesses{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'marketing.css' %}">
+<link rel="stylesheet" href="{% static 'about.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="lb">
+
+  {# ── HERO ── #}
+  <section class="abt-hero">
+    <div class="abt-hero__noise" aria-hidden="true"></div>
+    <div class="abt-hero__glow" aria-hidden="true"></div>
+    <div class="abt-hero__inner">
+      <div class="abt-hero__badge">About LiftBot</div>
+      <h1 class="abt-hero__h1">We're building a new way for businesses to <em>work with AI.</em></h1>
+      <p class="abt-hero__sub">
+        AI is becoming a bigger part of how businesses operate. But for many business owners, getting started still feels complicated.
+      </p>
+    </div>
+  </section>
+
+  {# ── ORIGIN STORY ── #}
+  <section class="abt-origin">
+    <div class="abt-origin__inner">
+      <div class="abt-origin__quote" data-reveal>
+        <p class="abt-origin__q">"What if a business could simply hire an AI employee and give it a job?"</p>
+        <p class="abt-origin__q-sub">That's where LiftBot started.</p>
+      </div>
+
+      <div class="abt-origin__body" data-reveal>
+        <p>There are countless AI tools, chatbots and automation platforms available. Yet the real question for us was much simpler than any of them.</p>
+        <p>We are building LiftBot to make AI more practical for everyday businesses — not just something impressive to experiment with, but something that can actually become part of the team.</p>
+      </div>
+
+      <div class="abt-origin__what" data-reveal>
+        <span class="lb__eyebrow">So, what is LiftBot?</span>
+        <p class="abt-origin__what-lede">LiftBot is an AI employee platform that helps businesses create digital employees for specific roles.</p>
+        <p class="abt-origin__what-sub">An AI employee can be configured around a business's knowledge, instructions, responsibilities and way of communicating. It can help with things like:</p>
+        <div class="abt-tag-cloud">
+          <span class="abt-tag">Customer conversations</span>
+          <span class="abt-tag">Lead capture</span>
+          <span class="abt-tag">Lead qualification</span>
+          <span class="abt-tag">Customer support</span>
+          <span class="abt-tag">FAQs</span>
+          <span class="abt-tag">Initial enquiries</span>
+          <span class="abt-tag">Repetitive business tasks</span>
+        </div>
+        <p class="abt-origin__idea">Give AI a role. Give it the right knowledge. Let it help your team.</p>
+      </div>
+    </div>
+  </section>
+
+  {# ── WHY WE STARTED ── #}
+  <section class="abt-why">
+    <div class="abt-why__inner" data-reveal>
+      <span class="lb__eyebrow" style="color:#cfe9ff; background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.16);">Why we started building it</span>
+      <h2 class="abt-why__h2">The same problem, again and again.</h2>
+      <p class="abt-why__p">We work closely with businesses and have seen it repeat itself. Businesses spend a lot of time answering the same questions, following up with enquiries, responding to customers and handling repetitive tasks — while customers expect a fast response.</p>
+      <p class="abt-why__p">We believe AI can help with this. But we don't think businesses need another complicated AI tool that requires a technical team to operate. We want to make the experience much simpler.</p>
+      <p class="abt-why__line">Create an AI employee. Train it around your business. Put it to work.</p>
+    </div>
+  </section>
+
+  {# ── OUR APPROACH: AI + PEOPLE (reuses marketing.css split component) ── #}
+  <section class="lb__section">
+    <div class="lb__container">
+      <div class="lb__section-head" data-reveal>
+        <div>
+          <span class="lb__eyebrow">Our approach to AI</span>
+          <h2 class="lb__h2" style="margin-top:16px;">AI + people. Not AI instead of people.</h2>
+        </div>
+        <p class="lb__lede">We don't believe AI should replace the people who make a business special. We believe it should support them.</p>
+      </div>
+
+      <div class="lb__split" data-reveal>
+        <div class="lb__split-card lb__split-card--ai">
+          <div class="lb__split-head">
+            <span class="lb__split-dot"></span>
+            <strong>Where AI helps</strong>
+          </div>
+          <ul class="lb__split-list">
+            <li>Conversations AI can handle very well</li>
+            <li>Repetitive, routine work</li>
+            <li>Initial questions and information requests</li>
+          </ul>
+        </div>
+        <div class="lb__split-card lb__split-card--human">
+          <div class="lb__split-head">
+            <span class="lb__split-dot"></span>
+            <strong>Where people are better</strong>
+          </div>
+          <ul class="lb__split-list">
+            <li>Customers, decisions and relationships</li>
+            <li>Conversations where a human will always be better</li>
+            <li>Parts of the business that need human judgment</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# ── BUILT FOR REAL BUSINESSES ── #}
+  <section class="abt-real">
+    <div class="abt-real__inner" data-reveal>
+      <span class="lb__eyebrow">Built for real businesses</span>
+      <h2 class="lb__h2" style="margin-top:16px;">Not built only in a lab.</h2>
+      <p class="lb__lede" style="margin-inline:auto; text-align:center;">
+        We're testing LiftBot with real websites, real customer questions and real business scenarios — learning from what actually happens when customers interact with an AI employee, including where it works well, where it needs improvement, and where a human should step in.
+      </p>
+      <p class="abt-real__line">Our goal isn't an AI employee that looks impressive in a demo. We want to build one that is genuinely useful.</p>
+    </div>
+  </section>
+
+  {# ── FROM ONE EMPLOYEE TO A WORKFORCE (reuses marketing.css timeline component) ── #}
+  <section class="lb__section lb__section--dim">
+    <div class="lb__container">
+      <div class="lb__center" data-reveal style="margin-bottom:48px;">
+        <span class="lb__eyebrow">The bigger vision</span>
+        <h2 class="lb__h2" style="margin-top:16px;">From one AI employee to an AI workforce.</h2>
+        <p class="lb__lede" style="margin-inline:auto;">A business might start with one employee — then grow its digital workforce around the roles it actually needs.</p>
+      </div>
+
+      <div class="lb__timeline" data-reveal>
+        <div class="lb__step">
+          <div class="lb__step-num">01</div>
+          <div class="lb__step-body">
+            <span class="lb__step-tag">Start with</span>
+            <p>AI Sales Employee</p>
+          </div>
+        </div>
+        <div class="lb__step">
+          <div class="lb__step-num">02</div>
+          <div class="lb__step-body">
+            <span class="lb__step-tag">Then add</span>
+            <p>AI Customer Support Employee</p>
+          </div>
+        </div>
+        <div class="lb__step">
+          <div class="lb__step-num">03</div>
+          <div class="lb__step-body">
+            <span class="lb__step-tag">Then</span>
+            <p>AI Receptionist</p>
+          </div>
+        </div>
+        <div class="lb__step">
+          <div class="lb__step-num">04</div>
+          <div class="lb__step-body">
+            <span class="lb__step-tag">Then</span>
+            <p>AI Lead Qualification Employee</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# ── MISSION ── #}
+  <section class="abt-mission">
+    <div class="abt-mission__inner" data-reveal>
+      <span class="lb__eyebrow" style="color:#cfe9ff; background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.16);">Our mission</span>
+      <h2 class="abt-mission__h2">Make AI employees practical for everyday businesses.</h2>
+      <p class="abt-mission__p">We want businesses of different sizes to use AI without needing to become AI experts themselves. Technology should make business simpler — not more complicated.</p>
+      <p class="abt-mission__p">We're not trying to build another chatbot. We're building a platform where businesses can create AI employees that actually have a role, understand the business they're working for, and work alongside the people behind it.</p>
+      <p class="abt-mission__tagline">That's the idea behind LiftBot. And we're just getting started.</p>
+      <p class="abt-mission__brand">LiftBot — AI Employees for Modern Businesses</p>
+    </div>
+  </section>
+
+  {# ── FINAL CTA ── #}
+  <section class="abt-cta">
+    <div class="abt-cta__inner" data-reveal>
+      <h2 class="abt-cta__h2">Want to help us build it?</h2>
+      <p class="abt-cta__sub">Join early access and be one of the first businesses to put an AI employee to work.</p>
+      <div class="abt-cta__actions">
+        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">Get Early Access</a>
+        <a href="{% url 'contact' %}" class="lb__btn lb__btn--outline">Contact Us</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="{% static 'about.js' %}" defer></script>
+{% endblock %}

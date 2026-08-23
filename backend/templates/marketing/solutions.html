@@ -1,0 +1,152 @@
+﻿{% extends "base.html" %}
+{% load static %}
+
+{% block title %}AI Business Automation Solutions | LiftBot{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'marketing.css' %}">
+<link rel="stylesheet" href="{% static 'solutions.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="lb">
+
+  {# ── HERO ── #}
+  <section class="sol-hero">
+    <div class="sol-hero__noise" aria-hidden="true"></div>
+    <div class="sol-hero__glow" aria-hidden="true"></div>
+    <div class="sol-hero__inner">
+      <div class="sol-hero__badge">Solutions</div>
+      <h1 class="sol-hero__h1">
+        AI built around your<br><em>business problems.</em>
+      </h1>
+      <p class="sol-hero__sub">
+        Don't start with technology. Start with the problem you want to solve.
+      </p>
+      <div class="sol-hero__cta">
+        <a href="{% url 'signup' %}" class="lb__btn lb__btn--primary">Find Your AI Use Case</a>
+        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline">Book a demo &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  {# ── SOLUTIONS GRID ── #}
+  <section class="sol-grid-section">
+    <div class="sol-grid-section__inner">
+      <div class="sol-grid-section__header" data-reveal>
+        <span class="lb__eyebrow">What can it solve?</span>
+        <h2 class="lb__h2" style="margin-top:16px;">Start with the problem you want to solve.</h2>
+        <p class="lb__lede" style="margin-inline:auto; text-align:center;">
+          One AI employee can be built around any of these use cases — and grow with your business from there.
+        </p>
+      </div>
+      <div class="sol-grid" data-reveal>
+
+        <div class="sol-card">
+          <div class="sol-card__icon sol-card__icon--capture">&#128442;</div>
+          <h3 class="sol-card__title">Capture more enquiries</h3>
+          <p class="sol-card__desc">Respond to customer questions and collect relevant information before opportunities disappear.</p>
+        </div>
+
+        <div class="sol-card">
+          <div class="sol-card__icon sol-card__icon--qualify">&#127919;</div>
+          <h3 class="sol-card__title">Qualify leads</h3>
+          <p class="sol-card__desc">Let AI ask the initial questions so your sales team can focus on better-qualified opportunities.</p>
+        </div>
+
+        <div class="sol-card">
+          <div class="sol-card__icon sol-card__icon--support">&#128172;</div>
+          <h3 class="sol-card__title">Automate customer support</h3>
+          <p class="sol-card__desc">Handle repetitive questions and provide customers with faster access to information.</p>
+        </div>
+
+        <div class="sol-card">
+          <div class="sol-card__icon sol-card__icon--repetitive">&#9881;&#65039;</div>
+          <h3 class="sol-card__title">Reduce repetitive work</h3>
+          <p class="sol-card__desc">Give your team more time by automating routine conversations.</p>
+        </div>
+
+        <div class="sol-card">
+          <div class="sol-card__icon sol-card__icon--responsive">&#128336;</div>
+          <h3 class="sol-card__title">Stay responsive</h3>
+          <p class="sol-card__desc">Keep your business available beyond traditional working hours.</p>
+        </div>
+
+        <div class="sol-card">
+          <div class="sol-card__icon sol-card__icon--experience">&#11088;</div>
+          <h3 class="sol-card__title">Improve customer experience</h3>
+          <p class="sol-card__desc">Give customers a fast, consistent way to interact with your business.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  {# ── STATEMENT SECTION ── #}
+  <section class="sol-statement">
+    <div class="sol-statement__inner">
+      <div data-reveal>
+        <span class="sol-statement__eyebrow">Start small. Grow fast.</span>
+        <h2 class="sol-statement__h2">One AI employee can start with one problem. Then grow with your business.</h2>
+        <p class="sol-statement__p">
+          You don't need to automate everything at once. Pick the problem that costs you the most time or revenue today — and start there.
+        </p>
+        <ul class="sol-statement__list">
+          <li>Capture more enquiries before opportunities disappear</li>
+          <li>Qualify leads so your sales team focuses on what matters</li>
+          <li>Automate customer support for faster, consistent answers</li>
+          <li>Reduce repetitive work and free up your team</li>
+          <li>Stay responsive beyond traditional working hours</li>
+          <li>Improve customer experience with every interaction</li>
+        </ul>
+        <a href="{% url 'signup' %}" class="lb__btn lb__btn--primary">Find Your AI Use Case &rarr;</a>
+      </div>
+      <div class="sol-statement__visual" data-reveal>
+        <div class="sol-pill">
+          <span class="sol-pill__check">&#10003;</span>
+          Capture more enquiries
+        </div>
+        <div class="sol-pill">
+          <span class="sol-pill__check">&#10003;</span>
+          Qualify leads
+        </div>
+        <div class="sol-pill">
+          <span class="sol-pill__check">&#10003;</span>
+          Automate customer support
+        </div>
+        <div class="sol-pill">
+          <span class="sol-pill__check">&#10003;</span>
+          Reduce repetitive work
+        </div>
+        <div class="sol-pill">
+          <span class="sol-pill__check">&#10003;</span>
+          Stay responsive
+        </div>
+        <div class="sol-pill">
+          <span class="sol-pill__check">&#10003;</span>
+          Improve customer experience
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# ── FINAL CTA ── #}
+  <section class="sol-cta">
+    <div class="sol-cta__inner" data-reveal>
+      <span class="lb__eyebrow" style="color:#cfe9ff; background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.16);">Start with one problem</span>
+      <h2 class="sol-cta__h2">Find your AI use case and get started today.</h2>
+      <p class="sol-cta__sub">One AI employee. One problem. Then grow from there.</p>
+      <div class="sol-cta__actions">
+        <a href="{% url 'signup' %}" class="lb__btn" style="background:#fff; color:#15161b;">Find Your AI Use Case</a>
+        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline" style="color:#fff; border-color:rgba(255,255,255,0.3);">Book a demo &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="{% static 'solutions.js' %}" defer></script>
+{% endblock %}

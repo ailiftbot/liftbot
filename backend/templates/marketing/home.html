@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}LiftBot — Meet Your AI Employee{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'marketing.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="lb">
+
+  {# ══════════════ HERO ══════════════ #}
+  <section class="lb__hero lb__container" data-reveal>
+    <div class="lb__hero-glow" aria-hidden="true"></div>
+    <div class="lb__hero-grid">
+      <div>
+        <span class="lb__eyebrow">AI Employees for Modern Businesses</span>
+        <h1 class="lb__h1">Meet Your <br>AI Employee.</h1>
+        <p class="lb__lede">
+          LiftBot helps your business handle customer conversations, capture enquiries, qualify leads and automate repetitive work with an AI employee built around your business.
+        </p>
+        <div class="lb__hero-cta">
+          <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary" id="firsttbtn">Get Early Access</a>
+          <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline">Book a Demo →</a>
+        </div>
+        <div class="lb__hero-trust">
+          <span>24/7 availability</span>
+          <span>Business knowledge</span>
+          <span>Lead management</span>
+          <span>Human handoff</span>
+        </div>
+      </div>
+
+      <div class="lb__hero-visual">
+        <div class="lb__demo-card">
+          <div class="lb__demo-head">
+            <div class="lb__demo-who">
+              <span class="lb__avatar lb__avatar--1" style="width:28px;height:28px;font-size:11px;">S</span>
+              AI Sales Employee
+            </div>
+            <span class="lb__demo-online">Online</span>
+          </div>
+          <div class="lb__bubble lb__bubble--in">Your customers can reach you at any time.</div>
+          <div class="lb__bubble lb__bubble--out">LiftBot helps your business stay responsive when your team is busy, unavailable or focused on higher-value work.</div>
+          <div class="lb__bubble lb__bubble--in">Answer questions. Capture opportunities. Keep conversations moving.</div>
+          <span class="lb__demo-chip">Your AI employee works alongside your team</span>
+        </div>
+        <div class="lb__float-card lb__employee-card lb__float-card--a">
+          <div class="lb__avatar lb__avatar--2">SU</div>
+          <div>
+            <div class="lb__employee-name">Support</div>
+            <div class="lb__employee-role">Online now</div>
+          </div>
+        </div>
+        <div class="lb__float-card lb__employee-card lb__float-card--b">
+          <div class="lb__avatar lb__avatar--3">R</div>
+          <div>
+            <div class="lb__employee-name">Reception</div>
+            <div class="lb__employee-role">Online now</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# ══════════════ YOUR TEAM CAN'T BE EVERYWHERE ══════════════ #}
+  <section class="lb__section lb__section--dim lb__container" data-reveal>
+    <div class="lb__statement">
+      <h2 class="lb__h2">Your team can't be everywhere.</h2>
+      <p class="lb__statement-sub">
+        Your customers can reach you at any time. LiftBot helps your business stay responsive when your team is busy, unavailable or focused on higher-value work.
+      </p>
+      <div class="lb__pill-row">
+        <span class="lb__pill">Answer questions</span>
+        <span class="lb__pill">Capture opportunities</span>
+        <span class="lb__pill">Keep conversations moving</span>
+      </div>
+      <p class="lb__statement-sub" style="margin-top:26px; margin-bottom:0; font-weight:600; color:var(--ink);">
+        Your AI employee works alongside your team.
+      </p>
+    </div>
+  </section>
+
+  {# ══════════════ WHAT IS AN AI EMPLOYEE ══════════════ #}
+  <section class="lb__section lb__container" data-reveal>
+    <div class="lb__section-head">
+      <div>
+        <span class="lb__eyebrow">Give AI a job</span>
+        <h2 class="lb__h2" style="margin-top:16px;">What exactly is an AI employee?</h2>
+        <p class="lb__lede">
+          An AI employee is a digital team member designed around a specific business role. Unlike a basic chatbot, LiftBot lets you define what your AI employee knows, what it does, how it communicates and when it should involve your human team.
+        </p>
+      </div>
+    </div>
+
+    <div class="lb__role-grid">
+      <div class="lb__role-card">
+        <div class="lb__avatar lb__avatar--1">S</div>
+        <h3 class="lb__h3">Sales</h3>
+        <p class="lb__role-desc">Engage and qualify potential customers.</p>
+      </div>
+      <div class="lb__role-card">
+        <div class="lb__avatar lb__avatar--2">SU</div>
+        <h3 class="lb__h3">Support</h3>
+        <p class="lb__role-desc">Handle common customer questions.</p>
+      </div>
+      <div class="lb__role-card">
+        <div class="lb__avatar lb__avatar--3">R</div>
+        <h3 class="lb__h3">Reception</h3>
+        <p class="lb__role-desc">Welcome visitors and guide enquiries.</p>
+      </div>
+      <div class="lb__role-card">
+        <div class="lb__avatar lb__avatar--4">LQ</div>
+        <h3 class="lb__h3">Lead Qualification</h3>
+        <p class="lb__role-desc">Understand customer requirements.</p>
+      </div>
+      <div class="lb__role-card">
+        <div class="lb__avatar lb__avatar--5">A</div>
+        <h3 class="lb__h3">Appointments</h3>
+        <p class="lb__role-desc">Help customers move toward the next step.</p>
+      </div>
+    </div>
+
+    <div class="lb__explore">
+      <a href="{% url 'ai_employees' %}" class="lb__link-arrow">Explore AI Employees →</a>
+    </div>
+  </section>
+
+  {# ══════════════ BUILT AROUND YOUR BUSINESS ══════════════ #}
+  <section class="lb__section lb__section--dim lb__container" data-reveal>
+    <div class="lb__knowledge">
+      <div>
+        <h2 class="lb__h2">Built around your business.</h2>
+        <p class="lb__lede">Your AI employee should understand <strong>your</strong> business. Configure LiftBot using your:</p>
+      </div>
+      <div class="lb__knowledge-visual">
+        <div class="lb__tag-cloud">
+          <span class="lb__tag lb__tag--in">Products</span>
+          <span class="lb__tag lb__tag--in">Services</span>
+          <span class="lb__tag lb__tag--in">FAQs</span>
+          <span class="lb__tag">Policies</span>
+          <span class="lb__tag">Processes</span>
+          <span class="lb__tag">Business information</span>
+          <span class="lb__tag">Brand communication</span>
+        </div>
+        <div class="lb__employee-card">
+          <div class="lb__avatar lb__avatar--1">
+            S
+            <span class="lb__avatar-dot"></span>
+          </div>
+          <div>
+            <div class="lb__employee-name">AI Sales Employee</div>
+            <div class="lb__employee-role">Trained on your business · Online now</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="lb__center" style="margin-top:40px; font-weight:600; color:var(--ink); font-size:1.05rem;">
+      Your knowledge. Your rules. Your AI employee.
+    </p>
+  </section>
+
+  {# ══════════════ FROM FIRST QUESTION TO QUALIFIED OPPORTUNITY ══════════════ #}
+  <section class="lb__section lb__container" data-reveal>
+    <div class="lb__section-head" style="display:block; text-align:center; margin-bottom:56px;">
+      <span class="lb__eyebrow">Turn conversations into opportunities</span>
+      <h2 class="lb__h2" style="margin-top:16px;">From first question to qualified opportunity.</h2>
+    </div>
+
+    <div class="lb__timeline">
+      <div class="lb__step">
+        <div class="lb__step-num">01</div>
+        <div class="lb__step-body"><p>A customer visits your website.</p></div>
+      </div>
+      <div class="lb__step">
+        <div class="lb__step-num">02</div>
+        <div class="lb__step-body"><p>They ask a question.</p></div>
+      </div>
+      <div class="lb__step">
+        <div class="lb__step-num">03</div>
+        <div class="lb__step-body"><p>LiftBot responds using your business knowledge.</p></div>
+      </div>
+      <div class="lb__step">
+        <div class="lb__step-num">04</div>
+        <div class="lb__step-body"><p>It understands what the customer needs.</p></div>
+      </div>
+      <div class="lb__step">
+        <div class="lb__step-num">05</div>
+        <div class="lb__step-body"><p>It can collect relevant information.</p></div>
+      </div>
+      <div class="lb__step">
+        <div class="lb__step-num">06</div>
+        <div class="lb__step-body"><p>Your team receives the conversation when human involvement is needed.</p></div>
+      </div>
+    </div>
+  </section>
+
+  {# ══════════════ AI THAT WORKS WITH YOUR TEAM ══════════════ #}
+  <section class="lb__section lb__section--ink lb__container" data-reveal>
+    <div class="lb__center" style="max-width:640px; margin-bottom:56px;">
+      <h2 class="lb__h2" style="color:#fff;">AI that works with your team.</h2>
+      <p class="lb__lede" style="margin-inline:auto;">
+        LiftBot isn't about removing people from the customer experience. It's about giving your people more time.
+      </p>
+    </div>
+
+    <div class="lb__split">
+      <div class="lb__split-card lb__split-card--ai">
+        <div class="lb__split-head">
+          <span class="lb__split-dot"></span>
+          <strong>Let AI handle</strong>
+        </div>
+        <ul class="lb__split-list">
+          <li>Routine questions</li>
+          <li>Initial enquiries</li>
+          <li>Information requests</li>
+          <li>Lead information</li>
+          <li>Repetitive conversations</li>
+        </ul>
+      </div>
+      <div class="lb__split-card lb__split-card--human">
+        <div class="lb__split-head">
+          <span class="lb__split-dot"></span>
+          <strong>Let your team handle</strong>
+        </div>
+        <ul class="lb__split-list">
+          <li>Complex situations</li>
+          <li>Important decisions</li>
+          <li>High-value opportunities</li>
+          <li>Relationships</li>
+          <li>Human judgment</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  {# ══════════════ START WITH ONE AI EMPLOYEE ══════════════ #}
+  <section class="lb__section lb__container" data-reveal>
+    <div class="lb__section-head" style="display:block; text-align:center; margin-bottom:48px;">
+      <span class="lb__eyebrow">One platform. Multiple roles.</span>
+      <h2 class="lb__h2" style="margin-top:16px;">Start with one AI employee.</h2>
+      <p class="lb__lede" style="margin-inline:auto;">As your business grows, your AI workforce can grow with it.</p>
+    </div>
+
+    <div class="lb__roster-grid">
+      <div class="lb__role-card">
+        <div class="lb__avatar lb__avatar--1">S</div>
+        <h3 class="lb__h3">AI Sales Employee</h3>
+      </div>
+      <div class="lb__role-card">
+        <div class="lb__avatar lb__avatar--2">SU</div>
+        <h3 class="lb__h3">AI Support Employee</h3>
+      </div>
+      <div class="lb__role-card">
+        <div class="lb__avatar lb__avatar--3">R</div>
+        <h3 class="lb__h3">AI Receptionist</h3>
+      </div>
+      <div class="lb__role-card">
+        <div class="lb__avatar lb__avatar--4">LQ</div>
+        <h3 class="lb__h3">AI Lead Qualification Employee</h3>
+      </div>
+      <div class="lb__role-card">
+        <div class="lb__avatar lb__avatar--5">A</div>
+        <h3 class="lb__h3">AI Appointment Assistant</h3>
+      </div>
+    </div>
+
+    <div class="lb__explore" style="text-align:center;">
+      <a href="{% url 'ai_employees' %}" class="lb__link-arrow">Explore AI Employees →</a>
+    </div>
+  </section>
+
+  {# ══════════════ FINAL CTA ══════════════ #}
+  <section class="lb__section lb__section--ink lb__container">
+    <div class="lb__cta-band" data-reveal>
+      <h2 class="lb__h2" style="color:#fff;">Ready to give your business an AI employee?</h2>
+      <p class="lb__lede" style="color:rgba(255,255,255,0.72);">
+        Build a smarter way to engage customers, capture opportunities and automate repetitive work.
+      </p>
+      <div class="lb__cta-actions">
+        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary" id="lastbtn">Get Early Access</a>
+        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline">Book a Demo →</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="{% static 'marketing.js' %}" defer></script>
+{% endblock %}

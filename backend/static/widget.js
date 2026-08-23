@@ -211,19 +211,25 @@
     }
 
     function openRect() {
-      var reset = { borderRadius: '16px', boxShadow: 'none', overflow: 'visible' };
+      var reset = { borderRadius: '16px', boxShadow: 'none', overflow: 'hidden' };
       if (isMobileViewport()) {
-        var vh = window.innerHeight;
-        var fab = fabSize();
-        var gap = 10;
-        var inset = 12;
-        var panelH = Math.min(480, Math.round(vh * 0.58));
+        var vv = window.visualViewport;
+        var layoutH = window.innerHeight;
+        var vh = vv ? vv.height : layoutH;
+        var vTop = vv ? Math.round(vv.offsetTop) : 0;
+        var inset = 8;
+        var usable = Math.max(240, Math.round(vh - inset * 2));
+        var keyboardOpen = vh < layoutH * 0.82;
+        var height = keyboardOpen ? usable : Math.min(usable, Math.round(vh * 0.7));
+        var top = keyboardOpen
+          ? (vTop + inset)
+          : (vTop + vh - height - inset);
         return Object.assign({
           left: inset + 'px',
           right: inset + 'px',
           width: 'auto',
-          bottom: offsetY + 'px',
-          height: (panelH + gap + fab) + 'px',
+          top: top + 'px',
+          height: height + 'px',
         }, reset);
       }
       return anchorStyle(Object.assign({
@@ -263,12 +269,9 @@
       'box-shadow:none;background:' + color + ';}' +
       '.lb-panel{display:none;flex-direction:column;width:100%;height:100%;background:#fff;border-radius:16px;' +
       'overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.22);}' +
-      'body.open:not(.mobile){align-items:stretch}' +
-      'body.open:not(.mobile) .lb-launcher{display:none}' +
-      'body.open:not(.mobile) .lb-panel{display:flex;flex:1;min-height:0;height:auto}' +
-      'body.open.mobile{align-items:stretch}' +
-      'body.open.mobile .lb-launcher{width:56px;height:56px;flex-shrink:0;align-self:flex-end}' +
-      'body.open.mobile .lb-panel{display:flex;flex:1;min-height:0;height:auto;margin-bottom:10px}' +
+      'body.open{align-items:stretch}' +
+      'body.open .lb-launcher{display:none!important}' +
+      'body.open .lb-panel{display:flex;flex:1;min-height:0;height:100%;width:100%;margin:0}' +
       '.lb-header{background:' + color + ';color:#fff;padding:14px 16px;display:flex;gap:10px;align-items:center;flex-shrink:0;}' +
       '.lb-header img{width:40px;height:40px;border-radius:999px;object-fit:cover;}' +
       '.lb-name{font-weight:700;}' +

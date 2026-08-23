@@ -1,6 +1,7 @@
 /**
  * LiftBot — Demo page JS
- * Scroll reveal (same pattern as industries.js) + scenario card interaction
+ * Scroll reveal + scenario card interaction + URL deep-linking
+ * (e.g. /demo/?scenario=sales auto-selects the matching card)
  */
 (function () {
   "use strict";
@@ -40,16 +41,52 @@
   /* Scenario card click → mark active + scroll to pre-launch panel */
   var scenarioCards = document.querySelectorAll(".dem-scenario-card");
   var panel = document.getElementById("demo-panel");
+  var panelHeading = panel ? panel.querySelector(".dem-prelaunch__h2") : null;
+
+  var SCENARIO_LABELS = {
+    sales:    "AI Sales Employee",
+    travel:   "AI Travel Consultant",
+    shopping: "AI Shopping Assistant",
+    support:  "AI Customer Support"
+  };
+
+  function activateScenario(key, shouldScroll) {
+    var matchedCard = null;
+    scenarioCards.forEach(function (c) {
+      var isMatch = c.getAttribute("data-scenario") === key;
+      c.classList.toggle("is-active", isMatch);
+      if (isMatch) matchedCard = c;
+    });
+
+    if (!matchedCard) return;
+
+    if (panelHeading && SCENARIO_LABELS[key]) {
+      panelHeading.textContent =
+        SCENARIO_LABELS[key] + " is currently available through early access.";
+    }
+
+    if (shouldScroll && panel) {
+      panel.classList.add("is-visible");
+      panel.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
+    }
+  }
 
   scenarioCards.forEach(function (card) {
     card.addEventListener("click", function () {
-      scenarioCards.forEach(function (c) { c.classList.remove("is-active"); });
-      card.classList.add("is-active");
+      var key = card.getAttribute("data-scenario");
+      activateScenario(key, true);
 
-      if (panel) {
-        panel.classList.add("is-visible");
-        panel.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
-      }
+      // Reflect selection in the URL (so it's shareable / refresh-safe)
+      var url = new URL(window.location.href);
+      url.searchParams.set("scenario", key);
+      window.history.replaceState({}, "", url);
     });
   });
+
+  /* ── Deep-link support: /demo/?scenario=sales auto-selects on load ── */
+  var params = new URLSearchParams(window.location.search);
+  var initialScenario = params.get("scenario");
+  if (initialScenario && SCENARIO_LABELS[initialScenario]) {
+    activateScenario(initialScenario, true);
+  }
 })();

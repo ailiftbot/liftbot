@@ -67,7 +67,7 @@
   }
 
   function isMobileViewport() {
-    return window.matchMedia && window.matchMedia('(max-width: 640px)').matches;
+    return window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
   }
 
   function safeJSON(obj) {
@@ -195,48 +195,45 @@
     if (document.getElementById('liftbot-shell-' + token)) return;
     var shell = createShell('liftbot-shell-' + token);
     var open = false;
-    var fabSize = function () { return isMobileViewport() ? 56 : 60; };
+    var fabSize = function () { return isMobileViewport() ? 60 : 64; };
 
     function closedRect() {
       var size = fabSize();
-      // Shadow on the circular host shell — not inside the square iframe.
       return anchorStyle({
         width: size + 'px',
         height: size + 'px',
         bottom: offsetY + 'px',
         borderRadius: '50%',
-        boxShadow: '0 8px 24px rgba(15,23,42,.22)',
+        boxShadow: '0 10px 28px rgba(15,23,42,.28)',
         overflow: 'visible',
       });
     }
 
     function openRect() {
-      var reset = { borderRadius: '16px', boxShadow: 'none', overflow: 'hidden' };
       if (isMobileViewport()) {
         var vv = window.visualViewport;
-        var layoutH = window.innerHeight;
-        var vh = vv ? vv.height : layoutH;
+        var vh = vv ? vv.height : window.innerHeight;
         var vTop = vv ? Math.round(vv.offsetTop) : 0;
-        var inset = 8;
-        var usable = Math.max(240, Math.round(vh - inset * 2));
-        var keyboardOpen = vh < layoutH * 0.82;
-        var height = keyboardOpen ? usable : Math.min(usable, Math.round(vh * 0.7));
-        var top = keyboardOpen
-          ? (vTop + inset)
-          : (vTop + vh - height - inset);
-        return Object.assign({
-          left: inset + 'px',
-          right: inset + 'px',
+        return {
+          left: '0px',
+          right: '0px',
           width: 'auto',
-          top: top + 'px',
-          height: height + 'px',
-        }, reset);
+          top: vTop + 'px',
+          height: Math.max(240, Math.round(vh)) + 'px',
+          borderRadius: '0px',
+          boxShadow: 'none',
+          overflow: 'hidden',
+        };
       }
-      return anchorStyle(Object.assign({
-        width: '380px',
-        height: '600px',
-        bottom: (offsetY + 68) + 'px',
-      }, reset));
+      var h = Math.min(720, Math.max(520, window.innerHeight - 40));
+      return anchorStyle({
+        width: '400px',
+        height: h + 'px',
+        bottom: (offsetY + 76) + 'px',
+        borderRadius: '24px',
+        boxShadow: '0 24px 64px rgba(15,23,42,.28)',
+        overflow: 'hidden',
+      });
     }
 
     function reposition() { shell.place(open ? openRect() : closedRect()); }
@@ -257,63 +254,89 @@
   }
 
   function employeeDocHtml(cfg, token, apiBase, visitorId, sessionKeyPrefix, sessionId, color) {
+    var initial = escapeHtml((cfg.name || 'AI').slice(0, 1).toUpperCase());
+    var avatar = cfg.avatar_url
+      ? '<img class="lb-avatar-img" src="' + escapeAttr(cfg.avatar_url) + '" alt="">'
+      : '<span class="lb-avatar-fallback">' + initial + '</span>';
     return '<!doctype html><html><head><meta charset="utf-8">' +
-      '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+      '<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">' +
       '<style>' +
       '*{box-sizing:border-box}' +
-      'html,body{margin:0;height:100%;width:100%;overflow:hidden;font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:transparent!important;pointer-events:none;color-scheme:normal;}' +
+      'html,body{margin:0;height:100%;width:100%;overflow:hidden;font-family:"Plus Jakarta Sans",ui-sans-serif,system-ui,sans-serif;background:transparent!important;pointer-events:none;color-scheme:normal;}' +
       'body{display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-end;}' +
       '.lb-launcher,.lb-panel{pointer-events:auto}' +
-      '.lb-launcher{all:unset;display:flex;align-items:center;justify-content:center;width:100%;height:100%;' +
-      'border-radius:50%;cursor:pointer;color:#fff;font-size:15px;font-weight:700;pointer-events:auto;' +
-      'box-shadow:none;background:' + color + ';}' +
-      '.lb-panel{display:none;flex-direction:column;width:100%;height:100%;background:#fff;border-radius:16px;' +
-      'overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.22);}' +
+      '.lb-launcher{all:unset;position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100%;' +
+      'border-radius:50%;cursor:pointer;color:#fff;pointer-events:auto;overflow:visible;' +
+      'background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.28),transparent 42%),' + color + ';' +
+      'transition:transform .15s ease;}' +
+      '.lb-launcher:hover{transform:scale(1.04)}' +
+      '.lb-launcher__pulse{position:absolute;inset:-5px;border-radius:50%;border:2px solid ' + color + ';opacity:.45;animation:lbPulse 2s ease-out infinite;pointer-events:none}' +
+      '.lb-launcher svg{width:28px;height:28px;position:relative;z-index:1}' +
+      '@keyframes lbPulse{0%{transform:scale(.92);opacity:.5}70%{transform:scale(1.18);opacity:0}100%{opacity:0}}' +
+      '.lb-panel{display:none;flex-direction:column;width:100%;height:100%;background:#f4f6fb;border-radius:24px;overflow:hidden}' +
       'body.open{align-items:stretch}' +
       'body.open .lb-launcher{display:none!important}' +
       'body.open .lb-panel{display:flex;flex:1;min-height:0;height:100%;width:100%;margin:0}' +
-      '.lb-header{background:' + color + ';color:#fff;padding:14px 16px;display:flex;gap:10px;align-items:center;flex-shrink:0;}' +
-      '.lb-header img{width:40px;height:40px;border-radius:999px;object-fit:cover;}' +
-      '.lb-name{font-weight:700;}' +
-      '.lb-status{font-size:12px;opacity:.9;}' +
-      '.lb-close{margin-left:auto;border:0;background:rgba(255,255,255,.18);color:#fff;width:30px;height:30px;' +
-      'border-radius:999px;cursor:pointer;font-size:16px;line-height:1;padding:0;}' +
-      '.lb-resume{padding:10px 12px;background:#EDE9FE;border-bottom:1px solid #DDD6FE;font-size:12px;color:#5B21B6;' +
-      'line-height:1.4;flex-shrink:0;}' +
-      '.lb-resume-actions{display:flex;gap:6px;margin-top:8px;}' +
-      '.lb-messages{flex:1;min-height:0;overflow-y:auto;padding:14px;background:#f7faf9;-webkit-overflow-scrolling:touch;}' +
-      '.lb-row{margin-bottom:8px;}' +
-      '.lb-bubble{display:inline-block;max-width:85%;padding:8px 12px;border-radius:16px;font-size:14px;line-height:1.4;' +
-      'border:1px solid #e5e7eb;background:#fff;color:#0B1220;}' +
-      '.lb-actions{padding:8px 10px;border-top:1px solid #E5E7EB;display:flex;flex-wrap:wrap;gap:6px;background:#fff;flex-shrink:0;}' +
-      '.lb-form{display:flex;align-items:center;gap:8px;padding:10px;' +
-      'border-top:1px solid #e5e7eb;background:#fff;flex-shrink:0;}' +
-      '.lb-input{flex:1;min-width:0;border:1px solid #d1d5db;border-radius:999px;padding:10px 14px;outline:none;font-size:16px;}' +
-      '.lb-send{border:0;border-radius:999px;background:' + color + ';color:#fff;padding:0 16px;min-height:40px;cursor:pointer;flex-shrink:0;}' +
-      '.lb-pill{border-radius:999px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600;font-family:inherit;}' +
-      '.lb-pill-solid{border:0;background:' + color + ';color:#fff;}' +
-      '.lb-pill-outline{border:1px solid #C4B5FD;background:#fff;color:#5B21B6;}' +
-      '.lb-field{display:block;width:100%;margin-bottom:6px;border:1px solid #D1D5DB;border-radius:8px;padding:8px 10px;font-size:13px;}' +
-      '.lb-card{margin-bottom:8px;padding:10px;background:#fff;border:1px solid #E5E7EB;border-radius:12px;}' +
-      '.lb-slot{display:block;width:100%;text-align:left;margin-bottom:6px;border:1px solid #DDD6FE;border-radius:8px;' +
-      'padding:8px 10px;background:#F5F3FF;cursor:pointer;font-size:12px;font-family:inherit;}' +
+      'body.open.mobile .lb-panel{border-radius:0}' +
+      '.lb-header{background:linear-gradient(135deg,' + color + ' 0%,#1f1147 140%);color:#fff;padding:14px 14px 14px 16px;' +
+      'display:flex;gap:12px;align-items:center;flex-shrink:0;box-shadow:0 8px 24px rgba(15,23,42,.12)}' +
+      '.lb-avatar{position:relative;width:42px;height:42px;flex-shrink:0}' +
+      '.lb-avatar-img,.lb-avatar-fallback{width:42px;height:42px;border-radius:50%;object-fit:cover;display:grid;place-items:center;' +
+      'background:rgba(255,255,255,.2);font-weight:800;font-size:16px;border:2px solid rgba(255,255,255,.35)}' +
+      '.lb-online{position:absolute;right:0;bottom:0;width:11px;height:11px;background:#22c55e;border:2px solid #fff;border-radius:50%}' +
+      '.lb-head-copy{min-width:0;flex:1}' +
+      '.lb-name{font-weight:800;font-size:15px;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+      '.lb-status{font-size:12px;opacity:.9;display:flex;align-items:center;gap:6px;margin-top:1px}' +
+      '.lb-close{margin-left:4px;border:0;background:rgba(255,255,255,.16);color:#fff;width:36px;height:36px;' +
+      'border-radius:12px;cursor:pointer;font-size:22px;line-height:1;padding:0;flex-shrink:0}' +
+      '.lb-close:hover{background:rgba(255,255,255,.26)}' +
+      '.lb-resume{padding:12px 14px;background:#EEF2FF;border-bottom:1px solid #E0E7FF;font-size:12.5px;color:#3730A3;line-height:1.45;flex-shrink:0}' +
+      '.lb-resume-actions{display:flex;gap:8px;margin-top:10px}' +
+      '.lb-messages{flex:1;min-height:0;overflow-y:auto;padding:16px 14px 8px;background:linear-gradient(#f4f6fb,#eef1f7);-webkit-overflow-scrolling:touch}' +
+      '.lb-row{margin-bottom:10px;display:flex}' +
+      '.lb-row--you{justify-content:flex-end}' +
+      '.lb-row--them{justify-content:flex-start}' +
+      '.lb-bubble{max-width:82%;padding:10px 14px;border-radius:18px;font-size:14.5px;line-height:1.45;word-wrap:break-word}' +
+      '.lb-bubble--them{background:#fff;color:#111827;border:1px solid #e8ecf3;border-bottom-left-radius:6px;box-shadow:0 1px 2px rgba(15,23,42,.04)}' +
+      '.lb-bubble--you{background:' + color + ';color:#fff;border:0;border-bottom-right-radius:6px}' +
+      '.lb-bubble--sys{background:#FEF3C7;color:#92400E;border:0;font-size:12.5px}' +
+      '.lb-bubble--human{background:#DBEAFE;color:#1E3A8A;border:0}' +
+      '.lb-bubble--typing{letter-spacing:2px;color:#6B7280;min-width:48px;text-align:center}' +
+      '.lb-actions{padding:8px 12px 4px;display:flex;flex-wrap:wrap;gap:8px;background:transparent;flex-shrink:0}' +
+      '.lb-form{display:flex;align-items:center;gap:10px;padding:10px 12px calc(12px + env(safe-area-inset-bottom,0px));' +
+      'background:#fff;border-top:1px solid #e8ecf3;flex-shrink:0}' +
+      '.lb-input{flex:1;min-width:0;border:1px solid #e5e7eb;background:#f8fafc;border-radius:22px;padding:12px 16px;outline:none;font-size:16px}' +
+      '.lb-input:focus{border-color:' + color + ';background:#fff;box-shadow:0 0 0 3px rgba(124,58,237,.12)}' +
+      '.lb-send{border:0;border-radius:50%;background:' + color + ';color:#fff;width:44px;height:44px;cursor:pointer;flex-shrink:0;display:grid;place-items:center}' +
+      '.lb-send:disabled{opacity:.55}' +
+      '.lb-send svg{width:18px;height:18px}' +
+      '.lb-pill{border-radius:999px;padding:7px 12px;font-size:12px;cursor:pointer;font-weight:650;font-family:inherit}' +
+      '.lb-pill-solid{border:0;background:' + color + ';color:#fff}' +
+      '.lb-pill-outline{border:1px solid #ddd6fe;background:#fff;color:#5B21B6}' +
+      '.lb-field{display:block;width:100%;margin-bottom:6px;border:1px solid #D1D5DB;border-radius:10px;padding:10px 12px;font-size:14px}' +
+      '.lb-card{margin:0 0 10px;padding:12px;background:#fff;border:1px solid #E5E7EB;border-radius:14px;width:100%}' +
+      '.lb-slot{display:block;width:100%;text-align:left;margin-bottom:6px;border:1px solid #DDD6FE;border-radius:10px;' +
+      'padding:10px 12px;background:#F5F3FF;cursor:pointer;font-size:13px;font-family:inherit}' +
       '</style></head><body class="closed">' +
-      '<button type="button" class="lb-launcher" id="lbLauncher" aria-label="Open chat">' +
-      escapeHtml((cfg.name || 'AI').slice(0, 1).toUpperCase()) +
+      '<button type="button" class="lb-launcher" id="lbLauncher" aria-label="Open conversation">' +
+      '<span class="lb-launcher__pulse" aria-hidden="true"></span>' +
+      '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.5 19.5V6.75A2.75 2.75 0 0 1 7.25 4h9.5A2.75 2.75 0 0 1 19.5 6.75v7A2.75 2.75 0 0 1 16.75 16.5H8.12L4.5 19.5Z"/></svg>' +
       '</button>' +
       '<div class="lb-panel">' +
       '<div class="lb-header">' +
-      (cfg.avatar_url ? '<img src="' + escapeAttr(cfg.avatar_url) + '" alt="">' : '') +
-      '<div><div class="lb-name">' + escapeHtml(cfg.name || '') + '</div>' +
-      '<div class="lb-status" id="lbStatus">' + escapeHtml((cfg.role || '') + ' · AI Employee') + '</div></div>' +
-      '<button type="button" class="lb-close" id="lbClose" aria-label="Close chat">&times;</button>' +
+      '<div class="lb-avatar">' + avatar + '<span class="lb-online" aria-hidden="true"></span></div>' +
+      '<div class="lb-head-copy"><div class="lb-name">' + escapeHtml(cfg.name || '') + '</div>' +
+      '<div class="lb-status" id="lbStatus">Online · ' + escapeHtml(cfg.role || 'AI Employee') + '</div></div>' +
+      '<button type="button" class="lb-close" id="lbClose" aria-label="Close">&times;</button>' +
       '</div>' +
       (cfg.returning_visitor && cfg.resume_message ? '<div class="lb-resume" id="lbResume"></div>' : '') +
       '<div class="lb-messages" id="lbMessages"></div>' +
       '<div class="lb-actions" id="lbActions"></div>' +
       '<form class="lb-form" id="lbForm">' +
-      '<input class="lb-input" id="lbInput" type="text" placeholder="Message ' + escapeAttr(cfg.name || '') + '…" autocomplete="off">' +
-      '<button class="lb-send" id="lbSend" type="submit">Send</button>' +
+      '<input class="lb-input" id="lbInput" type="text" placeholder="Write a message…" autocomplete="off">' +
+      '<button class="lb-send" id="lbSend" type="submit" aria-label="Send">' +
+      '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.6 21 12 3.4 3.4l.1 6.7L14 12 3.5 13.9z"/></svg>' +
+      '</button>' +
       '</form>' +
       '</div>' +
       '<script>window.__LB__=' + safeJSON({
@@ -334,7 +357,7 @@
       'var closeBtn=document.getElementById("lbClose"),form=document.getElementById("lbForm"),input=document.getElementById("lbInput");' +
       'var sendBtn=document.getElementById("lbSend");' +
 
-      'function isMobile(){try{return window.parent.matchMedia("(max-width:640px)").matches;}catch(e){return window.matchMedia("(max-width:640px)").matches;}}' +
+      'function isMobile(){try{return window.parent.matchMedia("(max-width:768px)").matches;}catch(e){return window.matchMedia("(max-width:768px)").matches;}}' +
       'function syncChrome(){var open=document.body.classList.contains("open");' +
       'document.body.className=(open?"open":"closed")+(isMobile()?" mobile":"");}' +
       'syncChrome();window.addEventListener("resize",syncChrome);' +
@@ -352,11 +375,10 @@
       'function addMsg(kind,text){var mine=kind==="you",sys=kind==="system",human=kind==="human";' +
       'var last=messages.lastElementChild&&messages.lastElementChild.querySelector(".lb-bubble");' +
       'if(!mine&&last&&last.textContent===text)return last;' +
-      'var row=document.createElement("div");row.className="lb-row";row.style.textAlign=mine?"right":"left";' +
-      'var b=document.createElement("div");b.className="lb-bubble";b.textContent=text;' +
-      'b.style.background=sys?"#FEF3C7":human?"#DBEAFE":"#fff";' +
-      'if(mine){b.style.background=D.color||"#7C3AED";b.style.color="#fff";b.style.border="0";}' +
-      'row.appendChild(b);messages.appendChild(row);messages.scrollTop=messages.scrollHeight;return b;}' +
+      'var row=document.createElement("div");row.className="lb-row "+(mine?"lb-row--you":"lb-row--them");' +
+      'var b=document.createElement("div");b.className="lb-bubble "+(mine?"lb-bubble--you":sys?"lb-bubble--sys":human?"lb-bubble--human":"lb-bubble--them");' +
+      'if(text==="…")b.className+=" lb-bubble--typing";' +
+      'b.textContent=text;row.appendChild(b);messages.appendChild(row);messages.scrollTop=messages.scrollHeight;return b;}' +
 
       'function pill(solid){return "lb-pill "+(solid?"lb-pill-solid":"lb-pill-outline");}' +
 
@@ -372,7 +394,7 @@
       'fetchJson(apiBase+"/action/",{method:"POST",headers:{"Content-Type":"application/json"},' +
       'body:JSON.stringify({token:token,action:action,visitor_id:visitorId,session_id:sessionId,data:data||{}})})' +
       '.then(function(res){if(res.session_id){sessionId=res.session_id;localStorage.setItem(sessionKey,sessionId);}' +
-      'node.textContent=res.message||"Done.";if(res.request_takeover){humanMode=true;' +
+      'node.classList.remove("lb-bubble--typing");node.textContent=res.message||"Done.";if(res.request_takeover){humanMode=true;' +
       'statusEl.textContent="Connecting you to a teammate…";startPolling();}})' +
       '.catch(function(err){node.textContent=err.message||"Could not complete that action.";});}' +
 
@@ -409,11 +431,12 @@
       'body:JSON.stringify({token:token,message:text,visitor_id:visitorId,session_id:sessionId,stream:false,continue_last:!!continueLast})})' +
       '.then(function(data){if(data.session_id){sessionId=data.session_id;localStorage.setItem(sessionKey,sessionId);}' +
       'if(data.message_id){lastMsgId=Math.max(lastMsgId,data.message_id);seenIds[data.message_id]=1;}' +
+      'node.classList.remove("lb-bubble--typing");' +
       'if(data.human_mode){humanMode=true;node.textContent=data.message||"A teammate will reply shortly.";' +
       'statusEl.textContent="Talking with a teammate";startPolling();return;}' +
       'node.textContent=data.reply||"No reply.";' +
       'if(data.actions&&data.actions.tasks_created&&data.actions.tasks_created.length)addMsg("system","✓ "+data.actions.tasks_created[0].title);})' +
-      '.catch(function(){node.textContent="Sorry, I could not reply right now.";})' +
+      '.catch(function(){node.classList.remove("lb-bubble--typing");node.textContent="Sorry, I could not reply right now.";})' +
       '.then(function(){sending=false;if(sendBtn)sendBtn.disabled=false;});}' +
 
       'var resumeEl=document.getElementById("lbResume");' +

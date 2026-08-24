@@ -100,19 +100,19 @@ main:has(.lb) {
 .feat-card__icon {
   width: 46px; height: 46px; border-radius: 13px;
   display: grid; place-items: center; margin-bottom: 18px;
-  font-size: 20px;
 }
-.feat-card__icon--1  { background: #eeecff; }
-.feat-card__icon--2  { background: #e6fbf0; }
-.feat-card__icon--3  { background: #ffeaf2; }
-.feat-card__icon--4  { background: #fff8e5; }
-.feat-card__icon--5  { background: #f0f4ff; }
-.feat-card__icon--6  { background: #f5f0ff; }
-.feat-card__icon--7  { background: #e8f4f8; }
-.feat-card__icon--8  { background: #fff0eb; }
-.feat-card__icon--9  { background: #f0fff4; }
-.feat-card__icon--10 { background: #fdf5ff; }
-.feat-card__icon--11 { background: #f8f9fa; }
+.feat-card__icon svg { width: 22px; height: 22px; display: block; }
+.feat-card__icon--1  { background: #eeecff; color: #4b3aff; }
+.feat-card__icon--2  { background: #e6fbf0; color: #0ea968; }
+.feat-card__icon--3  { background: #ffeaf2; color: #d6336c; }
+.feat-card__icon--4  { background: #fff8e5; color: #c98a02; }
+.feat-card__icon--5  { background: #f0f4ff; color: #3b5bdb; }
+.feat-card__icon--6  { background: #f5f0ff; color: #6f42c1; }
+.feat-card__icon--7  { background: #e8f4f8; color: #0f7490; }
+.feat-card__icon--8  { background: #fff0eb; color: #d9480f; }
+.feat-card__icon--9  { background: #f0fff4; color: #2f9e44; }
+.feat-card__icon--10 { background: #fdf5ff; color: #9c36b5; }
+.feat-card__icon--11 { background: #f8f9fa; color: #495057; }
 
 .feat-card__title {
   font-family: "Space Grotesk", sans-serif; font-weight: 700;

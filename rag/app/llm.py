@@ -5,7 +5,7 @@ import httpx
 
 
 class LLMFallbackChain:
-    """Groq (Llama 3.3 70B) → Gemini 2.0 Flash → OpenRouter."""
+    """Groq (openai/gpt-oss-120b) → Gemini 2.0 Flash → OpenRouter."""
 
     def __init__(self):
         self.groq_key = os.getenv('GROQ_API_KEY', '')
@@ -39,11 +39,17 @@ class LLMFallbackChain:
         for m in messages:
             role = 'user' if m.get('role') == 'visitor' else 'assistant'
             chat_messages.append({'role': role, 'content': m['content']})
+        
+        # DYNAMIC TEMPERATURE (Creative vs Factual)
+        creative_keywords = ["write", "draft", "slogan", "creative", "email"]
+        is_creative = any(kw in messages[-1]['content'].lower() for kw in creative_keywords)
+        temp_value = 0.7 if is_creative else 0.3
+
         stream = client.chat.completions.create(
-            model='llama-3.3-70b-versatile',
+            model='openai/gpt-oss-120b', # UPDATED MODEL (Fixes 404 error)
             messages=chat_messages,
             stream=True,
-            temperature=0.3,
+            temperature=temp_value, # Dynamic temperature
         )
         for chunk in stream:
             delta = chunk.choices[0].delta.content or ''

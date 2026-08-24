@@ -5,6 +5,7 @@ from typing import List, Optional
 from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
+from langchain_text_splitters import RecursiveCharacterTextSplitter # ADDED
 
 from .llm import LLMFallbackChain
 from .vectorstore import EmployeeVectorStore
@@ -41,18 +42,17 @@ class ChatRequest(BaseModel):
     capabilities: List[str] = Field(default_factory=list)
 
 
+# SMART CHUNKING (Sentences are respected now)
 def chunk_text(text: str, size: int = 800, overlap: int = 120) -> List[str]:
     text = re.sub(r'\s+', ' ', text).strip()
     if not text:
         return []
-    chunks = []
-    start = 0
-    while start < len(text):
-        end = min(len(text), start + size)
-        chunks.append(text[start:end])
-        if end == len(text):
-            break
-        start = max(0, end - overlap)
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=size,
+        chunk_overlap=overlap,
+        separators=["\n\n", "\n", ". ", " ", ""]
+    )
+    chunks = splitter.split_text(text)
     return chunks
 
 
@@ -71,15 +71,33 @@ def ingest(body: IngestRequest):
 
 @app.post('/chat', dependencies=[Depends(verify_token)])
 def chat(body: ChatRequest):
-    hits = store.search(body.employee_id, body.message, top_k=body.top_k)
-    context = '\n\n'.join(f'[{i+1}] {text}' for i, (text, _, _) in enumerate(hits)) or 'No training context available.'
+    # Better Retrieval: Fetch 10, filter by score, take top 4
+    hits = store.search(body.employee_id, body.message, top_k=10)
+    filtered_hits = [h for h in hits if h[2] >= 0.7]
+    top_hits = filtered_hits[:4]
+
+    if not top_hits:
+        context = "No relevant training context available for this query."
+    else:
+        context = '\n\n'.join(text for text, _, _ in top_hits)
+
+    # Structured Prompt (Clean without Source Index)
     system = (
-        f'{body.system_prompt}\n\n'
-        f'Context from training materials:\n{context}\n\n'
-        'Answer as a proactive AI Employee. Take action when appropriate — qualify, collect details, offer scheduling, confirm team handoff.\n'
-        'Write a single reply only. Never repeat the same greeting, introduction, or paragraph twice.\n'
-        'If the context does not contain the answer, say you will note it and follow up — do not invent facts.'
+        f"### ROLE ###\n"
+        f"You are {body.system_prompt}\n\n"
+        
+        f"### KNOWLEDGE BASE CONTEXT ###\n"
+        f"{context}\n\n"
+        
+        f"### STRICT INSTRUCTIONS ###\n"
+        f"1. Answer ONLY using the context provided above.\n"
+        f"2. If the context does not contain the answer, say: 'I am sorry, I don't have that specific information yet. I will note it down and follow up.'\n"
+        f"3. Do NOT invent facts or make up information.\n"
+        f"4. **CRITICAL: NEVER repeat the same response or text twice.** If you have already said it, do not say it again. Always provide a unique, concise answer.\n"
+        f"5. If the user asks about pricing or scheduling, proactively suggest the 'Schedule' or 'Contact' action.\n"
+        f"6. Format your answer in short, easy-to-read bullet points."
     )
+
     history = [m.model_dump() for m in body.history]
     if not history or history[-1].get('content') != body.message:
         history.append({'role': 'visitor', 'content': body.message})

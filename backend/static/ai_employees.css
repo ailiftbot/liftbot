@@ -16,7 +16,7 @@ main:has(.lb) {
   overflow: hidden;
   padding: 120px 24px 100px;
   text-align: center;
-  background: #fff;
+  background: #f3f2ee;
 }
 .aie-hero__noise {
   position: absolute; inset: 0; pointer-events: none;
@@ -24,12 +24,15 @@ main:has(.lb) {
   opacity: 0.5;
 }
 .aie-hero__glow {
-  position: absolute; inset: -30% -20% auto -20%;
-  height: 700px; pointer-events: none;
-  background:
-    radial-gradient(500px 400px at 30% 20%, rgba(75,58,255,0.12), transparent 70%),
-    radial-gradient(400px 300px at 80% 15%, rgba(255,77,141,0.10), transparent 70%);
-  filter: blur(14px);
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 640px;
+  height: 460px;
+  background: radial-gradient(ellipse at center, rgba(75,58,255,0.16) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
 }
 .aie-hero__inner {
   position: relative; z-index: 1;
@@ -129,7 +132,7 @@ main:has(.lb) {
 
 /* ── "What makes an AI employee different?" section ── */
 .aie-diff {
-  background: #fff;
+  background: #f3f2ee;
   padding: 100px 24px;
   border-bottom: 1px solid #e7e5de;
 }
@@ -215,16 +218,16 @@ main:has(.lb) {
 
 /* ── Final CTA ── */
 .aie-cta {
-  background: #15161b; color: #fff;
+  background: #f3f2ee; color: #15161b;
   padding: 120px 24px; text-align: center;
 }
 .aie-cta__inner { max-width: 680px; margin-inline: auto; }
 .aie-cta__h2 {
   font-family: "Space Grotesk", sans-serif; font-weight: 700;
   font-size: clamp(2.2rem, 4vw, 3.6rem); letter-spacing: -0.03em;
-  line-height: 1.08; margin: 18px 0 18px; color: #fff;
+  line-height: 1.08; margin: 18px 0 18px; color: #15161b;
 }
-.aie-cta__sub { font-size: 1.05rem; color: rgba(255,255,255,0.6); margin: 0 0 38px; }
+.aie-cta__sub { font-size: 1.05rem; color: #53555f; margin: 0 0 38px; }
 .aie-cta__actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
 
 /* ── Footer ── */

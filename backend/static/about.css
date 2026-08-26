@@ -44,7 +44,7 @@ main:has(.lb) {
 .abt-hero {
   position: relative;
   overflow: hidden;
-  background: #fff;
+  background: #f3f2ee;
   text-align: center;
   padding: 120px 24px 100px;
 }
@@ -126,7 +126,7 @@ main:has(.lb) {
    ORIGIN STORY
    ============================================================ */
 .abt-origin {
-  background: #fff;
+  background: #f3f2ee;
   padding: 100px 24px;
   border-top: 1px solid var(--paper-line);
 }
@@ -215,7 +215,7 @@ main:has(.lb) {
    WHY WE STARTED
    ============================================================ */
 .abt-why {
-  background: var(--ink);
+  background: #f3f2ee;
   padding: 100px 24px;
   text-align: center;
   border-top: 1px solid var(--paper-line);
@@ -229,7 +229,7 @@ main:has(.lb) {
   font-family: 'Space Grotesk', sans-serif;
   font-size: clamp(1.9rem, 3.2vw, 2.7rem);
   font-weight: 700;
-  color: #fff;
+  color: var(--ink);
   margin: 18px 0 24px;
   letter-spacing: -0.03em;
   line-height: 1.15;
@@ -238,7 +238,7 @@ main:has(.lb) {
   font-family: 'Inter', sans-serif;
   font-size: 1.02rem;
   line-height: 1.75;
-  color: rgba(255,255,255,0.65);
+  color: #53555f;
   margin: 0 0 18px;
 }
 .abt-why__line {
@@ -273,7 +273,7 @@ main:has(.lb) {
    MISSION  (flat dark, no glow overlay — mirrors .feat-cta)
    ============================================================ */
 .abt-mission {
-  background: var(--ink);
+  background: #f3f2ee;
   padding: 120px 24px;
   text-align: center;
 }
@@ -285,7 +285,7 @@ main:has(.lb) {
   font-family: 'Space Grotesk', sans-serif;
   font-size: clamp(2.2rem, 4vw, 3.2rem);
   font-weight: 700;
-  color: #fff;
+  color: var(--ink);
   margin: 18px 0 24px;
   letter-spacing: -0.03em;
   line-height: 1.1;
@@ -294,7 +294,7 @@ main:has(.lb) {
   font-family: 'Inter', sans-serif;
   font-size: 1.05rem;
   line-height: 1.75;
-  color: rgba(255,255,255,0.65);
+  color: #53555f;
   margin: 0 0 18px;
 }
 .abt-mission__tagline {
@@ -308,15 +308,21 @@ main:has(.lb) {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 0.8rem;
   letter-spacing: 0.06em;
-  color: rgba(255,255,255,0.45);
+  color: #8b8d97;
   margin: 0;
+}
+.abt-why .lb__eyebrow,
+.abt-mission .lb__eyebrow {
+  color: #2e21c9;
+  background: #eeecff;
+  border-color: rgba(75, 58, 255, 0.18);
 }
 
 /* ============================================================
    FINAL CTA
    ============================================================ */
 .abt-cta {
-  background: #fff;
+  background: #f3f2ee;
   padding: 100px 24px;
   text-align: center;
 }

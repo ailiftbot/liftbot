@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    :root { --p:#7C3AED; --pd:#6D28D9; --ink:#111827; --bg:#F3F4F6; }
+    :root { --p:#7C3AED; --pd:#6D28D9; --ink:#111827; --bg:#f3f2ee; }
     * { box-sizing: border-box; }
     html { overflow-x: hidden; }
     body { margin:0; max-width:100%; }
@@ -25,6 +25,7 @@
     nav { display: flex; align-items: center; gap: 6px; }
     nav > .nav-item { position: relative; }
     nav a.nav-link {
+      position: relative;
       display:flex; align-items:center; gap:5px; color:#D1D5DB; text-decoration:none;
       font-size:13.5px; font-weight:600; padding:8px 10px; border-radius:8px; transition: color 0.2s, background 0.2s;
     }
@@ -32,6 +33,20 @@
     nav a.cta { background:var(--p); color:#fff; padding:9px 16px; border-radius:999px; margin-left:6px; }
     nav a.cta:hover { background:var(--pd); }
     .chev { font-size:10px; margin-top:1px; opacity:.8; }
+
+    /* Active nav-link indicator — small gradient underline under the current page's link */
+    nav a.nav-link.active { color:#fff; }
+    nav a.nav-link.active::after {
+      content: "";
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 2px;
+      height: 2px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #A78BFA, var(--p) 55%, #C4B5FD);
+      box-shadow: 0 0 8px rgba(124, 58, 237, 0.55);
+    }
 
     /* Dropdown (desktop mega-menu) */
     .nav-item.has-dropdown .dropdown-panel {
@@ -50,6 +65,7 @@
     .dd-col { display:flex; flex-direction:column; gap:2px; }
     .dd-link { display:block; padding:7px 8px; border-radius:8px; color:#374151; text-decoration:none; font-size:13.5px; font-weight:500; }
     .dd-link:hover { background:#F3F4F6; color:#111827; }
+    .dd-link.active { color: var(--p); font-weight:700; background:#F3F4F6; }
     .dd-divider { border-left:1px solid #EEF0F3; padding-left:26px; }
     .dd-viewall { display:inline-block; margin-top:12px; font-size:13px; font-weight:700; color:var(--p); text-decoration:none; }
 
@@ -66,9 +82,21 @@
       transition:transform 0.3s ease, visibility 0.3s;
     }
     .nav-mobile.open { transform:translateX(0); visibility:visible; pointer-events:auto; }
-    .nav-mobile a { color:#D1D5DB; text-decoration:none; padding:12px 20px; font-size:14px; font-weight:600; display:block; border-bottom:1px solid rgba(255,255,255,0.05); }
+    .nav-mobile a { position: relative; color:#D1D5DB; text-decoration:none; padding:12px 20px; font-size:14px; font-weight:600; display:block; border-bottom:1px solid rgba(255,255,255,0.05); }
     .nav-mobile a:hover { color:#fff; background:rgba(255,255,255,0.08); }
     .nav-mobile a.cta { background:var(--p); color:#fff; margin:12px; border-radius:999px; text-align:center; border:none; }
+    .nav-mobile a.active { color:#fff; }
+    .nav-mobile a.active::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 8px;
+      bottom: 8px;
+      width: 3px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #A78BFA, var(--p) 55%, #C4B5FD);
+      box-shadow: 0 0 8px rgba(124, 58, 237, 0.55);
+    }
     .nav-mobile .mob-group-label { padding:14px 20px 4px; font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:#6B7280; font-weight:700; }
     .nav-mobile a.mob-sub { padding-left:32px; font-weight:500; font-size:13.5px; }
     .nav-close { position:absolute; top:16px; right:16px; background:rgba(255,255,255,.1); border:0; color:#fff; width:30px; height:30px; border-radius:999px; font-size:20px; cursor:pointer; }
@@ -120,43 +148,44 @@
   {% block extra_css %}{% endblock %}
 </head>
 <body>
+  {% with current=request.resolver_match.url_name %}
   <div class="nav-overlay" id="navOverlay"></div>
   <div class="nav-mobile" id="navMobile">
     <button class="nav-close" id="navClose" aria-label="Close menu">×</button>
 
-    <a href="{% url 'ai_employees' %}">AI Employees</a>
-    <a href="{% url 'features' %}">Features</a>
-    <a href="{% url 'how_it_works' %}">How It Works</a>
-    <a href="{% url 'solutions' %}">Solutions</a>
+    <a class="{% if current == 'ai_employees' %}active{% endif %}" href="{% url 'ai_employees' %}">AI Employees</a>
+    <a class="{% if current == 'features' %}active{% endif %}" href="{% url 'features' %}">Features</a>
+    <a class="{% if current == 'how_it_works' %}active{% endif %}" href="{% url 'how_it_works' %}">How It Works</a>
+    <a class="{% if current == 'solutions' %}active{% endif %}" href="{% url 'solutions' %}">Solutions</a>
 
     <div class="mob-group-label">Industries</div>
-    <a class="mob-sub" href="{% url 'industries' %}">All industries</a>
-    <a class="mob-sub" href="{% url 'industry_detail' slug='real-estate' %}">Real estate</a>
-    <a class="mob-sub" href="{% url 'industry_detail' slug='travel' %}">Travel &amp; tourism</a>
-    <a class="mob-sub" href="{% url 'industry_detail' slug='ecommerce' %}">E-commerce</a>
-    <a class="mob-sub" href="{% url 'industry_detail' slug='education' %}">Education</a>
-    <a class="mob-sub" href="{% url 'industry_detail' slug='healthcare' %}">Healthcare</a>
-    <a class="mob-sub" href="{% url 'industry_detail' slug='professional-services' %}">Professional services</a>
-    <a class="mob-sub" href="{% url 'industry_detail' slug='hospitality' %}">Hospitality</a>
+    <a class="mob-sub {% if current == 'industries' %}active{% endif %}" href="{% url 'industries' %}">All industries</a>
+    <a class="mob-sub {% if current == 'industry_detail' and request.resolver_match.kwargs.slug == 'real-estate' %}active{% endif %}" href="{% url 'industry_detail' slug='real-estate' %}">Real estate</a>
+    <a class="mob-sub {% if current == 'industry_detail' and request.resolver_match.kwargs.slug == 'travel' %}active{% endif %}" href="{% url 'industry_detail' slug='travel' %}">Travel &amp; tourism</a>
+    <a class="mob-sub {% if current == 'industry_detail' and request.resolver_match.kwargs.slug == 'ecommerce' %}active{% endif %}" href="{% url 'industry_detail' slug='ecommerce' %}">E-commerce</a>
+    <a class="mob-sub {% if current == 'industry_detail' and request.resolver_match.kwargs.slug == 'education' %}active{% endif %}" href="{% url 'industry_detail' slug='education' %}">Education</a>
+    <a class="mob-sub {% if current == 'industry_detail' and request.resolver_match.kwargs.slug == 'healthcare' %}active{% endif %}" href="{% url 'industry_detail' slug='healthcare' %}">Healthcare</a>
+    <a class="mob-sub {% if current == 'industry_detail' and request.resolver_match.kwargs.slug == 'professional-services' %}active{% endif %}" href="{% url 'industry_detail' slug='professional-services' %}">Professional services</a>
+    <a class="mob-sub {% if current == 'industry_detail' and request.resolver_match.kwargs.slug == 'hospitality' %}active{% endif %}" href="{% url 'industry_detail' slug='hospitality' %}">Hospitality</a>
 
     <div class="mob-group-label">Resources</div>
-    <a class="mob-sub" href="{% url 'blog' %}">Blog</a>
-    <a class="mob-sub" href="{% url 'guide' %}">LiftBot guide</a>
-    <a class="mob-sub" href="{% url 'use_cases' %}">Use cases</a>
-    <a class="mob-sub" href="{% url 'customers' %}">Customer stories</a>
-    <a class="mob-sub" href="{% url 'pricing' %}">Pricing</a>
-    <a class="mob-sub" href="{% url 'support' %}">Support</a>
-    <a class="mob-sub" href="{% url 'faq' %}">FAQ</a>
-    <a class="mob-sub" href="{% url 'security' %}">Security</a>
-    
+    <a class="mob-sub {% if current == 'blog' %}active{% endif %}" href="{% url 'blog' %}">Blog</a>
+    <a class="mob-sub {% if current == 'guide' %}active{% endif %}" href="{% url 'guide' %}">LiftBot guide</a>
+    <a class="mob-sub {% if current == 'use_cases' %}active{% endif %}" href="{% url 'use_cases' %}">Use cases</a>
+    <a class="mob-sub {% if current == 'customers' %}active{% endif %}" href="{% url 'customers' %}">Customer stories</a>
+    <a class="mob-sub {% if current == 'pricing' %}active{% endif %}" href="{% url 'pricing' %}">Pricing</a>
+    <a class="mob-sub {% if current == 'support' %}active{% endif %}" href="{% url 'support' %}">Support</a>
+    <a class="mob-sub {% if current == 'faq' %}active{% endif %}" href="{% url 'faq' %}">FAQ</a>
+    <a class="mob-sub {% if current == 'security' %}active{% endif %}" href="{% url 'security' %}">Security</a>
 
-    <a href="{% url 'about' %}">About</a>
-    <a href="{% url 'contact' %}">Contact</a>
+
+    <a class="{% if current == 'about' %}active{% endif %}" href="{% url 'about' %}">About</a>
+    <a class="{% if current == 'contact' %}active{% endif %}" href="{% url 'contact' %}">Contact</a>
 
     {% if user.is_authenticated %}
-      <a href="{% url 'dashboard' %}">Dashboard</a>
+      <a class="{% if current == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">Dashboard</a>
     {% else %}
-      <a href="{% url 'login' %}">Log in</a>
+      <a class="{% if current == 'login' %}active{% endif %}" href="{% url 'login' %}">Log in</a>
       <a class="cta" href="{% url 'signup' %}">Start hiring</a>
     {% endif %}
   </div>
@@ -165,27 +194,27 @@
     <a class="brand" href="{% url 'home' %}">LiftBot</a>
 
     <nav id="navDesktop">
-      <div class="nav-item"><a class="nav-link" href="{% url 'ai_employees' %}">AI Employees</a></div>
-      <div class="nav-item"><a class="nav-link" href="{% url 'features' %}">Features</a></div>
-      <div class="nav-item"><a class="nav-link" href="{% url 'how_it_works' %}">How It Works</a></div>
-      <div class="nav-item"><a class="nav-link" href="{% url 'solutions' %}">Solutions</a></div>
+      <div class="nav-item"><a class="nav-link {% if current == 'ai_employees' %}active{% endif %}" href="{% url 'ai_employees' %}">AI Employees</a></div>
+      <div class="nav-item"><a class="nav-link {% if current == 'features' %}active{% endif %}" href="{% url 'features' %}">Features</a></div>
+      <div class="nav-item"><a class="nav-link {% if current == 'how_it_works' %}active{% endif %}" href="{% url 'how_it_works' %}">How It Works</a></div>
+      <div class="nav-item"><a class="nav-link {% if current == 'solutions' %}active{% endif %}" href="{% url 'solutions' %}">Solutions</a></div>
 
       <div class="nav-item has-dropdown" tabindex="0">
-        <a class="nav-link" href="{% url 'industries' %}">Industries <span class="chev">▾</span></a>
+        <a class="nav-link {% if current == 'industries' or current == 'industry_detail' %}active{% endif %}" href="{% url 'industries' %}">Industries <span class="chev">▾</span></a>
         <div class="dropdown-panel">
           <div>
             <p class="dd-col-label">Industries</p>
             <div class="dd-grid">
               <div class="dd-col">
-                <a class="dd-link" href="{% url 'industry_detail' slug='real-estate' %}">Real estate</a>
-                <a class="dd-link" href="{% url 'industry_detail' slug='travel' %}">Travel &amp; tourism</a>
-                <a class="dd-link" href="{% url 'industry_detail' slug='ecommerce' %}">E-commerce</a>
-                <a class="dd-link" href="{% url 'industry_detail' slug='education' %}">Education</a>
+                <a class="dd-link {% if current == 'industry_detail' and request.resolver_match.kwargs.slug == 'real-estate' %}active{% endif %}" href="{% url 'industry_detail' slug='real-estate' %}">Real estate</a>
+                <a class="dd-link {% if current == 'industry_detail' and request.resolver_match.kwargs.slug == 'travel' %}active{% endif %}" href="{% url 'industry_detail' slug='travel' %}">Travel &amp; tourism</a>
+                <a class="dd-link {% if current == 'industry_detail' and request.resolver_match.kwargs.slug == 'ecommerce' %}active{% endif %}" href="{% url 'industry_detail' slug='ecommerce' %}">E-commerce</a>
+                <a class="dd-link {% if current == 'industry_detail' and request.resolver_match.kwargs.slug == 'education' %}active{% endif %}" href="{% url 'industry_detail' slug='education' %}">Education</a>
               </div>
               <div class="dd-col">
-                <a class="dd-link" href="{% url 'industry_detail' slug='healthcare' %}">Healthcare</a>
-                <a class="dd-link" href="{% url 'industry_detail' slug='professional-services' %}">Professional services</a>
-                <a class="dd-link" href="{% url 'industry_detail' slug='hospitality' %}">Hospitality</a>
+                <a class="dd-link {% if current == 'industry_detail' and request.resolver_match.kwargs.slug == 'healthcare' %}active{% endif %}" href="{% url 'industry_detail' slug='healthcare' %}">Healthcare</a>
+                <a class="dd-link {% if current == 'industry_detail' and request.resolver_match.kwargs.slug == 'professional-services' %}active{% endif %}" href="{% url 'industry_detail' slug='professional-services' %}">Professional services</a>
+                <a class="dd-link {% if current == 'industry_detail' and request.resolver_match.kwargs.slug == 'hospitality' %}active{% endif %}" href="{% url 'industry_detail' slug='hospitality' %}">Hospitality</a>
               </div>
             </div>
             <a class="dd-viewall" href="{% url 'industries' %}">View all industries →</a>
@@ -202,35 +231,36 @@
       </div>
 
       <div class="nav-item has-dropdown single" tabindex="0">
-        <a class="nav-link" href="{% url 'resources' %}">Resources <span class="chev">▾</span></a>
+        <a class="nav-link {% if current == 'resources' or current == 'blog' or current == 'guide' or current == 'use_cases' or current == 'customers' or current == 'pricing' or current == 'support' or current == 'faq' or current == 'security' %}active{% endif %}" href="{% url 'resources' %}">Resources <span class="chev">▾</span></a>
         <div class="dropdown-panel">
           <div class="dd-col">
             <p class="dd-col-label">Resources</p>
-            <a class="dd-link" href="{% url 'blog' %}">Blog</a>
-            <a class="dd-link" href="{% url 'guide' %}">LiftBot guide</a>
-            <a class="dd-link" href="{% url 'use_cases' %}">Use cases</a>
-            <a class="dd-link" href="{% url 'customers' %}">Customer stories</a>
-            <a class="dd-link" href="{% url 'pricing' %}">Pricing</a>
-            <a class="dd-link" href="{% url 'support' %}">Support</a>
-            <a class="dd-link" href="{% url 'faq' %}">FAQ</a>
-            <a class="dd-link" href="{% url 'security' %}">Security</a>
+            <a class="dd-link {% if current == 'blog' %}active{% endif %}" href="{% url 'blog' %}">Blog</a>
+            <a class="dd-link {% if current == 'guide' %}active{% endif %}" href="{% url 'guide' %}">LiftBot guide</a>
+            <a class="dd-link {% if current == 'use_cases' %}active{% endif %}" href="{% url 'use_cases' %}">Use cases</a>
+            <a class="dd-link {% if current == 'customers' %}active{% endif %}" href="{% url 'customers' %}">Customer stories</a>
+            <a class="dd-link {% if current == 'pricing' %}active{% endif %}" href="{% url 'pricing' %}">Pricing</a>
+            <a class="dd-link {% if current == 'support' %}active{% endif %}" href="{% url 'support' %}">Support</a>
+            <a class="dd-link {% if current == 'faq' %}active{% endif %}" href="{% url 'faq' %}">FAQ</a>
+            <a class="dd-link {% if current == 'security' %}active{% endif %}" href="{% url 'security' %}">Security</a>
           </div>
         </div>
       </div>
 
-      <div class="nav-item"><a class="nav-link" href="{% url 'about' %}">About</a></div>
-      <div class="nav-item"><a class="nav-link" href="{% url 'contact' %}">Contact</a></div>
+      <div class="nav-item"><a class="nav-link {% if current == 'about' %}active{% endif %}" href="{% url 'about' %}">About</a></div>
+      <div class="nav-item"><a class="nav-link {% if current == 'contact' %}active{% endif %}" href="{% url 'contact' %}">Contact</a></div>
 
       {% if user.is_authenticated %}
-        <div class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></div>
+        <div class="nav-item"><a class="nav-link {% if current == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">Dashboard</a></div>
       {% else %}
-        <div class="nav-item"><a class="nav-link" href="{% url 'login' %}">Log in</a></div>
+        <div class="nav-item"><a class="nav-link {% if current == 'login' %}active{% endif %}" href="{% url 'login' %}">Log in</a></div>
         <a class="cta" href="{% url 'signup' %}">Start hiring</a>
       {% endif %}
     </nav>
 
     <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
   </header>
+  {% endwith %}
 
   {% if messages %}
   <main style="padding-bottom:0;">

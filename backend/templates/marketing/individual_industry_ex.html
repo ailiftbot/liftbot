@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{% static 'marketing.css' %}">
 <link rel="stylesheet" href="{% static 'industries.css' %}">
+<link rel="stylesheet" href="{% static 'individual_industry.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -32,27 +33,300 @@
 
   {# ── ROLE + HELPS WITH ── #}
   <section class="lb__section lb__container" data-reveal>
-    <div class="lb__knowledge">
-      <div>
+    <div class="iid-help">
+      <div class="iid-help__left">
         <span class="lb__eyebrow">{{ industry.role }}</span>
-        <h2 class="lb__h2" style="margin-top:16px;">Your AI employee can help with:</h2>
-        <ul class="feature-block__list" style="margin-top:24px;">
+        <h2 class="lb__h2 iid-help__h2">Your AI employee can help with:</h2>
+
+        <div class="iid-help__grid">
           {% for point in industry.capabilities %}
-          <li>{{ point }}</li>
+          <div class="iid-help__card">
+            <span class="iid-help__icon" aria-hidden="true">
+              {% if point == "Property enquiries" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 11l9-7 9 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M5 10v9a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1v-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              {% elif point == "Buyer requirements" or point == "Client requirements" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              {% elif point == "Budget questions" or point == "Budget range" or point == "Fee & scholarship questions" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="6" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M3 10h18" stroke="currentColor" stroke-width="1.8"/>
+                <circle cx="16.5" cy="14.5" r="1.2" fill="currentColor"/>
+              </svg>
+              {% elif point == "Location preferences" or point == "Local recommendations" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 21s7-6.4 7-11.5A7 7 0 105 9.5C5 14.6 12 21 12 21z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <circle cx="12" cy="9.5" r="2.4" stroke="currentColor" stroke-width="1.8"/>
+              </svg>
+              {% elif point == "Property type" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="4" y="3" width="9" height="18" rx="1" stroke="currentColor" stroke-width="1.8"/>
+                <rect x="13" y="9" width="7" height="12" rx="1" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M7 7h1M7 11h1M7 15h1M16 13h1M16 17h1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              {% elif point == "Lead capture" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 4h16l-6.5 8v6l-3 2v-8L4 4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              </svg>
+              {% elif point == "Initial qualification" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                <circle cx="9" cy="11" r="2" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M6 16c0-1.7 1.3-2.5 3-2.5s3 .8 3 2.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M14.5 10h4M14.5 13h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              {% elif point == "Viewing enquiries" or point == "Travel dates" or point == "Intake dates" or point == "Availability questions" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M3 9.5h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              {% elif point == "Trip enquiries" or point == "Booking enquiries" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="4" y="8" width="16" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M9 8V6a1 1 0 011-1h4a1 1 0 011 1v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M4 13h16" stroke="currentColor" stroke-width="1.8"/>
+              </svg>
+              {% elif point == "Destination questions" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 3v18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M6 4h11l-3 4 3 4H6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              </svg>
+              {% elif point == "Group size" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="9" cy="9" r="3" stroke="currentColor" stroke-width="1.8"/>
+                <circle cx="16.5" cy="10" r="2.4" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M15 15c2.4.4 4 2.2 4 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              {% elif point == "Package interest" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="4" y="9" width="16" height="11" rx="1" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M4 9l8-4 8 4" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M12 9v11" stroke="currentColor" stroke-width="1.8"/>
+              </svg>
+              {% elif point == "Product enquiries" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 8h12l-1 12H7L6 8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M9 8V6a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.8"/>
+              </svg>
+              {% elif point == "Sizing & fit questions" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="9" width="18" height="6" rx="1" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M7 9v3M11 9v3M15 9v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              {% elif point == "Order status" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="9" width="10" height="8" rx="1" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M12 11h4l3 3v3h-7v-6z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <circle cx="6" cy="18" r="1.4" fill="currentColor"/>
+                <circle cx="16" cy="18" r="1.4" fill="currentColor"/>
+              </svg>
+              {% elif point == "Return & exchange questions" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 12a8 8 0 0113.6-5.7L20 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M20 4v4h-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M20 12a8 8 0 01-13.6 5.7L4 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M4 20v-4h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              {% elif point == "Product recommendations" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 3l2.6 5.9 6.4.6-4.8 4.3 1.4 6.2L12 16.9 6.4 20l1.4-6.2L3 9.5l6.4-.6L12 3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+              </svg>
+              {% elif point == "Stock availability" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 3l9 5-9 5-9-5 9-5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M3 13l9 5 9-5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              </svg>
+              {% elif point == "First-level support" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 13v-1a8 8 0 0116 0v1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <rect x="2.5" y="13" width="4" height="6" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
+                <rect x="17.5" y="13" width="4" height="6" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M19.5 19v1a2 2 0 01-2 2h-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              {% elif point == "Course enquiries" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 6c-2-1.5-5-2-8-1v13c3-1 6-.5 8 1c2-1.5 5-2 8-1V5c-3-1-6-.5-8 1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                <path d="M12 6v13" stroke="currentColor" stroke-width="1.6"/>
+              </svg>
+              {% elif point == "Eligibility questions" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M8 8l1.5 1.5L12 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M8 14l1.5 1.5L12 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M14 8.5h3M14 14.5h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              {% elif point == "Application process" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M7 3h7l5 5v13H7V3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M14 3v5h5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M9.5 13h5M9.5 16.5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              {% elif point == "Prospective student capture" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M18 8v5M15.5 10.5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              {% elif point == "Admission enquiries" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 4l10 5-10 5L2 9l10-5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M22 9v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              {% elif point == "General enquiries" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 5h16v11H8l-4 4V5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              </svg>
+              {% elif point == "Clinic hours & location" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              {% elif point == "Service questions" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              {% elif point == "Approved appointment conversations" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M3 9.5h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M8.5 14.5l2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              {% elif point == "Insurance questions" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              {% elif point == "Pre-visit information" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="5" y="4" width="14" height="17" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                <rect x="9" y="2.5" width="6" height="3" rx="1" fill="currentColor"/>
+                <path d="M12 10.5v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <circle cx="12" cy="8" r="0.6" fill="currentColor"/>
+              </svg>
+              {% elif point == "Service enquiries" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="8" width="18" height="12" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M8 8V6a2 2 0 012-2h4a2 2 0 012 2v2" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M3 13h18" stroke="currentColor" stroke-width="1.8"/>
+              </svg>
+              {% elif point == "Scope questions" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/>
+                <circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.8"/>
+                <circle cx="12" cy="12" r="1.2" fill="currentColor"/>
+              </svg>
+              {% elif point == "Consultation requests" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 4a8 8 0 00-6.9 12l-1 4 4.2-1.1A8 8 0 1012 4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              </svg>
+              {% elif point == "Prospect handoff" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M8 12h8M13 8l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              {% elif point == "Amenity questions" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                <path d="M18 16l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z" fill="currentColor"/>
+              </svg>
+              {% elif point == "Check-in & check-out times" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="8" cy="14" r="3" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M10.5 12l8-8M16 6l2 2M18.5 3.5l2 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              {% elif point == "Special requests" %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 4v16M4 12h16M6.5 6.5l11 11M17.5 6.5l-11 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              {% else %}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 12.5L9.5 17L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              {% endif %}
+            </span>
+            <span class="iid-help__label">{{ point }}</span>
+          </div>
           {% endfor %}
-        </ul>
+        </div>
+
         <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">{{ industry.cta_text }}</a>
       </div>
 
-      <div class="lb__knowledge-visual">
-        <div class="lb__employee-card">
-          <div class="lb__avatar lb__avatar--1">
-            {{ industry.icon }}
-            <span class="lb__avatar-dot"></span>
+      <div class="iid-help__right">
+        <div class="iid-help__panel">
+          <div class="lb__employee-card">
+            <div class="lb__avatar lb__avatar--1">
+              {{ industry.icon }}
+              <span class="lb__avatar-dot"></span>
+            </div>
+            <div>
+              <div class="lb__employee-name">{{ industry.role }}</div>
+              <div class="lb__employee-role">Configured for {{ industry.name }} · Online now</div>
+            </div>
           </div>
-          <div>
-            <div class="lb__employee-name">{{ industry.role }}</div>
-            <div class="lb__employee-role">Configured for {{ industry.name }} · Online now</div>
+
+          <div class="iid-help__divider"></div>
+
+          <div class="iid-help__panel-body">
+            <div class="iid-help__stats">
+              <div class="iid-help__stat">
+                <span class="iid-help__stat-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 5h16v11H7l-3 3V5z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+                Smart<br>Conversations
+              </div>
+              <div class="iid-help__stat">
+                <span class="iid-help__stat-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.6"/>
+                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/>
+                  </svg>
+                </span>
+                Qualified<br>Leads
+              </div>
+              <div class="iid-help__stat">
+                <span class="iid-help__stat-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+                24/7<br>Support
+              </div>
+            </div>
+
+          </div>
+
+          <div class="iid-help__illustration" aria-hidden="true">
+            <div class="iid-help__illustration-glow"></div>
+            <svg class="iid-help__clipboard" viewBox="0 0 120 150" xmlns="http://www.w3.org/2000/svg">
+              <rect x="14" y="8" width="92" height="134" rx="12" fill="#fff" stroke="var(--paper-line)" stroke-width="2"/>
+              <rect x="42" y="0" width="36" height="16" rx="6" fill="var(--brand)"/>
+              <circle cx="34" cy="42" r="4.5" fill="none" stroke="var(--brand)" stroke-width="2"/>
+              <path d="M31.5 42l2 2 4-4" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="46" y="39" width="46" height="6" rx="3" fill="var(--paper-line)"/>
+              <circle cx="34" cy="66" r="4.5" fill="none" stroke="var(--brand)" stroke-width="2"/>
+              <path d="M31.5 66l2 2 4-4" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="46" y="63" width="46" height="6" rx="3" fill="var(--paper-line)"/>
+              <circle cx="34" cy="90" r="4.5" fill="none" stroke="var(--brand)" stroke-width="2"/>
+              <path d="M31.5 90l2 2 4-4" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="46" y="87" width="34" height="6" rx="3" fill="var(--paper-line)"/>
+            </svg>
+            <svg class="iid-help__plant" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+              <path d="M30 34c0-10 -8-16-16-17c0 10 6 18 16 17z" fill="#3fae63"/>
+              <path d="M30 34c0-13 9-20 19-21c0 12 -7 21 -19 21z" fill="#4fc477"/>
+              <rect x="18" y="33" width="24" height="20" rx="4" fill="#fff" stroke="var(--paper-line)" stroke-width="2"/>
+              <path d="M18 33h24l-3 20h-18z" fill="#f3f2ee" stroke="var(--paper-line)" stroke-width="2"/>
+            </svg>
           </div>
         </div>
       </div>
@@ -84,8 +358,8 @@
   {# ── FINAL CTA ── #}
   <section class="lb__section lb__section--ink lb__container">
     <div class="lb__cta-band" data-reveal>
-      <h2 class="lb__h2" style="color:#fff;">Ready for an AI employee built for {{ industry.name|lower }}?</h2>
-      <p class="lb__lede" style="color:rgba(255,255,255,0.72);">
+      <h2 class="lb__h2" style="color:var(--ink);">Ready for an AI employee built for {{ industry.name|lower }}?</h2>
+      <p class="lb__lede" style="color:#53555f;">
         Start with one AI employee configured around your industry — and grow from there.
       </p>
       <div class="lb__cta-actions">
@@ -93,7 +367,7 @@
         <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline">Book a Demo →</a>
       </div>
       <p style="margin-top:24px;">
-        <a href="{% url 'industries' %}" class="lb__link-arrow" style="color:#fff; border-color:rgba(255,255,255,0.3);">← Back to all industries</a>
+        <a href="{% url 'industries' %}" class="lb__link-arrow" style="color:var(--ink); border-color:var(--paper-line);">← Back to all industries</a>
       </p>
     </div>
   </section>

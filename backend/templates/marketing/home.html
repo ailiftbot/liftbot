@@ -8,6 +8,144 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{% static 'marketing.css' %}">
+<style>
+  /* ── "Your team can't be everywhere" — visual enhancement only, no copy changes ── */
+  .lb__team-everywhere {
+    position: relative;
+    overflow: hidden;
+    background: var(--paper-dim);
+    text-align: center;
+  }
+  .lb__team-everywhere .lb__statement { max-width: 720px; margin-inline: auto; }
+  .lb__team-everywhere .lb__h2 { text-align: center; }
+  .lb__team-everywhere .lb__statement-sub { text-align: center; margin-inline: auto; }
+  .lb__team-everywhere-accent { color: var(--brand); }
+
+  .lb__team-everywhere-pills { justify-content: center; margin-top: 28px; }
+  .lb__team-everywhere-pills .lb__pill {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: #fff; border: 1px solid var(--paper-line);
+    box-shadow: 0 8px 20px -12px rgba(75,58,255,0.18);
+    padding: 8px 18px 8px 8px;
+  }
+  .lb__pill-icon {
+    width: 26px; height: 26px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--brand-dim); color: var(--brand); font-size: 13px; flex-shrink: 0;
+  }
+  .lb__pill-icon svg { width: 14px; height: 14px; }
+
+  .lb__team-everywhere-divider {
+    width: 28px; height: 28px; margin: 34px auto 18px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--brand); font-size: 18px;
+  }
+ 
+
+  /* ── Hero visual — dashboard mockup ── */
+  .lb__hero-visual { position: relative; min-height: 360px; padding: 8px; }
+  .lb__hero-dots {
+    position: absolute; left: -6px; top: 42%; width: 64px; height: 64px;
+    background-image: radial-gradient(circle, rgba(75,58,255,0.28) 1.4px, transparent 1.4px);
+    background-size: 12px 12px; z-index: 0; pointer-events: none;
+  }
+  .lb__hero-blob {
+    position: absolute; left: 4%; bottom: 4%; width: 190px; height: 190px;
+    background: radial-gradient(circle at 40% 40%, rgba(31,206,122,0.20), rgba(31,206,122,0.04) 70%);
+    border-radius: 50%; z-index: 0; pointer-events: none;
+  }
+  .lb__hero-platform {
+    position: absolute; left: 4%; bottom: 3%; width: 76%; height: 64px;
+    background: #fff; border: 1px solid var(--paper-line); border-radius: 16px;
+    box-shadow: var(--shadow-card); transform: perspective(600px) rotateX(50deg);
+    z-index: 0; pointer-events: none;
+  }
+  .lb__hero-cube {
+    position: absolute; right: 8%; bottom: 2%; width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--signal), var(--signal-deep));
+    border-radius: 8px; transform: rotate(12deg); z-index: 1; box-shadow: var(--shadow-card);
+  }
+
+  /* Chat card: dark header + white body — homepage-only override.
+     .lb__demo-card / .lb__demo-head / .lb__bubble* are shared classes used
+     elsewhere (e.g. industry "example conversation" cards), so these rules
+     are scoped under .lb__hero-visual and only apply to this hero mockup. */
+  .lb__hero-visual .lb__demo-card {
+    background: #fff;
+    color: var(--ink);
+    padding: 0;
+    overflow: hidden;
+    max-width: 320px;
+  }
+  .lb__hero-visual .lb__demo-head {
+    background: var(--ink);
+    margin-bottom: 0;
+    padding: 13px 16px;
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+  }
+  .lb__hero-visual .lb__demo-who { color: rgba(255,255,255,0.85); font-size: 0.78rem; }
+  .lb__hero-visual .lb__demo-body { padding: 15px 16px 15px; }
+  .lb__hero-visual .lb__bubble--in {
+    background: var(--paper-dim);
+    color: var(--ink);
+  }
+  .lb__hero-visual .lb__bubble {
+    font-size: 0.8rem;
+    padding: 9px 12px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+  }
+  .lb__hero-visual .lb__demo-online { font-size: 9px; padding: 3px 7px; }
+  .lb__hero-visual .lb__demo-chip { font-size: 10px; }
+
+  .lb__stat-card {
+    position: absolute; left: -5%; top: 16%; z-index: 3;
+    background: #fff; border: 1px solid var(--paper-line); border-radius: var(--r-md);
+    box-shadow: var(--shadow-card); padding: 12px 14px; width: 148px;
+  }
+  .lb__stat-card__label { display: block; font-size: 0.72rem; font-weight: 600; color: var(--ink); }
+  .lb__stat-card__sub { display: block; font-size: 0.64rem; color: var(--ink-faint); margin-bottom: 8px; }
+  .lb__stat-card__value { display: block; font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; color: var(--ink); }
+  .lb__stat-card__delta { display: block; font-size: 0.64rem; color: var(--signal-deep); font-weight: 600; margin-top: 2px; }
+  .lb__stat-card__spark { display: block; width: 100%; height: 26px; margin-top: 6px; color: var(--signal-deep); }
+
+  .lb__stat-mini-stack { position: absolute; right: -5%; top: 6%; z-index: 3; display: flex; flex-direction: column; gap: 22px; }
+  .lb__stat-mini {
+    display: flex; align-items: center; gap: 7px;
+    background: #fff; border: 1px solid var(--paper-line); border-radius: var(--r-md);
+    box-shadow: var(--shadow-card); padding: 8px 12px; min-width: 128px;
+  }
+  .lb__stat-mini__icon {
+    width: 23px; height: 23px; border-radius: 7px;
+    background: var(--signal-dim); color: var(--signal-deep);
+    display: grid; place-items: center; flex-shrink: 0;
+  }
+  .lb__stat-mini__icon svg { width: 12px; height: 12px; }
+  .lb__stat-mini__text { display: flex; flex-direction: column; }
+  .lb__stat-mini__value { font-weight: 700; font-size: 0.82rem; color: var(--ink); }
+  .lb__stat-mini__label { font-size: 0.64rem; color: var(--ink-faint); }
+
+  .lb__demo-menu { margin-left: auto; color: rgba(255,255,255,0.5); font-size: 14px; letter-spacing: 1px; }
+  .lb__bubble-time { display: block; font-size: 0.6rem; color: var(--ink-faint); margin-top: 3px; text-align: right; }
+  .lb__bubble--in .lb__bubble-time { color: var(--ink-faint); }
+  .lb__bubble--out .lb__bubble-time { color: rgba(255,255,255,0.75); }
+  .lb__demo-input {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--paper-dim); border: 1px solid var(--paper-line);
+    border-radius: 999px; padding: 6px 6px 6px 12px; margin-top: 10px;
+  }
+  .lb__demo-input__text { flex: 1; font-size: 0.76rem; color: var(--ink-faint); }
+  .lb__demo-input__attach { color: var(--ink-faint); flex-shrink: 0; display: flex; align-items: center; }
+  .lb__demo-input__attach svg { width: 14px; height: 14px; }
+  .lb__demo-input__send {
+    width: 24px; height: 24px; border-radius: 50%; background: var(--brand);
+    display: grid; place-items: center; color: #fff; flex-shrink: 0; font-size: 11px;
+  }
+
+  @media (max-width: 960px) {
+    .lb__stat-card, .lb__stat-mini-stack, .lb__hero-dots, .lb__hero-blob, .lb__hero-platform, .lb__hero-cube { display: none; }
+  }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -36,31 +174,57 @@
       </div>
 
       <div class="lb__hero-visual">
+        <div class="lb__hero-dots" aria-hidden="true"></div>
+        <div class="lb__hero-blob" aria-hidden="true"></div>
+        <div class="lb__hero-platform" aria-hidden="true"></div>
+        <div class="lb__hero-cube" aria-hidden="true"></div>
+
+        <div class="lb__stat-card" aria-hidden="true">
+          <span class="lb__stat-card__label">Conversations</span>
+          <span class="lb__stat-card__sub">This Week</span>
+          <span class="lb__stat-card__value">1,248</span>
+          <span class="lb__stat-card__delta">&uarr; 32% vs last week</span>
+          <svg class="lb__stat-card__spark" viewBox="0 0 120 40" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,32 20,24 38,28 56,14 74,18 92,6 118,4"/></svg>
+        </div>
+
         <div class="lb__demo-card">
           <div class="lb__demo-head">
             <div class="lb__demo-who">
-              <span class="lb__avatar lb__avatar--1" style="width:28px;height:28px;font-size:11px;">S</span>
+              <span class="lb__avatar lb__avatar--1" style="width:24px;height:24px;font-size:10px;">L</span>
               AI Sales Employee
             </div>
             <span class="lb__demo-online">Online</span>
+            <span class="lb__demo-menu" aria-hidden="true">&#8942;</span>
           </div>
-          <div class="lb__bubble lb__bubble--in">Your customers can reach you at any time.</div>
-          <div class="lb__bubble lb__bubble--out">LiftBot helps your business stay responsive when your team is busy, unavailable or focused on higher-value work.</div>
-          <div class="lb__bubble lb__bubble--in">Answer questions. Capture opportunities. Keep conversations moving.</div>
-          <span class="lb__demo-chip">Your AI employee works alongside your team</span>
-        </div>
-        <div class="lb__float-card lb__employee-card lb__float-card--a">
-          <div class="lb__avatar lb__avatar--2">SU</div>
-          <div>
-            <div class="lb__employee-name">Support</div>
-            <div class="lb__employee-role">Online now</div>
+          <div class="lb__demo-body">
+            <div class="lb__bubble lb__bubble--in">Your customers can reach you at any time.<span class="lb__bubble-time">10:30 AM</span></div>
+            <div class="lb__bubble lb__bubble--out">LiftBot helps your business stay responsive when your team is busy, unavailable or focused on higher-value work.<span class="lb__bubble-time">10:30 AM &#10003;</span></div>
+            <div class="lb__bubble lb__bubble--in">Answer questions. Capture opportunities. Keep conversations moving.<span class="lb__bubble-time">10:31 AM</span></div>
+            <div class="lb__demo-input" aria-hidden="true">
+              <span class="lb__demo-input__attach">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 12.5l6.5-6.5a3 3 0 014.24 4.24l-8 8a5 5 0 01-7.07-7.07L11.5 3.34" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+              <span class="lb__demo-input__text">Type a message...</span>
+              <span class="lb__demo-input__send">&#10148;</span>
+            </div>
+            <span class="lb__demo-chip">Your AI employee works alongside your team</span>
           </div>
         </div>
-        <div class="lb__float-card lb__employee-card lb__float-card--b">
-          <div class="lb__avatar lb__avatar--3">R</div>
-          <div>
-            <div class="lb__employee-name">Reception</div>
-            <div class="lb__employee-role">Online now</div>
+
+        <div class="lb__stat-mini-stack" aria-hidden="true">
+          <div class="lb__stat-mini">
+            <span class="lb__stat-mini__icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 9 9"/></svg></span>
+            <span class="lb__stat-mini__text"><span class="lb__stat-mini__value">98%</span><span class="lb__stat-mini__label">Query Resolution</span></span>
+          </div>
+          <div class="lb__stat-mini">
+            <span class="lb__stat-mini__icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg></span>
+            <span class="lb__stat-mini__text"><span class="lb__stat-mini__value">2.5 min</span><span class="lb__stat-mini__label">Avg Response Time</span></span>
+          </div>
+          <div class="lb__stat-mini">
+            <span class="lb__stat-mini__icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="0.8" fill="currentColor"/></svg></span>
+            <span class="lb__stat-mini__text"><span class="lb__stat-mini__value">320</span><span class="lb__stat-mini__label">Leads Captured</span></span>
           </div>
         </div>
       </div>
@@ -68,19 +232,20 @@
   </section>
 
   {# ══════════════ YOUR TEAM CAN'T BE EVERYWHERE ══════════════ #}
-  <section class="lb__section lb__section--dim lb__container" data-reveal>
+  <section class="lb__section lb__team-everywhere lb__container" data-reveal>
     <div class="lb__statement">
-      <h2 class="lb__h2">Your team can't be everywhere.</h2>
+      <h2 class="lb__h2">Your team can't be <span class="lb__team-everywhere-accent">everywhere.</span></h2>
       <p class="lb__statement-sub">
         Your customers can reach you at any time. LiftBot helps your business stay responsive when your team is busy, unavailable or focused on higher-value work.
       </p>
-      <div class="lb__pill-row">
-        <span class="lb__pill">Answer questions</span>
-        <span class="lb__pill">Capture opportunities</span>
-        <span class="lb__pill">Keep conversations moving</span>
+      <div class="lb__pill-row lb__team-everywhere-pills">
+        <span class="lb__pill"><span class="lb__pill-icon lb__pill-icon--chat" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>Answer questions</span>
+        <span class="lb__pill"><span class="lb__pill-icon lb__pill-icon--target" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg></span>Capture opportunities</span>
+        <span class="lb__pill"><span class="lb__pill-icon lb__pill-icon--chart" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></span>Keep conversations moving</span>
       </div>
-      <p class="lb__statement-sub" style="margin-top:26px; margin-bottom:0; font-weight:600; color:var(--ink);">
-        Your AI employee works alongside your team.
+      <div class="lb__team-everywhere-divider" aria-hidden="true"></div>
+      <p class="lb__statement-sub" style="margin-top:0; margin-bottom:0; font-weight:600; color:var(--ink);">
+        Your AI employee works <span class="lb__team-everywhere-accent">alongside</span> your team.
       </p>
     </div>
   </section>
@@ -202,7 +367,7 @@
   {# ══════════════ AI THAT WORKS WITH YOUR TEAM ══════════════ #}
   <section class="lb__section lb__section--ink lb__container" data-reveal>
     <div class="lb__center" style="max-width:640px; margin-bottom:56px;">
-      <h2 class="lb__h2" style="color:#fff;">AI that works with your team.</h2>
+      <h2 class="lb__h2" style="color:var(--ink);">AI that works with your team.</h2>
       <p class="lb__lede" style="margin-inline:auto;">
         LiftBot isn't about removing people from the customer experience. It's about giving your people more time.
       </p>
@@ -277,8 +442,8 @@
   {# ══════════════ FINAL CTA ══════════════ #}
   <section class="lb__section lb__section--ink lb__container">
     <div class="lb__cta-band" data-reveal>
-      <h2 class="lb__h2" style="color:#fff;">Ready to give your business an AI employee?</h2>
-      <p class="lb__lede" style="color:rgba(255,255,255,0.72);">
+      <h2 class="lb__h2" style="color:var(--ink);">Ready to give your business an AI employee?</h2>
+      <p class="lb__lede" style="color:var(--ink-soft);">
         Build a smarter way to engage customers, capture opportunities and automate repetitive work.
       </p>
       <div class="lb__cta-actions">

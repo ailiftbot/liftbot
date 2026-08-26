@@ -38,8 +38,8 @@ main:has(.lb) {
    ============================================================ */
 .faq-hero {
   position: relative;
-  background: var(--ink);
-  color: #fff;
+  background: var(--paper-dim);
+  color: var(--ink);
   overflow: hidden;
   padding: 120px 24px 80px;
   text-align: center;
@@ -60,7 +60,7 @@ main:has(.lb) {
   transform: translateX(-50%);
   width: 820px;
   height: 540px;
-  background: radial-gradient(ellipse at center, rgba(75,58,255,0.28) 0%, transparent 72%);
+  background: radial-gradient(ellipse at center, rgba(75,58,255,0.16) 0%, transparent 72%);
   pointer-events: none;
   z-index: 0;
 }
@@ -79,9 +79,9 @@ main:has(.lb) {
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #a8b5ff;
-  background: rgba(75,58,255,0.14);
-  border: 1px solid rgba(75,58,255,0.32);
+  color: var(--brand);
+  background: rgba(75,58,255,0.08);
+  border: 1px solid rgba(75,58,255,0.24);
   border-radius: 100px;
   padding: 6px 16px;
   margin-bottom: 30px;
@@ -100,13 +100,13 @@ main:has(.lb) {
   font-size: clamp(2.3rem, 5vw, 3.6rem);
   font-weight: 700;
   line-height: 1.16;
-  color: #fff;
+  color: var(--ink);
   margin: 0 0 22px;
   letter-spacing: -0.02em;
 }
 .faq-hero__h1 em {
   font-style: normal;
-  background: linear-gradient(90deg, #a78bfa 0%, #60a5fa 50%, var(--signal) 100%);
+  background: linear-gradient(90deg, #7c3aed 0%, #2563eb 50%, #15b56a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -114,7 +114,7 @@ main:has(.lb) {
 .faq-hero__sub {
   font-family: 'Inter', sans-serif;
   font-size: clamp(1rem, 1.8vw, 1.15rem);
-  color: rgba(255,255,255,0.65);
+  color: rgba(21,22,27,0.65);
   line-height: 1.65;
   max-width: 500px;
   margin: 0 auto;
@@ -232,7 +232,7 @@ main:has(.lb) {
    FINAL CTA
    ============================================================ */
 .faq-cta {
-  background: var(--ink);
+  background: var(--paper-dim);
   padding: 100px 24px;
   text-align: center;
   position: relative;
@@ -246,7 +246,7 @@ main:has(.lb) {
   transform: translateX(-50%);
   width: 700px;
   height: 400px;
-  background: radial-gradient(ellipse at center, rgba(75,58,255,0.22) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(75,58,255,0.14) 0%, transparent 70%);
   pointer-events: none;
 }
 .faq-cta__inner {
@@ -259,7 +259,7 @@ main:has(.lb) {
   font-family: 'Space Grotesk', sans-serif;
   font-size: clamp(1.9rem, 3.5vw, 2.7rem);
   font-weight: 700;
-  color: #fff;
+  color: var(--ink);
   margin: 20px 0 16px;
   letter-spacing: -0.02em;
   line-height: 1.15;
@@ -267,7 +267,7 @@ main:has(.lb) {
 .faq-cta__sub {
   font-family: 'Inter', sans-serif;
   font-size: 1.02rem;
-  color: rgba(255,255,255,0.6);
+  color: rgba(21,22,27,0.65);
   line-height: 1.65;
   margin: 0 0 40px;
 }

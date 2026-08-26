@@ -265,7 +265,7 @@ color: white; background: black;
 .lb__hero-visual { position: relative; min-height: 420px; }
 .lb__demo-card {
   position: relative;
-  z-index: 2;
+  z-index: 4;
   background: var(--ink);
   color: #fff;
   border-radius: var(--r-lg);

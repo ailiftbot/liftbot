@@ -47,7 +47,7 @@ main:has(.lb) {
   overflow: hidden;
   padding: 120px 24px 100px;
   text-align: center;
-  background: #fff;
+  background: #f3f2ee;
 }
 .cnt-hero__noise {
   position: absolute;

@@ -38,8 +38,8 @@ main:has(.lb) {
    ============================================================ */
 .gd-hero {
   position: relative;
-  background: var(--ink);
-  color: #fff;
+  background: var(--paper-dim);
+  color: var(--ink);
   overflow: hidden;
   padding: 120px 24px 80px;
   text-align: center;
@@ -60,7 +60,7 @@ main:has(.lb) {
   transform: translateX(-50%);
   width: 820px;
   height: 540px;
-  background: radial-gradient(ellipse at center, rgba(75,58,255,0.28) 0%, transparent 72%);
+  background: radial-gradient(ellipse at center, rgba(75,58,255,0.16) 0%, transparent 72%);
   pointer-events: none;
   z-index: 0;
 }
@@ -79,9 +79,9 @@ main:has(.lb) {
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #a8b5ff;
-  background: rgba(75,58,255,0.14);
-  border: 1px solid rgba(75,58,255,0.32);
+  color: var(--brand);
+  background: rgba(75,58,255,0.08);
+  border: 1px solid rgba(75,58,255,0.24);
   border-radius: 100px;
   padding: 6px 16px;
   margin-bottom: 30px;
@@ -100,13 +100,13 @@ main:has(.lb) {
   font-size: clamp(2.3rem, 5vw, 3.6rem);
   font-weight: 700;
   line-height: 1.16;
-  color: #fff;
+  color: var(--ink);
   margin: 0 0 22px;
   letter-spacing: -0.02em;
 }
 .gd-hero__h1 em {
   font-style: normal;
-  background: linear-gradient(90deg, #a78bfa 0%, #60a5fa 50%, var(--signal) 100%);
+  background: linear-gradient(90deg, #7c3aed 0%, #2563eb 50%, #15b56a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -114,7 +114,7 @@ main:has(.lb) {
 .gd-hero__sub {
   font-family: 'Inter', sans-serif;
   font-size: clamp(1rem, 1.8vw, 1.15rem);
-  color: rgba(255,255,255,0.65);
+  color: rgba(21,22,27,0.65);
   line-height: 1.65;
   max-width: 520px;
   margin: 0 auto;
@@ -124,109 +124,69 @@ main:has(.lb) {
    DOCS LAYOUT
    ============================================================ */
 .gd-docs {
-  background: #fff;
+  background: var(--paper-dim);
   padding: 80px 24px 100px;
 }
 .gd-docs__inner {
   max-width: 1080px;
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: 220px 1fr;
-  gap: 64px;
-  align-items: start;
-}
-@media (max-width: 880px) {
-  .gd-docs__inner {
-    grid-template-columns: 1fr;
-    gap: 40px;
-  }
 }
 
-/* ── Sidebar nav ── */
-.gd-nav {
-  position: sticky;
-  top: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  border-left: 2px solid var(--paper-line);
-  padding-left: 18px;
-}
-@media (max-width: 880px) {
-  .gd-nav {
-    position: static;
-    flex-direction: row;
-    flex-wrap: wrap;
-    border-left: none;
-    padding-left: 0;
-    gap: 8px;
-    border-bottom: 1px solid var(--paper-line);
-    padding-bottom: 24px;
-  }
-}
-.gd-nav__label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #9a9ba3;
-  margin: 0 0 10px;
-}
-@media (max-width: 880px) {
-  .gd-nav__label { width: 100%; margin-bottom: 4px; }
-}
-.gd-nav__link {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.88rem;
-  font-weight: 500;
-  color: #52535a;
-  text-decoration: none;
-  padding: 7px 0;
-  transition: color 0.15s ease;
-}
-@media (max-width: 880px) {
-  .gd-nav__link {
-    padding: 6px 12px;
-    background: var(--paper-dim);
-    border-radius: 100px;
-  }
-}
-.gd-nav__link:hover {
-  color: var(--brand);
-}
-
-/* ── Content groups ── */
+/* ── Content grid (2 columns of topic cards) ── */
 .gd-content {
-  display: flex;
-  flex-direction: column;
-  gap: 64px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+@media (max-width: 720px) {
+  .gd-content {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
 }
 
 .gd-group {
   scroll-margin-top: 24px;
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: 14px;
+  padding: 20px 22px;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+.gd-group:hover {
+  transform: translateY(-3px);
+  border-color: var(--brand);
+  box-shadow: 0 12px 32px rgba(21,22,27,0.07);
 }
 
 .gd-group__num {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.78rem;
+  font-size: 0.68rem;
   font-weight: 600;
   color: var(--brand);
+  background: rgba(75,58,255,0.08);
+  border-radius: 7px;
   margin-bottom: 10px;
 }
 
 .gd-group__title {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(1.3rem, 2.2vw, 1.6rem);
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--ink);
-  margin: 0 0 24px;
-  padding-bottom: 16px;
+  margin: 0 0 14px;
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--paper-line);
 }
 
 .gd-item {
-  padding: 16px 0;
+  padding: 10px 0;
   border-bottom: 1px solid var(--paper-line);
 }
 .gd-item:last-child {
@@ -236,17 +196,17 @@ main:has(.lb) {
 
 .gd-item__title {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.98rem;
+  font-size: 0.86rem;
   font-weight: 700;
   color: var(--ink);
-  margin: 0 0 4px;
+  margin: 0 0 3px;
 }
 
 .gd-item__desc {
   font-family: 'Inter', sans-serif;
-  font-size: 0.88rem;
+  font-size: 0.8rem;
   color: #52535a;
-  line-height: 1.6;
+  line-height: 1.5;
   margin: 0;
 }
 
@@ -260,18 +220,19 @@ main:has(.lb) {
 }
 .gd-simple-list li {
   font-family: 'Inter', sans-serif;
-  font-size: 0.92rem;
+  font-size: 0.82rem;
   color: #3a3b42;
-  padding: 12px 0;
+  padding: 9px 0;
   border-bottom: 1px solid var(--paper-line);
 }
 .gd-simple-list li:last-child {
   border-bottom: none;
+  padding-bottom: 0;
 }
 .gd-simple-list li::before {
   content: '→';
   color: var(--brand);
-  margin-right: 10px;
+  margin-right: 9px;
   font-weight: 600;
 }
 
@@ -279,7 +240,7 @@ main:has(.lb) {
    FINAL CTA
    ============================================================ */
 .gd-cta {
-  background: var(--ink);
+  background: var(--paper-dim);
   padding: 100px 24px;
   text-align: center;
   position: relative;
@@ -293,7 +254,7 @@ main:has(.lb) {
   transform: translateX(-50%);
   width: 700px;
   height: 400px;
-  background: radial-gradient(ellipse at center, rgba(75,58,255,0.22) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(75,58,255,0.14) 0%, transparent 70%);
   pointer-events: none;
 }
 .gd-cta__inner {
@@ -306,7 +267,7 @@ main:has(.lb) {
   font-family: 'Space Grotesk', sans-serif;
   font-size: clamp(1.9rem, 3.5vw, 2.7rem);
   font-weight: 700;
-  color: #fff;
+  color: var(--ink);
   margin: 20px 0 16px;
   letter-spacing: -0.02em;
   line-height: 1.15;
@@ -314,7 +275,7 @@ main:has(.lb) {
 .gd-cta__sub {
   font-family: 'Inter', sans-serif;
   font-size: 1.02rem;
-  color: rgba(255,255,255,0.6);
+  color: rgba(21,22,27,0.65);
   line-height: 1.65;
   margin: 0 0 40px;
 }

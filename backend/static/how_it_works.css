@@ -54,7 +54,7 @@ main:has(.lb) {
   overflow: hidden;
   padding: 120px 24px 100px;
   text-align: center;
-  background: #fff;
+  background: #f3f2ee;
 }
 
 .hiw-hero__noise {
@@ -230,12 +230,11 @@ main:has(.lb) {
    WORKFLOW BAND  (mirrors .feat-statement / .feat-pill)
    ============================================================ */
 .hiw-workflow {
-  background: #fff;
+  background: #f3f2ee;
   padding: 100px 24px;
   border-bottom: 1px solid #e7e5de;
   text-align: center;
 }
-
 .hiw-workflow__inner {
   max-width: 640px;
   margin-inline: auto;
@@ -303,8 +302,8 @@ main:has(.lb) {
    FINAL CTA SECTION  (mirrors .feat-cta)
    ============================================================ */
 .hiw-cta {
-  background: #15161b;
-  color: #fff;
+  background: #f3f2ee;
+  color: #15161b;
   padding: 120px 24px;
   text-align: center;
 }
@@ -321,13 +320,13 @@ main:has(.lb) {
   letter-spacing: -0.03em;
   line-height: 1.08;
   margin: 18px 0 18px;
-  color: #fff;
+  color: #15161b;
 }
 
 .hiw-cta__sub {
   font-family: 'Inter', sans-serif;
   font-size: 1.05rem;
-  color: rgba(255,255,255,0.6);
+  color: #53555f;
   margin: 0 0 38px;
   line-height: 1.65;
 }

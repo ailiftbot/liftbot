@@ -44,17 +44,23 @@
 
       <div class="pr-expect__grid" data-reveal>
         <div class="pr-expect-card">
-          <div class="pr-expect-card__icon">&#127919;</div>
+          <div class="pr-expect-card__icon pr-expect-card__icon--1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg>
+          </div>
           <h3 class="pr-expect-card__title">Start with one role</h3>
           <p class="pr-expect-card__desc">Pick one AI employee for the problem costing you the most time today.</p>
         </div>
         <div class="pr-expect-card">
-          <div class="pr-expect-card__icon">&#128200;</div>
+          <div class="pr-expect-card__icon pr-expect-card__icon--2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>
+          </div>
           <h3 class="pr-expect-card__title">Grow as you need</h3>
           <p class="pr-expect-card__desc">Add more roles or capabilities as your business scales — no need to commit upfront.</p>
         </div>
         <div class="pr-expect-card">
-          <div class="pr-expect-card__icon">&#129309;</div>
+          <div class="pr-expect-card__icon pr-expect-card__icon--3">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>
+          </div>
           <h3 class="pr-expect-card__title">Early access pricing</h3>
           <p class="pr-expect-card__desc">Early access members will be the first to know about plans and pricing before public launch.</p>
         </div>
@@ -65,11 +71,11 @@
   {# ── FINAL CTA ── #}
   <section class="pr-cta">
     <div class="pr-cta__inner" data-reveal>
-      <span class="lb__eyebrow" style="color:#cfe9ff; background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.16);">Pre-launch</span>
+      <span class="lb__eyebrow" style="color:#4b3aff; background:rgba(75,58,255,0.08); border-color:rgba(75,58,255,0.24);">Pre-launch</span>
       <h2 class="pr-cta__h2">Be the first to know when pricing goes live.</h2>
       <p class="pr-cta__sub">Join early access to learn about availability and upcoming plans before anyone else.</p>
       <div class="pr-cta__actions">
-        <a href="{% url 'early_access' %}" class="lb__btn" style="background:#fff; color:#15161b;">Request Early Access</a>
+        <a href="{% url 'early_access' %}" class="lb__btn" style="background:#15161b; color:#fff;">Request Early Access</a>
       </div>
     </div>
   </section>

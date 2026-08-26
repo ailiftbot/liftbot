@@ -71,10 +71,15 @@ def ingest(body: IngestRequest):
 
 @app.post('/chat', dependencies=[Depends(verify_token)])
 def chat(body: ChatRequest):
-    # Better Retrieval: Fetch 10, filter by score, take top 4
-    hits = store.search(body.employee_id, body.message, top_k=10)
-    filtered_hits = [h for h in hits if h[2] >= 0.7]
-    top_hits = filtered_hits[:4]
+    # Retrieve the best-matching chunks. store.search() already ranks by
+    # hybrid (vector + keyword) score and returns them in order, so we just
+    # take the top few — no extra absolute cutoff here. A fixed threshold
+    # like ">= 0.7" assumes the score is always a 0-1 cosine similarity;
+    # once BM25 was mixed in that assumption broke, and short common
+    # queries ("phone", "address") were silently dropping every chunk,
+    # which is why the bot kept saying it had no information.
+    hits = store.search(body.employee_id, body.message, top_k=4)
+    top_hits = hits
 
     if not top_hits:
         context = "No relevant training context available for this query."

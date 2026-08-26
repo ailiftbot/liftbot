@@ -67,13 +67,13 @@ main:has(.lb) {
 
 .ind-hero__glow {
   position: absolute;
-  inset: -30% -20% auto -20%;
-  height: 700px;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 640px;
+  height: 460px;
+  background: radial-gradient(ellipse at center, rgba(75,58,255,0.16) 0%, transparent 70%);
   pointer-events: none;
-  background:
-    radial-gradient(500px 400px at 30% 20%, rgba(75,58,255,0.12), transparent 70%),
-    radial-gradient(400px 300px at 80% 10%, rgba(255,77,141,0.09), transparent 70%);
-  filter: blur(14px);
   z-index: 0;
 }
 

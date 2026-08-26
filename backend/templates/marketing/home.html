@@ -54,17 +54,130 @@
     background: radial-gradient(circle at 40% 40%, rgba(31,206,122,0.20), rgba(31,206,122,0.04) 70%);
     border-radius: 50%; z-index: 0; pointer-events: none;
   }
-  .lb__hero-platform {
-    position: absolute; left: 4%; bottom: 3%; width: 76%; height: 64px;
-    background: #fff; border: 1px solid var(--paper-line); border-radius: 16px;
-    box-shadow: var(--shadow-card); transform: perspective(600px) rotateX(50deg);
-    z-index: 0; pointer-events: none;
-  }
-  .lb__hero-cube {
-    position: absolute; right: 8%; bottom: 2%; width: 32px; height: 32px;
-    background: linear-gradient(135deg, var(--signal), var(--signal-deep));
-    border-radius: 8px; transform: rotate(12deg); z-index: 1; box-shadow: var(--shadow-card);
-  }
+ /* ---------- 3D platform under hero chat ---------- */
+.lb__hero-platform {
+  position: absolute;
+  left: 4%;
+  bottom: -2px;
+  width: 76%;
+  height: 92px;
+
+  /* left side of the 3D block */
+  background: linear-gradient(
+    to bottom,
+    #f7f7f5 0%,
+    #e9e9e6 100%
+  );
+
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  transform: none;
+
+  clip-path: polygon(
+    0 30%,
+    22% 58%,
+    22% 100%,
+    0 72%
+  );
+
+  z-index: 2;
+  pointer-events: none;
+}
+
+
+/* TOP WHITE SURFACE */
+.lb__hero-platform::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 58px;
+
+  background: #ffffff;
+
+  clip-path: polygon(
+    0 30%,
+    78% 0,
+    100% 28%,
+    22% 58%
+  );
+
+  filter: drop-shadow(
+    0 10px 16px rgba(21, 22, 27, 0.10)
+  );
+}
+
+
+/* FRONT THICKNESS */
+.lb__hero-platform::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 28px;
+  width: 100%;
+  height: 64px;
+
+  background: linear-gradient(
+    to bottom,
+    #f8f8f6 0%,
+    #eeeeeb 100%
+  );
+
+  clip-path: polygon(
+    22% 47%,
+    100% 0,
+    100% 70%,
+    22% 100%
+  );
+
+  border-bottom: 1px solid #deddd8;
+}
+  /* ---------- GREEN 3D CUBE ---------- */
+
+/* ---------- 3D PLATFORM UNDER CHATBOX ---------- */
+
+.lb__hero-platform {
+  position: absolute;
+  left: 50%;
+  top: 68%;
+  transform: translateX(-50%);
+  width: 92%;
+  height: 150px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  z-index: 2;
+  pointer-events: none;
+}
+.lb__hero-platform::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 82px;
+  background: #ffffff;
+  border: 1px solid #e5e4df;
+  clip-path: polygon( 0 32%, 78% 0, 100% 28%, 22% 63% );
+  filter: drop-shadow( 0 8px 12px rgba(20, 20, 25, 0.10));
+}
+.lb__hero-platform::after {
+  content: "";
+  position: absolute;
+  left: 22%;
+  top: 42px;
+  width: 78%;
+  height: 108px;
+  background: linear-gradient(
+    to bottom, #f8f8f6 0%, #eeeeeb 100% );
+  clip-path: polygon( 0 0, 100% 0, 100% 72%, 0 100% );
+  border-left: 1px solid #e5e4df;
+  border-bottom: 1px solid #dcdcd7;
+  filter: drop-shadow(0 12px 16px rgba(20, 20, 25, 0.08));
+}
 
   /* Chat card: dark header + white body — homepage-only override.
      .lb__demo-card / .lb__demo-head / .lb__bubble* are shared classes used
@@ -109,7 +222,7 @@
   .lb__stat-card__delta { display: block; font-size: 0.64rem; color: var(--signal-deep); font-weight: 600; margin-top: 2px; }
   .lb__stat-card__spark { display: block; width: 100%; height: 26px; margin-top: 6px; color: var(--signal-deep); }
 
-  .lb__stat-mini-stack { position: absolute; right: -5%; top: 6%; z-index: 3; display: flex; flex-direction: column; gap: 22px; }
+  .lb__stat-mini-stack { position: absolute; right: -5%; top: 6%; z-index: 5; display: flex; flex-direction: column; gap: 22px; }
   .lb__stat-mini {
     display: flex; align-items: center; gap: 7px;
     background: #fff; border: 1px solid var(--paper-line); border-radius: var(--r-md);

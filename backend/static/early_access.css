@@ -14,6 +14,7 @@ main:has(.lb) {
   --signal:     #1fce7a;
   --pop:        #ff4d8d;
   --ink:        #15161b;
+  --ink-soft:   #53555f;
   --paper-dim:  #f3f2ee;
   --paper-line: #e7e5de;
 }
@@ -42,7 +43,7 @@ main:has(.lb) {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: var(--ink);
+  background: #fdfdfb;
   text-align: center;
   padding: 110px 24px 70px;
 }
@@ -52,7 +53,7 @@ main:has(.lb) {
   inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
   background-size: 200px 200px;
-  opacity: 0.55;
+  opacity: 0.5;
   pointer-events: none;
   z-index: 0;
 }
@@ -64,7 +65,7 @@ main:has(.lb) {
   transform: translateX(-50%);
   width: 860px;
   height: 560px;
-  background: radial-gradient(ellipse at center, rgba(75,58,255,0.28) 0%, transparent 72%);
+  background: radial-gradient(ellipse at center, rgba(75,58,255,0.12) 0%, transparent 72%);
   pointer-events: none;
   z-index: 0;
 }
@@ -85,9 +86,9 @@ main:has(.lb) {
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #a8b5ff;
-  background: rgba(75,58,255,0.14);
-  border: 1px solid rgba(75,58,255,0.32);
+  color: var(--brand);
+  background: #eeecff;
+  border: 1px solid rgba(75,58,255,0.2);
   border-radius: 100px;
   padding: 6px 16px;
   margin-bottom: 28px;
@@ -108,7 +109,7 @@ main:has(.lb) {
   font-size: clamp(2rem, 4.5vw, 3.1rem);
   font-weight: 700;
   line-height: 1.2;
-  color: #fff;
+  color: var(--ink);
   margin: 0 0 20px;
   letter-spacing: -0.02em;
 }
@@ -116,7 +117,7 @@ main:has(.lb) {
 .ea-hero__sub {
   font-family: 'Inter', sans-serif;
   font-size: clamp(0.98rem, 1.6vw, 1.1rem);
-  color: rgba(255,255,255,0.65);
+  color: var(--ink-soft);
   line-height: 1.65;
   max-width: 600px;
   margin: 0 auto;

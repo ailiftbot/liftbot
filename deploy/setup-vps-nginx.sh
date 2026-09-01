@@ -3,11 +3,11 @@
 #   curl -fsSL … | bash
 # or copy this file and: bash setup-vps-nginx.sh
 #
-# Proxies http://liftbot.brandinglift.com → 127.0.0.1:8001 (LiftBot gunicorn)
+# Proxies http://liftbot.app → 127.0.0.1:8001 (LiftBot gunicorn)
 
 set -euo pipefail
 
-DOMAIN="${DOMAIN:-liftbot.brandinglift.com}"
+DOMAIN="${DOMAIN:-liftbot.app}"
 BACKEND="${BACKEND:-127.0.0.1:8001}"
 CONF_DIR=""
 

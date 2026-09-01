@@ -8,7 +8,7 @@
 
 set -euo pipefail
 
-DOMAIN="${DOMAIN:-liftbot.brandinglift.com}"
+DOMAIN="${DOMAIN:-liftbot.app}"
 BACKEND="${BACKEND:-127.0.0.1:8001}"
 EMAIL="${EMAIL:-admin@${DOMAIN}}"
 APP_DIR="${APP_DIR:-}"

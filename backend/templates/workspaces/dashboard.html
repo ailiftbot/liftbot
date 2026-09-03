@@ -12,6 +12,22 @@
 {% block top_actions %}
   {% if primary_employee %}
   <a class="lb-btn lb-btn-ghost" href="{% url 'employee_playground' primary_employee.pk %}">Preview Employee</a>
+  {% endif %}
+  <details class="qs-dropdown">
+    <summary class="lb-btn lb-btn-ghost qs-dropdown-toggle">Quick Setup</summary>
+    <div class="qs-dropdown-menu">
+      {% for item in quick_setup %}
+        <a class="{% if item.done %}is-done{% endif %}" href="{% if item.pk %}{% url item.href_name item.pk %}{% else %}{% url item.href_name %}{% endif %}">
+          <span class="qs-check">{% if item.done %}✓{% else %}{{ item.n }}{% endif %}</span>
+          <div>
+            <strong>{{ item.title }}</strong>
+            <span>{{ item.desc }}</span>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  </details>
+  {% if primary_employee %}
   <a class="lb-btn lb-btn-primary" href="{% url 'employee_edit' primary_employee.pk %}">Save Changes</a>
   {% else %}
   <a class="lb-btn lb-btn-primary" href="{% url 'employee_hire' %}">Hire AI Employee</a>
@@ -49,13 +65,14 @@
 
 <div class="dash-grid">
   <div class="dash-left">
-    <!-- Setup Progress -->
+    {% if not setup_completed %}
     <section class="stepper">
       <div class="stepper-head">
         <h2>Setup Progress</h2>
-        <span>{{ completed_steps }}/{{ setup_steps|length }} completed</span>
+        <span class="stepper-count">{{ completed_steps }}/{{ setup_steps|length }} completed</span>
       </div>
       <div class="stepper-track">
+        <div class="stepper-track-fill" style="width: {{ setup_percent }}%"></div>
         {% for step in setup_steps %}
         <div class="step {% if step.done %}done{% endif %}">
           <div class="bubble">{% if step.done %}✓{% else %}{{ forloop.counter }}{% endif %}</div>
@@ -64,39 +81,42 @@
         {% endfor %}
       </div>
     </section>
+    {% endif %}
 
-    <!-- Management cards + overview -->
-    <section class="mgmt-grid">
+    <section class="mgmt-grid mgmt-grid--{{ visible_card_count }}">
       {% for card in cards %}
-      <article class="mgmt-card">
-        <div class="icon">{{ card.icon }}</div>
-        <h3>{{ card.title }}</h3>
-        <p>{{ card.desc }}</p>
-        <div class="row">
-          {% if card.done %}
-            <span class="lb-badge lb-badge-green"><span class="lb-dot"></span> Completed</span>
-          {% else %}
-            <span class="lb-badge lb-badge-orange"><span class="lb-dot"></span> In Progress</span>
-          {% endif %}
-          {% if card.url == 'knowledge' and primary_employee %}
-            <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'knowledge_list' primary_employee.pk %}">{{ card.cta }}</a>
-          {% elif card.url == 'edit' and primary_employee %}
-            <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'employee_edit' primary_employee.pk %}">{{ card.cta }}</a>
-          {% elif card.url == 'hire' %}
-            <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'employee_hire' %}">{{ card.cta }}</a>
-          {% elif card.url == 'settings' %}
-            <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'settings' %}">{{ card.cta }}</a>
-          {% else %}
-            <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'dashboard' %}">{{ card.cta }}</a>
-          {% endif %}
-        </div>
-      </article>
+        <article class="mgmt-card mgmt-card-{{ card.key }}">
+          <div class="icon">{{ card.icon }}</div>
+          <h3>{{ card.title }}</h3>
+          <p>{{ card.desc }}</p>
+          <div class="row">
+            {% if card.done %}
+              <span class="lb-badge lb-badge-green"><span class="lb-dot"></span> Completed</span>
+            {% else %}
+              <span class="lb-badge lb-badge-orange"><span class="lb-dot"></span> In Progress</span>
+            {% endif %}
+            {% if card.url == 'knowledge' and primary_employee %}
+              <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'knowledge_list' primary_employee.pk %}">{{ card.cta }}</a>
+            {% elif card.url == 'edit' and primary_employee %}
+              <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'employee_edit' primary_employee.pk %}">{{ card.cta }}</a>
+            {% elif card.url == 'hire' %}
+              <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'employee_hire' %}">{{ card.cta }}</a>
+            {% elif card.url == 'settings' %}
+              <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'settings' %}">{{ card.cta }}</a>
+            {% else %}
+              <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'dashboard' %}">{{ card.cta }}</a>
+            {% endif %}
+          </div>
+        </article>
       {% endfor %}
 
       <aside class="overview">
-        <h3>Employee Overview</h3>
+        <div class="overview-head">
+          <h3>AI Employee Overview</h3>
+          {% if primary_employee and primary_employee.is_active %}<span class="live-dot" title="Active"></span>{% endif %}
+        </div>
         {% if primary_employee %}
-        <div class="overview-row"><span>Status</span><strong style="color:var(--lb-green);">{% if primary_employee.is_active %}● Active{% else %}Inactive{% endif %}</strong></div>
+        <div class="overview-row"><span>Status</span><strong class="{% if primary_employee.is_active %}status-active{% endif %}">{% if primary_employee.is_active %}● Active{% else %}Inactive{% endif %}</strong></div>
         <div class="overview-row"><span>Employee</span><strong>{{ primary_employee.name }}</strong></div>
         <div class="overview-row"><span>Role</span><strong>{{ primary_employee.get_role_display }}</strong></div>
         <div class="overview-row"><span>Conversations</span><strong>{{ conversation_count }}</strong></div>
@@ -106,7 +126,7 @@
         <div class="overview-row"><span>FAQs</span><strong>{{ faq_count }}</strong></div>
         <div class="overview-row"><span>Language</span><strong>{{ primary_employee.language|upper }}</strong></div>
         <div class="usage-ring">
-          <label><span>Token / plan usage</span><span>{{ usage_percent|floatformat:0 }}%</span></label>
+          <label><span>Token / plan usage</span><span class="usage-pct">{{ usage_percent|floatformat:0 }}%</span></label>
           <div class="usage-bar"><i style="width:{{ usage_percent|floatformat:0 }}%"></i></div>
         </div>
         {% else %}
@@ -116,30 +136,8 @@
       </aside>
     </section>
 
-    <!-- Quick setup + recent conversations -->
+    <!-- Recent Conversations -->
     <section class="bottom-grid">
-      <div class="panel">
-        <div class="panel-head">
-          <h3>Quick Setup</h3>
-        </div>
-        {% for item in quick_setup %}
-        <div class="quick-item {% if item.done %}done{% endif %}">
-          <div class="quick-num">{% if item.done %}✓{% else %}{{ item.n }}{% endif %}</div>
-          <div>
-            <h4>{{ item.title }}</h4>
-            <p>{{ item.desc }}</p>
-          </div>
-          {% if item.done %}
-            <span class="lb-badge lb-badge-green">Completed</span>
-          {% elif item.pk %}
-            <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url item.href_name item.pk %}">{{ item.cta }}</a>
-          {% else %}
-            <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url item.href_name %}">{{ item.cta }}</a>
-          {% endif %}
-        </div>
-        {% endfor %}
-      </div>
-
       <div class="panel">
         <div class="panel-head">
           <h3>Recent Conversations</h3>
@@ -179,7 +177,7 @@
           <div class="bot-av">{{ primary_employee.name|slice:":1" }}</div>
           <div>
             <strong>{{ primary_employee.name }}</strong>
-            <span>{{ primary_employee.get_role_display }} · We're online</span>
+            <span><i class="online-dot"></i>{{ primary_employee.get_role_display }} · We're online</span>
           </div>
         </div>
         <div class="widget-messages" id="dash-msgs">
@@ -220,92 +218,105 @@
 {% endblock %}
 
 {% block extra_js %}
-{% if primary_employee %}
 <script>
-(() => {
-  const root = document.getElementById('dash-preview');
-  if (!root || !root.dataset.token) return;
-  const token = root.dataset.token;
-  const api = root.dataset.api;
-  const msgs = document.getElementById('dash-msgs');
-  const greeting = document.getElementById('dash-greeting');
-  const form = document.getElementById('dash-form');
-  const input = document.getElementById('dash-input');
-  let sessionId = null;
-  let busy = false;
+  (function () {
+    var qs = document.querySelector('.qs-dropdown');
+    if (!qs) return;
+    document.addEventListener('click', function (e) {
+      if (!qs.contains(e.target)) qs.removeAttribute('open');
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') qs.removeAttribute('open');
+    });
+  })();
 
-  greeting.textContent = root.dataset.greeting || ('Hi! I am ' + root.dataset.name + '.');
+  // Existing dashboard preview logic
+  (() => {
+    const root = document.getElementById('dash-preview');
+    if (!root || !root.dataset.token) return;
+    const token = root.dataset.token;
+    const api = root.dataset.api;
+    const msgs = document.getElementById('dash-msgs');
+    const greeting = document.getElementById('dash-greeting');
+    const form = document.getElementById('dash-form');
+    const input = document.getElementById('dash-input');
+    let sessionId = null;
+    let busy = false;
 
-  function add(who, text) {
-    const el = document.createElement('div');
-    el.className = who === 'you' ? 'bubble-user' : 'bubble-bot';
-    el.textContent = text;
-    const quick = document.getElementById('dash-quick');
-    if (quick) quick.remove();
-    msgs.appendChild(el);
-    msgs.scrollTop = msgs.scrollHeight;
-    return el;
-  }
+    greeting.textContent = root.dataset.greeting || ('Hi! I am ' + root.dataset.name + '.');
 
-  async function send(msg) {
-    if (!msg || busy) return;
-    busy = true;
-    add('you', msg);
-    const thinking = add('them', 'Thinking…');
-    try {
-      const res = await fetch(api + 'message/', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ token, message: msg, session_id: sessionId, stream: false }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        thinking.textContent = data.error || 'Could not reply right now.';
-      } else {
-        if (data.session_id) sessionId = data.session_id;
-        thinking.textContent = data.reply || 'No reply.';
-      }
-    } catch (e) {
-      thinking.textContent = 'Network error.';
-    } finally {
-      busy = false;
+    function add(who, text) {
+      const el = document.createElement('div');
+      el.className = who === 'you' ? 'bubble-user' : 'bubble-bot';
+      el.textContent = text;
+      const quick = document.getElementById('dash-quick');
+      if (quick) quick.remove();
+      msgs.appendChild(el);
+      msgs.scrollTop = msgs.scrollHeight;
+      return el;
     }
-  }
 
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const msg = input.value.trim();
-    input.value = '';
-    send(msg);
-  });
+    async function send(msg) {
+      if (!msg || busy) return;
+      busy = true;
+      add('you', msg);
+      const thinking = add('them', 'Thinking…');
+      try {
+        const res = await fetch(api + 'message/', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ token, message: msg, session_id: sessionId, stream: false }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          thinking.textContent = data.error || 'Could not reply right now.';
+        } else {
+          if (data.session_id) sessionId = data.session_id;
+          thinking.textContent = data.reply || 'No reply.';
+        }
+      } catch (e) {
+        thinking.textContent = 'Network error.';
+      } finally {
+        busy = false;
+      }
+    }
 
-  document.getElementById('dash-quick')?.addEventListener('click', (e) => {
-    const btn = e.target.closest('button[data-q]');
-    if (!btn) return;
-    send(btn.dataset.q);
-  });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const msg = input.value.trim();
+      input.value = '';
+      send(msg);
+    });
 
-  document.getElementById('copy-team-embed')?.addEventListener('click', async () => {
-    const box = document.getElementById('team-embed-code');
-    const text = box.childNodes[0].textContent.trim();
-    try {
-      await navigator.clipboard.writeText(text);
-      document.getElementById('copy-team-embed').textContent = 'Copied';
-      setTimeout(() => document.getElementById('copy-team-embed').textContent = 'Copy', 1500);
-    } catch (_) {}
-  });
+    document.getElementById('dash-quick')?.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-q]');
+      if (!btn) return;
+      send(btn.dataset.q);
+    });
 
-  document.getElementById('copy-embed')?.addEventListener('click', async () => {
-    const box = document.getElementById('embed-code');
-    const text = box.childNodes[0].textContent.trim();
-    try {
-      await navigator.clipboard.writeText(text);
-      const btn = document.getElementById('copy-embed');
-      btn.textContent = 'Copied';
-      setTimeout(() => btn.textContent = 'Copy', 1500);
-    } catch (_) {}
-  });
-})();
+    document.getElementById('copy-team-embed')?.addEventListener('click', async () => {
+      const box = document.getElementById('team-embed-code');
+      const text = box.childNodes[0].textContent.trim();
+      try {
+        await navigator.clipboard.writeText(text);
+        const btn = document.getElementById('copy-team-embed');
+        btn.textContent = 'Copied';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+      } catch (_) {}
+    });
+
+    document.getElementById('copy-embed')?.addEventListener('click', async () => {
+      const box = document.getElementById('embed-code');
+      const text = box.childNodes[0].textContent.trim();
+      try {
+        await navigator.clipboard.writeText(text);
+        const btn = document.getElementById('copy-embed');
+        btn.textContent = 'Copied';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+      } catch (_) {}
+    });
+  })();
 </script>
-{% endif %}
 {% endblock %}

@@ -38,7 +38,7 @@ def _setup_steps(workspace, employee, knowledge_count):
     steps = [
         {'key': 'business', 'label': 'Business Info', 'done': has_workspace},
         {'key': 'knowledge', 'label': 'Knowledge', 'done': has_knowledge},
-        {'key': 'replies', 'label': 'Greeting', 'done': has_personality},
+        {'key': 'replies', 'label': 'Personality', 'done': has_personality},
         {'key': 'customize', 'label': 'Customize', 'done': has_employee and bool(employee.brand_color)},
         {'key': 'install', 'label': 'Install', 'done': has_widget and has_knowledge},
     ]
@@ -103,44 +103,59 @@ def dashboard(request):
         if workspace else ''
     )
 
+    business_done = bool(workspace and workspace.name)
+    knowledge_done = knowledge_count > 0
+    personality_done = bool(primary and primary.greeting_message and primary.personality)
+    customize_done = bool(primary and primary.brand_color)
+
     cards = [
         {
+            'key': 'business',
             'title': 'Business Information',
             'desc': 'Company profile, brand color, and workspace details.',
-            'status': 'Completed' if workspace else 'In Progress',
-            'done': bool(workspace),
+            'status': 'Completed' if business_done else 'In Progress',
+            'done': business_done,
             'cta': 'Edit',
             'url': 'settings' if workspace else 'dashboard',
             'icon': 'BI',
+            'hide': business_done,
         },
         {
+            'key': 'knowledge',
             'title': 'Knowledge Base',
             'desc': 'Train your AI Employee with PDFs, URLs, FAQs, and text.',
-            'status': 'Completed' if knowledge_count else 'In Progress',
-            'done': knowledge_count > 0,
+            'status': 'Completed' if knowledge_done else 'In Progress',
+            'done': knowledge_done,
             'cta': 'Manage',
             'url': 'knowledge' if primary else 'hire',
             'icon': 'KB',
+            'hide': knowledge_done,
         },
         {
-            'title': 'Greeting & Tone',
+            'key': 'personality',
+            'title': 'Personality',
             'desc': 'Opening message and personality for website visitors.',
-            'status': 'Completed' if primary else 'In Progress',
-            'done': bool(primary),
+            'status': 'Completed' if personality_done else 'In Progress',
+            'done': personality_done,
             'cta': 'Manage',
             'url': 'edit' if primary else 'hire',
             'icon': 'GT',
+            'hide': personality_done,
         },
         {
+            'key': 'customize',
             'title': 'Customize Employee',
             'desc': 'Name, role, avatar, and brand color for the widget.',
-            'status': 'Completed' if primary and primary.brand_color else 'In Progress',
-            'done': bool(primary and primary.brand_color),
+            'status': 'Completed' if customize_done else 'In Progress',
+            'done': customize_done,
             'cta': 'Customize',
             'url': 'edit' if primary else 'hire',
             'icon': 'CE',
+            'hide': customize_done,
         },
     ]
+    cards = [card for card in cards if not card.get('hide')]
+    setup_completed = all(s['done'] for s in steps)
 
     quick_setup = [
         {
@@ -193,10 +208,13 @@ def dashboard(request):
         'sessions': sessions,
         'setup_steps': steps,
         'completed_steps': completed_steps,
+        'setup_percent': int(round((completed_steps / len(steps)) * 100)) if steps else 0,
+        'setup_completed': setup_completed,
         'embed_snippet': embed_snippet,
         'team_embed_snippet': team_embed_snippet,
         'task_count': task_count,
         'cards': cards,
+        'visible_card_count': len(cards),
         'quick_setup': quick_setup,
         'usage_percent': workspace.usage_percent if workspace else 0,
         'public_widget_api': urls['api'],

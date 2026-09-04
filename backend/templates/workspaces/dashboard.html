@@ -11,7 +11,7 @@
 
 {% block top_actions %}
   {% if primary_employee %}
-  <a class="lb-btn lb-btn-ghost" href="{% url 'employee_playground' primary_employee.pk %}">Preview Employee</a>
+  <a class="lb-btn lb-btn-ghost" href="{% url 'employee_playground' primary_employee.pk %}">Preview<span class="lb-btn-rest"> Employee</span></a>
   {% endif %}
   <details class="qs-dropdown">
     <summary class="lb-btn lb-btn-ghost qs-dropdown-toggle">Quick Setup</summary>
@@ -28,7 +28,7 @@
     </div>
   </details>
   {% if primary_employee %}
-  <a class="lb-btn lb-btn-primary" href="{% url 'employee_edit' primary_employee.pk %}">Save Changes</a>
+  <a class="lb-btn lb-btn-primary" href="{% url 'employee_edit' primary_employee.pk %}">Save<span class="lb-btn-rest"> Changes</span></a>
   {% else %}
   <a class="lb-btn lb-btn-primary" href="{% url 'employee_hire' %}">Hire AI Employee</a>
   {% endif %}

@@ -1,32 +1,91 @@
 {% extends 'base_app.html' %}
+{% load static %}
+
 {% block title %}AI Employees — LiftBot{% endblock %}
 {% block page_title %}AI Employees{% endblock %}
-{% block page_subtitle %}Hire specialists with name, role, and personality — trained on your data.{% endblock %}
+{% block page_subtitle %}Hire specialists with a name, role, and personality — trained on your data.{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'pages.css' %}" />
+{% endblock %}
 {% block top_actions %}
 <a class="lb-btn lb-btn-primary" href="{% url 'employee_hire' %}">Hire AI Employee</a>
 {% endblock %}
+
 {% block content %}
-<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;">
+<div class="pg-stats">
+  <div class="pg-stat">
+    <span>Team</span>
+    <strong>{{ employee_count }}</strong>
+  </div>
+  <div class="pg-stat">
+    <span>Active</span>
+    <strong>{{ active_count }}</strong>
+  </div>
+  <div class="pg-stat">
+    <span>Plan seats</span>
+    <strong>{{ workspace.employee_limit|default:'—' }}</strong>
+  </div>
+</div>
+
+<div class="pg-toolbar">
+  <label class="pg-search">
+    <span class="pg-search-ico" aria-hidden="true">⌕</span>
+    <input type="search" id="emp-search" placeholder="Search by name, role, or department" autocomplete="off" />
+  </label>
+</div>
+
+<div class="pg-grid" id="emp-grid">
   {% for e in employees %}
-  <a href="{% url 'employee_detail' e.pk %}" class="lb-card" style="padding:18px;text-decoration:none;color:inherit;display:block;">
-    <div style="display:flex;gap:12px;align-items:center;">
-      <div class="lb-avatar" style="width:44px;height:44px;background:{{ e.brand_color|default:'#EDE9FE' }};color:#fff;">{{ e.name|slice:':1' }}</div>
-      <div>
-        <div style="font-weight:700;">{{ e.name }}</div>
-        <div style="font-size:12.5px;color:var(--lb-muted);">{{ e.get_role_display }} · {{ e.get_personality_display }}</div>
+  <article class="pg-emp-card" data-search="{{ e.name }} {{ e.get_role_display }} {{ e.get_personality_display }} {{ e.department }}">
+    <a class="pg-emp-main" href="{% url 'employee_detail' e.pk %}">
+      <div class="pg-av" style="background:{{ e.brand_color|default:'#7C3AED' }}">{{ e.name|slice:":1"|upper }}</div>
+      <div class="pg-emp-meta">
+        <h3>{{ e.name }}</h3>
+        <p>{{ e.get_role_display }}{% if e.department %} · {{ e.department }}{% endif %} · {{ e.get_personality_display }}</p>
       </div>
+    </a>
+    <div class="pg-emp-foot">
+      {% if e.is_active %}
+      <span class="lb-badge lb-badge-green"><span class="lb-dot"></span> Active</span>
+      {% else %}
+      <span class="lb-badge lb-badge-orange">Inactive</span>
+      {% endif %}
+      <span class="pg-quiet">{{ e.knowledge_count }} knowledge {{ e.knowledge_count|pluralize:"item,items" }}</span>
     </div>
-    <div style="margin-top:14px;">
-      {% if e.is_active %}<span class="lb-badge lb-badge-green"><span class="lb-dot"></span> Active</span>
-      {% else %}<span class="lb-badge lb-badge-orange">Inactive</span>{% endif %}
+    <div class="pg-emp-actions">
+      <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'employee_edit' e.pk %}">Personality</a>
+      <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'knowledge_list' e.pk %}">Train</a>
+      <a class="lb-btn lb-btn-primary lb-btn-sm" href="{% url 'employee_playground' e.pk %}">Playground</a>
     </div>
-  </a>
+  </article>
   {% empty %}
-  <div class="lb-card" style="padding:28px;grid-column:1/-1;">
-    <h3 style="margin-top:0;">No AI Employees yet</h3>
-    <p style="color:var(--lb-muted);">Hire your first specialist to deploy on your website.</p>
+  <div class="pg-empty">
+    <h3>No AI Employees yet</h3>
+    <p>Hire your first specialist to deploy on your website.</p>
     <a class="lb-btn lb-btn-primary" href="{% url 'employee_hire' %}">Hire now</a>
   </div>
   {% endfor %}
 </div>
+<p class="pg-empty-filter" id="emp-empty" hidden>No teammates match that search.</p>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  var input = document.getElementById('emp-search');
+  var cards = document.querySelectorAll('.pg-emp-card');
+  var empty = document.getElementById('emp-empty');
+  if (!input) return;
+  input.addEventListener('input', function () {
+    var q = input.value.trim().toLowerCase();
+    var n = 0;
+    cards.forEach(function (card) {
+      var hit = !q || (card.getAttribute('data-search') || '').toLowerCase().indexOf(q) !== -1;
+      card.hidden = !hit;
+      if (hit) n += 1;
+    });
+    if (empty) empty.hidden = n !== 0 || cards.length === 0;
+  });
+})();
+</script>
 {% endblock %}

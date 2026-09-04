@@ -1,48 +1,108 @@
 {% extends 'base_app.html' %}
-{% block title %}{{ employee.name }} — LiftBot{% endblock %}
+{% load static %}
+
+{% block title %}{{ employee.name }} — Widget — LiftBot{% endblock %}
 {% block page_title %}{{ employee.name }}{% endblock %}
 {% block page_subtitle %}{{ employee.get_role_display }}{% if employee.department %} · {{ employee.department }}{% endif %}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'pages.css' %}" />
+{% endblock %}
 {% block top_actions %}
   <a class="lb-btn lb-btn-ghost" href="{% url 'employee_edit' employee.pk %}">Edit</a>
   <a class="lb-btn lb-btn-ghost" href="{% url 'knowledge_list' employee.pk %}">Train</a>
   <a class="lb-btn lb-btn-primary" href="{% url 'employee_playground' employee.pk %}">Playground</a>
 {% endblock %}
+
 {% block content %}
-<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px;">
-  <div class="lb-card" style="padding:20px;">
-    <h3 style="margin:0 0 8px;font-size:15px;">Single AI Employee embed</h3>
-    <p style="margin:0 0 12px;color:var(--lb-muted);font-size:13px;">Visitors talk directly to {{ employee.name }}.</p>
-    <pre style="background:#0B1220;color:#C4B5FD;padding:14px;border-radius:10px;font-size:12px;overflow:auto;white-space:pre-wrap;">{{ embed_snippet }}</pre>
-  </div>
-  <div class="lb-card" style="padding:20px;">
-    <h3 style="margin:0 0 8px;font-size:15px;">Whole team embed</h3>
-    <p style="margin:0 0 12px;color:var(--lb-muted);font-size:13px;">Visitor picks which AI Employee to talk to (Sales, Support, etc.).</p>
-    <pre style="background:#0B1220;color:#C4B5FD;padding:14px;border-radius:10px;font-size:12px;overflow:auto;white-space:pre-wrap;">{{ team_embed_snippet }}</pre>
-  </div>
-</div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-  <div class="lb-card" style="padding:20px;">
-    <h3 style="margin:0 0 12px;font-size:15px;">What this employee can do</h3>
-    <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.8;color:#374151;">
-      {% for cap in employee.capabilities %}
-      <li>{{ cap|cut:"_"|title }}</li>
-      {% empty %}
-      <li>Default role capabilities</li>
-      {% endfor %}
-    </ul>
-    {% if employee.handoff_email %}
-    <p style="margin:14px 0 0;font-size:12px;color:var(--lb-muted);">Handoffs go to: <strong>{{ employee.handoff_email }}</strong></p>
-    {% endif %}
-  </div>
-  <div class="lb-card" style="padding:20px;">
-    <h3 style="margin:0 0 8px;font-size:15px;">Greeting</h3>
-    <p style="margin:0;font-size:14px;line-height:1.5;">{{ employee.greeting_message }}</p>
-    <div style="margin-top:14px;">
-      {% if employee.is_active %}
-      <span class="lb-badge lb-badge-green"><span class="lb-dot"></span> Active AI Employee</span>
-      {% endif %}
-      <a class="lb-btn lb-btn-ghost lb-btn-sm" style="margin-left:8px;" href="{% url 'employee_fire' employee.pk %}">Fire</a>
+<div class="pg-widget-layout">
+  <div class="pg-widget-main">
+    <section class="pg-card">
+      <header class="pg-card-head">
+        <div>
+          <p class="pg-kicker">Install</p>
+          <h2>Website widget</h2>
+          <p>Paste one snippet on any page. Copy updates the clipboard immediately.</p>
+        </div>
+      </header>
+      <div class="pg-embed-grid">
+        <article class="pg-embed">
+          <h3>Single employee</h3>
+          <p>Visitors talk directly to {{ employee.name }}.</p>
+          <div class="pg-code" id="embed-single">{{ embed_snippet }}<button type="button" data-copy="embed-single">Copy</button></div>
+        </article>
+        <article class="pg-embed">
+          <h3>Whole team</h3>
+          <p>Visitor picks which AI Employee to talk to (Sales, Support, and more).</p>
+          <div class="pg-code" id="embed-team">{{ team_embed_snippet }}<button type="button" data-copy="embed-team">Copy</button></div>
+        </article>
+      </div>
+    </section>
+
+    <div class="pg-split">
+      <section class="pg-card">
+        <h2>What {{ employee.name }} can do</h2>
+        <ul class="pg-caps">
+          {% for item in capability_items %}
+          <li>{{ item }}</li>
+          {% empty %}
+          <li>Default role capabilities</li>
+          {% endfor %}
+        </ul>
+        {% if employee.handoff_email %}
+        <p class="pg-help">Handoffs go to <strong>{{ employee.handoff_email }}</strong></p>
+        {% endif %}
+      </section>
+      <section class="pg-card">
+        <h2>Greeting &amp; status</h2>
+        <blockquote class="pg-quote">{{ employee.greeting_message }}</blockquote>
+        <div class="pg-status-row">
+          {% if employee.is_active %}
+          <span class="lb-badge lb-badge-green"><span class="lb-dot"></span> Active on website</span>
+          {% else %}
+          <span class="lb-badge lb-badge-orange">Inactive</span>
+          {% endif %}
+          <a class="lb-btn lb-btn-ghost lb-btn-sm pg-danger-link" href="{% url 'employee_fire' employee.pk %}">Fire employee</a>
+        </div>
+      </section>
     </div>
   </div>
+
+  <aside class="pg-widget-aside">
+    <div class="pg-preview">
+      <h3>Widget preview</h3>
+      <p>How this employee appears on your site.</p>
+      <div class="pg-mini-widget">
+        <div class="pg-mini-head" style="background:{{ employee.brand_color|default:'#7C3AED' }}">
+          <div class="pg-mini-av">{{ employee.name|slice:":1"|upper }}</div>
+          <div>
+            <strong>{{ employee.name }}</strong>
+            <span>{{ employee.get_role_display }} · Online</span>
+          </div>
+        </div>
+        <div class="pg-mini-body">
+          <div class="pg-mini-bubble">{{ employee.greeting_message }}</div>
+        </div>
+      </div>
+    </div>
+  </aside>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', async function () {
+      var box = document.getElementById(btn.getAttribute('data-copy'));
+      if (!box) return;
+      var text = box.childNodes[0] ? box.childNodes[0].textContent.trim() : box.textContent.trim();
+      try {
+        await navigator.clipboard.writeText(text);
+        btn.textContent = 'Copied';
+        setTimeout(function () { btn.textContent = 'Copy'; }, 1500);
+      } catch (_) {}
+    });
+  });
+})();
+</script>
 {% endblock %}

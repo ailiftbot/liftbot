@@ -1,8 +1,10 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
+from apps.chat.constants import CAPABILITY_LABELS
 from apps.chat.models import ChatSession
 from apps.workspaces.public_urls import widget_urls
 from apps.workspaces.views import user_workspace
@@ -24,8 +26,18 @@ def employee_list(request):
     workspace = _workspace_or_redirect(request)
     if not workspace:
         return redirect('dashboard')
-    employees = AIEmployee.objects.filter(workspace=workspace)
-    return render(request, 'employees/list.html', {'employees': employees, 'workspace': workspace})
+    employees = (
+        AIEmployee.objects
+        .filter(workspace=workspace)
+        .annotate(knowledge_count=Count('knowledge_sources'))
+    )
+    active_count = sum(1 for e in employees if e.is_active)
+    return render(request, 'employees/list.html', {
+        'employees': employees,
+        'workspace': workspace,
+        'employee_count': len(employees),
+        'active_count': active_count,
+    })
 
 
 @login_required
@@ -52,7 +64,13 @@ def employee_hire(request):
     else:
         form = AIEmployeeForm(initial={'brand_color': workspace.brand_color})
 
-    return render(request, 'employees/form.html', {'form': form, 'title': 'Hire an AI Employee'})
+    return render(request, 'employees/form.html', {
+        'form': form,
+        'title': 'Hire an AI Employee',
+        'is_hire': True,
+        'employee': None,
+        'cancel_url': 'employee_list',
+    })
 
 
 @login_required
@@ -67,6 +85,10 @@ def employee_detail(request, pk):
             widget_url=urls['widget'], api_base=urls['api']
         ),
         'workspace': workspace,
+        'capability_items': [
+            CAPABILITY_LABELS.get(c, c.replace('_', ' ').title())
+            for c in (employee.capabilities or [])
+        ],
     })
 
 
@@ -82,7 +104,13 @@ def employee_edit(request, pk):
             return redirect('employee_detail', pk=employee.pk)
     else:
         form = AIEmployeeForm(instance=employee)
-    return render(request, 'employees/form.html', {'form': form, 'title': f'Edit {employee.name}'})
+    return render(request, 'employees/form.html', {
+        'form': form,
+        'title': f'Edit {employee.name}',
+        'is_hire': False,
+        'employee': employee,
+        'cancel_url': 'employee_detail',
+    })
 
 
 @login_required

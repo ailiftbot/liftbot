@@ -1,30 +1,93 @@
 {% extends 'base_app.html' %}
-{% block title %}Train {{ employee.name }}{% endblock %}
+{% load static %}
+
+{% block title %}Knowledge Base — LiftBot{% endblock %}
 {% block page_title %}Knowledge Base{% endblock %}
 {% block page_subtitle %}Train {{ employee.name }} with PDFs, URLs, FAQs, and text.{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'pages.css' %}" />
+{% endblock %}
 {% block top_actions %}
+<a class="lb-btn lb-btn-ghost" href="{% url 'employee_detail' employee.pk %}">Widget</a>
 <a class="lb-btn lb-btn-primary" href="{% url 'knowledge_add' employee.pk %}">Add material</a>
 {% endblock %}
+
 {% block content %}
-<div class="lb-card" style="overflow:hidden;">
+<div class="pg-stats">
+  <div class="pg-stat"><span>Sources</span><strong>{{ source_count }}</strong></div>
+  <div class="pg-stat"><span>Ready</span><strong>{{ ready_count }}</strong></div>
+  <div class="pg-stat"><span>Chunks</span><strong>{{ chunk_total }}</strong></div>
+</div>
+
+<div class="pg-toolbar">
+  <label class="pg-search">
+    <span class="pg-search-ico" aria-hidden="true">⌕</span>
+    <input type="search" id="kb-search" placeholder="Search training material" autocomplete="off" />
+  </label>
+  <div class="pg-filters" role="group" aria-label="Filter by type">
+    <button type="button" class="pg-filter is-on" data-type="">All</button>
+    <button type="button" class="pg-filter" data-type="pdf">PDF</button>
+    <button type="button" class="pg-filter" data-type="url">URL</button>
+    <button type="button" class="pg-filter" data-type="faq">FAQ</button>
+    <button type="button" class="pg-filter" data-type="text">Text</button>
+  </div>
+</div>
+
+<div class="pg-kb-list" id="kb-list">
   {% for s in sources %}
-  <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;padding:14px 18px;border-bottom:1px solid #F3F4F6;">
-    <div>
-      <div style="font-weight:650;">{{ s.title }}</div>
-      <div style="font-size:12px;color:var(--lb-muted);">{{ s.get_source_type_display }} · {{ s.get_status_display }} · {{ s.chunk_count }} chunks</div>
-      {% if s.error_message %}<div style="font-size:12px;color:#DC2626;margin-top:4px;">{{ s.error_message }}</div>{% endif %}
+  <article class="pg-kb-row" data-title="{{ s.title }}" data-type="{{ s.source_type }}">
+    <div class="pg-kb-ico pg-kb-ico-{{ s.source_type }}">{{ s.get_source_type_display|slice:":1" }}</div>
+    <div class="pg-kb-body">
+      <h3>{{ s.title }}</h3>
+      <p>{{ s.get_source_type_display }} · {{ s.chunk_count }} chunks{% if s.source_url %} · {{ s.source_url }}{% endif %}</p>
+      {% if s.error_message %}<p class="pg-error">{{ s.error_message }}</p>{% endif %}
     </div>
-    <div style="display:flex;gap:8px;align-items:center;">
+    <div class="pg-kb-side">
       {% if s.status == 'ready' %}<span class="lb-badge lb-badge-green">Ready</span>
       {% elif s.status == 'failed' %}<span class="lb-badge lb-badge-orange">Failed</span>
       {% else %}<span class="lb-badge lb-badge-purple">{{ s.get_status_display }}</span>{% endif %}
-      <form method="post" action="{% url 'knowledge_delete' employee.pk s.pk %}">{% csrf_token %}
-        <button class="lb-btn lb-btn-ghost lb-btn-sm" type="submit">Remove</button>
-      </form>
+      <a class="lb-btn lb-btn-ghost lb-btn-sm pg-danger-link" href="{% url 'knowledge_delete' employee.pk s.pk %}">Remove</a>
     </div>
-  </div>
+  </article>
   {% empty %}
-  <div style="padding:28px;color:var(--lb-muted);">No training materials yet. Add a PDF, URL, FAQ, or text to get started.</div>
+  <div class="pg-empty">
+    <h3>No training materials yet</h3>
+    <p>Add a PDF, website URL, FAQ, or text so {{ employee.name }} can answer from your business knowledge.</p>
+    <a class="lb-btn lb-btn-primary" href="{% url 'knowledge_add' employee.pk %}">Add material</a>
+  </div>
   {% endfor %}
 </div>
+<p class="pg-empty-filter" id="kb-empty" hidden>No sources match that filter.</p>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  var search = document.getElementById('kb-search');
+  var rows = document.querySelectorAll('.pg-kb-row');
+  var empty = document.getElementById('kb-empty');
+  var type = '';
+  function apply() {
+    var q = (search && search.value.trim().toLowerCase()) || '';
+    var n = 0;
+    rows.forEach(function (row) {
+      var title = (row.getAttribute('data-title') || '').toLowerCase();
+      var t = row.getAttribute('data-type') || '';
+      var hit = (!q || title.indexOf(q) !== -1) && (!type || t === type);
+      row.hidden = !hit;
+      if (hit) n += 1;
+    });
+    if (empty) empty.hidden = n !== 0 || rows.length === 0;
+  }
+  if (search) search.addEventListener('input', apply);
+  document.querySelectorAll('.pg-filter').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.pg-filter').forEach(function (b) { b.classList.remove('is-on'); });
+      btn.classList.add('is-on');
+      type = btn.getAttribute('data-type') || '';
+      apply();
+    });
+  });
+})();
+</script>
 {% endblock %}

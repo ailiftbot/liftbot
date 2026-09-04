@@ -1,26 +1,65 @@
 {% extends 'base_app.html' %}
+{% load static %}
+
 {% block title %}Playground — {{ employee.name }}{% endblock %}
 {% block page_title %}Playground{% endblock %}
-{% block page_subtitle %}Test {{ employee.name }} with your live knowledge and personality.{% endblock %}
+{% block page_subtitle %}Test {{ employee.name }} with live knowledge and personality.{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'playground.css' %}" />
+{% endblock %}
+{% block top_actions %}
+<button type="button" class="lb-btn lb-btn-ghost" id="pg-reset">New chat</button>
+<a class="lb-btn lb-btn-primary" href="{% url 'knowledge_list' employee.pk %}">Train</a>
+{% endblock %}
+
 {% block content %}
-<div class="lb-card" style="max-width:480px;overflow:hidden;padding:0;">
-  <div style="padding:14px 16px;color:#fff;background:{{ employee.brand_color|default:workspace.brand_color|default:'#7C3AED' }};display:flex;justify-content:space-between;align-items:center;">
-    <div>
-      <strong>{{ employee.name }}</strong>
-      <div style="font-size:12px;opacity:.9;">{{ employee.get_role_display }} · We're online</div>
+<div class="pg-layout">
+  <section class="pg-chat-card">
+    <header class="pg-chat-head" style="background:{{ employee.brand_color|default:workspace.brand_color|default:'#7C3AED' }}">
+      <div class="pg-chat-id">
+        <div class="pg-chat-av">{{ employee.name|slice:":1"|upper }}</div>
+        <div>
+          <strong>{{ employee.name }}</strong>
+          <span>{{ employee.get_role_display }} · We're online</span>
+        </div>
+      </div>
+      <button type="button" class="pg-chat-new" id="pg-reset-inline">New chat</button>
+    </header>
+    <div id="playground"
+         data-token="{{ employee.widget_token }}"
+         data-greeting="{{ employee.greeting_message }}"
+         data-api="{{ public_widget_api }}/"
+         data-history-url="{% url 'playground_history' employee.pk %}">
+      <div id="pg-messages" class="pg-messages" role="log" aria-live="polite"></div>
+      <form id="pg-form" class="pg-form">
+        <label class="visually-hidden" for="pg-input">Message</label>
+        <input id="pg-input" type="text" placeholder="Ask {{ employee.name }}…" autocomplete="off" />
+        <button id="pg-send" class="lb-btn lb-btn-primary" type="submit">Send</button>
+      </form>
     </div>
-    <button id="pg-reset" type="button" style="background:rgba(255,255,255,.15);border:none;color:#fff;font-size:11px;padding:4px 8px;border-radius:999px;cursor:pointer;">New chat</button>
-  </div>
-  <div id="playground" data-token="{{ employee.widget_token }}" data-greeting="{{ employee.greeting_message }}"
-       data-api="{{ public_widget_api }}/" data-history-url="{% url 'playground_history' employee.pk %}"
-       style="height:420px;display:flex;flex-direction:column;">
-    <div id="pg-messages" style="flex:1;overflow:auto;padding:14px;background:#F9FAFB;display:flex;flex-direction:column;gap:8px;"></div>
-    <form id="pg-form" style="display:flex;gap:8px;padding:10px;border-top:1px solid #E5E7EB;background:#fff;">
-      <input id="pg-input" style="flex:1;border:1px solid #E5E7EB;border-radius:999px;padding:10px 14px;" placeholder="Ask {{ employee.name }}..." autocomplete="off" />
-      <button id="pg-send" class="lb-btn lb-btn-primary" type="submit">Send</button>
-    </form>
-  </div>
+  </section>
+
+  <aside class="pg-side">
+    <div class="pg-side-card">
+      <p class="pg-kicker">How to test</p>
+      <h2>Try real visitor questions</h2>
+      <ul>
+        <li>Ask who they are and what they do for {{ workspace.name|default:'the company' }}.</li>
+        <li>Ask something from your knowledge base.</li>
+        <li>Ask for pricing, hours, or next steps.</li>
+      </ul>
+    </div>
+    <div class="pg-side-card">
+      <p class="pg-kicker">Shortcuts</p>
+      <a href="{% url 'employee_edit' employee.pk %}">Edit personality</a>
+      <a href="{% url 'knowledge_list' employee.pk %}">Add training material</a>
+      <a href="{% url 'employee_detail' employee.pk %}">Get embed code</a>
+    </div>
+  </aside>
 </div>
+{% endblock %}
+
+{% block extra_js %}
 <script>
 (() => {
   const root = document.getElementById('playground');
@@ -36,14 +75,19 @@
 
   function add(who, text) {
     const el = document.createElement('div');
-    el.style.cssText = 'max-width:85%;padding:8px 12px;border-radius:14px;font-size:13px;line-height:1.4;' +
-      (who === 'you'
-        ? 'align-self:flex-end;background:#7C3AED;color:#fff;'
-        : 'align-self:flex-start;background:#fff;border:1px solid #E5E7EB;');
+    el.className = who === 'you' ? 'pg-bubble pg-bubble-you' : 'pg-bubble pg-bubble-them';
     el.textContent = text;
     box.appendChild(el);
     box.scrollTop = box.scrollHeight;
     return el;
+  }
+
+  function resetChat() {
+    localStorage.removeItem(storageKey);
+    sessionId = null;
+    box.innerHTML = '';
+    add('them', root.dataset.greeting || 'Hi!');
+    input.focus();
   }
 
   async function loadHistory() {
@@ -66,12 +110,8 @@
     }
   }
 
-  document.getElementById('pg-reset').addEventListener('click', () => {
-    localStorage.removeItem(storageKey);
-    sessionId = null;
-    box.innerHTML = '';
-    add('them', root.dataset.greeting || 'Hi!');
-  });
+  document.getElementById('pg-reset')?.addEventListener('click', resetChat);
+  document.getElementById('pg-reset-inline')?.addEventListener('click', resetChat);
 
   loadHistory();
 
@@ -80,8 +120,10 @@
     if (busy) return;
     const msg = input.value.trim();
     if (!msg) return;
-    busy = true; sendBtn.disabled = true;
-    add('you', msg); input.value = '';
+    busy = true;
+    sendBtn.disabled = true;
+    add('you', msg);
+    input.value = '';
     const thinking = add('them', 'Thinking…');
     try {
       const res = await fetch(api + 'message/', {
@@ -98,7 +140,9 @@
     } catch (_) {
       thinking.textContent = 'Network error.';
     } finally {
-      busy = false; sendBtn.disabled = false; input.focus();
+      busy = false;
+      sendBtn.disabled = false;
+      input.focus();
     }
   });
 })();

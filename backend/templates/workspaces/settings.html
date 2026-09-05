@@ -9,121 +9,268 @@
 {% endblock %}
 
 {% block content %}
-<div class="lb-settings-grid">
-  <section class="lb-card lb-settings-panel">
-    <h2>Workspace</h2>
-    <p class="desc">Company name and default brand color used across embeds.</p>
-    <form method="post" class="lb-form">
-      {% csrf_token %}
-      <input type="hidden" name="section" value="workspace" />
-      <div class="field">
-        <label for="ws-name">Workspace name</label>
-        <input id="ws-name" name="name" value="{{ workspace.name }}" required maxlength="200" />
-      </div>
-      <div class="field">
-        <label for="ws-color">Brand color</label>
-        <input id="ws-color" name="brand_color" type="color" value="{{ workspace.brand_color|default:'#0F766E' }}" style="width:72px;height:40px;padding:4px;" />
-      </div>
-      <button class="lb-btn lb-btn-primary" type="submit">Save workspace</button>
-    </form>
-  </section>
+<style>
+  /* Hide the browser's scrollbar chrome on this page. Scrolling still
+     works via wheel/trackpad/keyboard/touch — only the visible
+     track/thumb is removed. */
+  html {
+    scrollbar-width: none;       /* Firefox */
+    -ms-overflow-style: none;    /* old Edge / IE */
+  }
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {      /* Chrome, Safari, new Edge */
+    width: 0;
+    height: 0;
+    display: none;
+  }
 
-  <section class="lb-card lb-settings-panel">
-    <h2>Your account</h2>
-    <p class="desc">Profile details for {{ user.email }}.</p>
-    <form method="post" class="lb-form">
-      {% csrf_token %}
-      <input type="hidden" name="section" value="account" />
-      <div class="field">
-        <label for="full-name">Display name</label>
-        <input id="full-name" name="full_name" value="{{ profile.full_name|default:'' }}" maxlength="150" />
-      </div>
-      <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div>
-          <label for="first-name">First name</label>
-          <input id="first-name" name="first_name" value="{{ user.first_name }}" maxlength="150" />
+  /* Copy button: labeled pill sitting next to the field label, instead
+     of an icon squeezed into a small box (in case a shared .lb-copy-btn
+     rule elsewhere assumes an icon-only button). */
+  .lb-copy-wrap-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .lb-copy-wrap-head label { margin-bottom: 0; }
+  .lb-copy-wrap .lb-copy-btn {
+    width: auto;
+    height: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--lb-border, #E6E6EA);
+    background: #fff;
+    color: var(--lb-purple, #6D3DF5);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease;
+  }
+  .lb-copy-wrap .lb-copy-btn:hover {
+    background: var(--lb-purple-soft, #F0EBFF);
+    border-color: #C4B5FD;
+  }
+</style>
+
+<div class="lb-settings-shell">
+
+  <nav class="lb-settings-nav">
+    <a href="#workspace" class="active">Workspace</a>
+    <a href="#account">Account</a>
+    <a href="#webhook">Webhook</a>
+    <a href="#embed">Embed</a>
+    <a href="#team">Team</a>
+    <a href="#billing">Billing</a>
+  </nav>
+
+  <div class="lb-settings-list">
+
+    <div class="lb-settings-row" id="workspace">
+      <div class="lb-settings-row-label">
+        <div class="lb-settings-row-head">
+          <div class="lb-settings-icon lb-icon-purple">◈</div>
+          <h3 class="lb-settings-row-title">Workspace</h3>
         </div>
-        <div>
-          <label for="last-name">Last name</label>
-          <input id="last-name" name="last_name" value="{{ user.last_name }}" maxlength="150" />
+        <p class="desc">Company name and default brand color used across embeds.</p>
+      </div>
+      <div class="lb-settings-row-control">
+        <form method="post" class="lb-form">
+          {% csrf_token %}
+          <input type="hidden" name="section" value="workspace" />
+          <div class="field">
+            <label for="ws-name">Workspace name</label>
+            <input id="ws-name" name="name" value="{{ workspace.name }}" required maxlength="200" />
+          </div>
+          <div class="field">
+            <label for="ws-color">Brand color</label>
+            <input id="ws-color" name="brand_color" type="color" value="{{ workspace.brand_color|default:'#0F766E' }}" style="width:72px;height:40px;padding:4px;" />
+          </div>
+          <div class="lb-settings-row-actions">
+            <button class="lb-btn lb-btn-primary" type="submit">Save workspace</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="lb-settings-row" id="account">
+      <div class="lb-settings-row-label">
+        <div class="lb-settings-row-head">
+          <div class="lb-settings-icon lb-icon-purple">◎</div>
+          <h3 class="lb-settings-row-title">Your account</h3>
+        </div>
+        <p class="desc">Profile details for {{ user.email }}.</p>
+      </div>
+      <div class="lb-settings-row-control">
+        <div class="lb-settings-avatar-row">
+          <div class="lb-settings-avatar">{{ user.first_name|default:user.email|slice:":2"|upper }}</div>
+          <div class="meta">
+            <strong>{{ user.first_name|default:user.email }}</strong>
+            <span>{{ user.email }}</span>
+          </div>
+        </div>
+        <form method="post" class="lb-form">
+          {% csrf_token %}
+          <input type="hidden" name="section" value="account" />
+          <div class="field">
+            <label for="full-name">Display name</label>
+            <input id="full-name" name="full_name" value="{{ profile.full_name|default:'' }}" maxlength="150" />
+          </div>
+          <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <label for="first-name">First name</label>
+              <input id="first-name" name="first_name" value="{{ user.first_name }}" maxlength="150" />
+            </div>
+            <div>
+              <label for="last-name">Last name</label>
+              <input id="last-name" name="last_name" value="{{ user.last_name }}" maxlength="150" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input value="{{ user.email }}" disabled />
+            {% if profile %}
+            <p style="margin:8px 0 0;">
+              {% if profile.email_verified %}
+              <span style="font-size:12px;color:var(--lb-green);">Verified</span>
+              {% else %}
+              <span class="lb-verify-badge">⚠ Not verified — use the banner to resend</span>
+              {% endif %}
+            </p>
+            {% endif %}
+          </div>
+          <div class="lb-settings-row-actions">
+            <a class="lb-btn lb-btn-ghost" href="{% url 'password_reset' %}">Change password</a>
+            <button class="lb-btn lb-btn-primary" type="submit">Save account</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="lb-settings-row" id="webhook">
+      <div class="lb-settings-row-label">
+        <div class="lb-settings-row-head">
+          <div class="lb-settings-icon lb-icon-purple">⇄</div>
+          <h3 class="lb-settings-row-title">Team webhook</h3>
+        </div>
+        <p class="desc">POST JSON when leads or tasks are created (Slack, Zapier, n8n, etc.).</p>
+      </div>
+      <div class="lb-settings-row-control">
+        <form method="post" class="lb-form">
+          {% csrf_token %}
+          <input type="hidden" name="section" value="webhook" />
+          <div class="field">
+            <label for="webhook">Webhook URL</label>
+            <input id="webhook" name="webhook_url" value="{{ workspace.webhook_url }}" placeholder="https://hooks.slack.com/services/…" />
+          </div>
+          <div class="lb-settings-row-actions">
+            <button class="lb-btn lb-btn-primary" type="submit">Save webhook</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="lb-settings-row" id="embed">
+      <div class="lb-settings-row-label">
+        <div class="lb-settings-row-head">
+          <div class="lb-settings-icon lb-icon-purple">⧉</div>
+          <h3 class="lb-settings-row-title">Team embed</h3>
+        </div>
+        <p class="desc">One snippet for all AI Employees — visitors pick who to talk to.</p>
+      </div>
+      <div class="lb-settings-row-control">
+        <div class="field">
+          <label>Workspace widget token</label>
+          <code class="lb-code-block">{{ workspace.widget_token }}</code>
+        </div>
+        <div class="field lb-copy-wrap">
+          <div class="lb-copy-wrap-head">
+            <label>Embed snippet</label>
+            <button type="button" class="lb-copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('embed-snippet').value); this.textContent='Copied'; var b=this; setTimeout(function(){ b.textContent='Copy'; }, 1800);">Copy</button>
+          </div>
+          <textarea id="embed-snippet" class="lb-code-block" rows="3" readonly>{{ team_embed_snippet }}</textarea>
+        </div>
+        <form method="post" onsubmit="return confirm('Regenerate the team token? Existing team embeds will stop working until you update them.');">
+          {% csrf_token %}
+          <input type="hidden" name="section" value="regenerate_workspace_token" />
+          <div class="lb-settings-row-actions">
+            <button class="lb-btn lb-btn-danger-ghost" type="submit">Regenerate team token</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="lb-settings-row" id="team">
+      <div class="lb-settings-row-label">
+        <div class="lb-settings-row-head">
+          <div class="lb-settings-icon lb-icon-purple">◑</div>
+          <h3 class="lb-settings-row-title">Team members</h3>
+        </div>
+        <p class="desc">People with access to this workspace.</p>
+      </div>
+      <div class="lb-settings-row-control">
+        <ul class="lb-feed" style="margin:0;">
+          {% for m in memberships %}
+          <li style="display:flex;align-items:center;justify-content:space-between;border-bottom:none;padding:6px 0;">
+            <div>
+              <strong>{{ m.user.get_full_name|default:m.user.email }}</strong>
+              <span>{{ m.user.email }}</span>
+            </div>
+            <span class="lb-role-badge">{{ m.get_role_display }}</span>
+          </li>
+          {% empty %}
+          <li class="muted">No members.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <div class="lb-settings-row" id="billing">
+      <div class="lb-settings-row-label">
+        <div class="lb-settings-row-head">
+          <div class="lb-settings-icon lb-icon-purple">♛</div>
+          <h3 class="lb-settings-row-title">Plan & billing</h3>
+        </div>
+        <p class="desc">Current plan: <strong>{{ workspace.plan.name|default:'Unassigned' }}</strong></p>
+      </div>
+      <div class="lb-settings-row-control">
+        <div class="lb-usage-label">
+          <span>{{ workspace.conversations_used }} of {{ workspace.conversation_limit }} conversations</span>
+        </div>
+        <div class="lb-usage-bar">
+          <div class="lb-usage-fill" style="--pct: {{ workspace.usage_percent|default:0 }}%; width: var(--pct);"></div>
+        </div>
+        <div class="lb-settings-row-actions" style="justify-content:flex-start;">
+          <a class="lb-btn lb-btn-primary" href="{% url 'billing' %}">Manage billing</a>
+          <a class="lb-btn lb-btn-ghost" href="{% url 'analytics' %}">View analytics</a>
         </div>
       </div>
-      <div class="field">
-        <label>Email</label>
-        <input value="{{ user.email }}" disabled />
-        {% if profile %}
-        <p style="margin:6px 0 0;font-size:12px;color:var(--lb-muted);">
-          {% if profile.email_verified %}Verified{% else %}Not verified — use the banner to resend{% endif %}
-        </p>
-        {% endif %}
-      </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <button class="lb-btn lb-btn-primary" type="submit">Save account</button>
-        <a class="lb-btn lb-btn-ghost" href="{% url 'password_reset' %}">Change password</a>
-      </div>
-    </form>
-  </section>
-
-  <section class="lb-card lb-settings-panel">
-    <h2>Team webhook</h2>
-    <p class="desc">POST JSON when leads or tasks are created (Slack, Zapier, n8n, etc.).</p>
-    <form method="post" class="lb-form">
-      {% csrf_token %}
-      <input type="hidden" name="section" value="webhook" />
-      <div class="field">
-        <label for="webhook">Webhook URL</label>
-        <input id="webhook" name="webhook_url" value="{{ workspace.webhook_url }}" placeholder="https://hooks.slack.com/services/…" />
-      </div>
-      <button class="lb-btn lb-btn-primary" type="submit">Save webhook</button>
-    </form>
-  </section>
-
-  <section class="lb-card lb-settings-panel">
-    <h2>Team embed</h2>
-    <p class="desc">One snippet for all AI Employees — visitors pick who to talk to.</p>
-    <div class="field">
-      <label>Workspace widget token</label>
-      <code class="lb-code-block">{{ workspace.widget_token }}</code>
     </div>
-    <div class="field">
-      <label>Embed snippet</label>
-      <textarea class="lb-code-block" rows="3" readonly onclick="this.select()">{{ team_embed_snippet }}</textarea>
-    </div>
-    <form method="post" onsubmit="return confirm('Regenerate the team token? Existing team embeds will stop working until you update them.');">
-      {% csrf_token %}
-      <input type="hidden" name="section" value="regenerate_workspace_token" />
-      <button class="lb-btn lb-btn-ghost" type="submit">Regenerate team token</button>
-    </form>
-  </section>
 
-  <section class="lb-card lb-settings-panel">
-    <h2>Team members</h2>
-    <p class="desc">People with access to this workspace.</p>
-    <ul class="lb-feed" style="margin:0;">
-      {% for m in memberships %}
-      <li>
-        <div>
-          <strong>{{ m.user.get_full_name|default:m.user.email }}</strong>
-          <span>{{ m.user.email }} · {{ m.get_role_display }}</span>
-        </div>
-      </li>
-      {% empty %}
-      <li class="muted">No members.</li>
-      {% endfor %}
-    </ul>
-  </section>
-
-  <section class="lb-card lb-settings-panel">
-    <h2>Plan & billing</h2>
-    <p class="desc">Current plan: <strong>{{ workspace.plan.name|default:'Unassigned' }}</strong></p>
-    <p style="font-size:13px;color:var(--lb-muted);margin:0 0 14px;">
-      {{ workspace.conversations_used }}/{{ workspace.conversation_limit }} conversations ·
-      {{ workspace.tokens_used }}/{{ workspace.token_limit }} tokens
-    </p>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
-      <a class="lb-btn lb-btn-primary" href="{% url 'billing' %}">Manage billing</a>
-      <a class="lb-btn lb-btn-ghost" href="{% url 'analytics' %}">View analytics</a>
-    </div>
-  </section>
+  </div>
 </div>
+
+<script>
+(function () {
+  var links = document.querySelectorAll('.lb-settings-nav a');
+  var sections = Array.prototype.map.call(links, function (a) {
+    return document.getElementById(a.getAttribute('href').slice(1));
+  });
+  window.addEventListener('scroll', function () {
+    var pos = window.scrollY + 120;
+    var activeIndex = 0;
+    sections.forEach(function (sec, i) {
+      if (sec && sec.offsetTop <= pos) activeIndex = i;
+    });
+    links.forEach(function (a, i) {
+      a.classList.toggle('active', i === activeIndex);
+    });
+  }, { passive: true });
+})();
+</script>
 {% endblock %}

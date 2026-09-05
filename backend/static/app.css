@@ -38,6 +38,7 @@ body.lb-app {
   text-rendering: optimizeLegibility;
   overflow-x: clip;
   max-width: 100%;
+  
 }
 
 .lb-shell {
@@ -498,23 +499,126 @@ body.lb-app {
 .lb-feed span { color: var(--lb-muted); font-size: 12px; }
 
 /* Settings */
-.lb-settings-grid {
+.lb-settings-shell {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: 200px 1fr;
+  gap: 32px;
+  align-items: start;
 }
-.lb-settings-panel { padding: 20px; }
-.lb-settings-panel h2 {
-  margin: 0 0 4px;
-  font-size: 16px;
-  font-weight: 750;
+
+.lb-settings-nav {
+  position: sticky;
+  top: 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
-.lb-settings-panel .desc {
-  margin: 0 0 16px;
+.lb-settings-nav a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--lb-muted);
+  text-decoration: none;
+  transition: 0.15s ease;
+}
+.lb-settings-nav a:hover { background: #F3F4F6; color: var(--lb-ink); }
+.lb-settings-nav a.active {
+  background: var(--lb-purple-soft);
+  color: var(--lb-purple-dark);
+}
+
+.lb-settings-list {
+  background: var(--lb-card);
+  border: 1px solid var(--lb-border);
+  border-radius: var(--lb-radius);
+  overflow: hidden;
+}
+
+.lb-settings-row {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 32px;
+  padding: 28px;
+  scroll-margin-top: 90px;
+  transition: background 0.15s ease;
+}
+.lb-settings-row:hover { background: #FAFAFB; }
+.lb-settings-row + .lb-settings-row {
+  border-top: 1px solid var(--lb-border);
+}
+
+.lb-settings-row-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.lb-settings-row-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--lb-ink);
+  line-height: 1.3;
+}
+.lb-settings-row-label .desc {
+  margin: 0;
   font-size: 13px;
   color: var(--lb-muted);
-  line-height: 1.45;
+  line-height: 1.55;
 }
+
+.lb-settings-row-control { max-width: 440px; }
+.lb-settings-row-control .field { margin-bottom: 16px; }
+.lb-settings-row-control .field:last-child { margin-bottom: 0; }
+.lb-settings-row-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.lb-settings-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.lb-icon-purple { background: #EDE9FE; color: #6D28D9; }
+.lb-icon-blue { background: #DBEAFE; color: #1D4ED8; }
+.lb-icon-green { background: #D1FAE5; color: #047857; }
+.lb-icon-pink { background: #FCE7F3; color: #BE185D; }
+.lb-icon-amber { background: #FEF3C7; color: #B45309; }
+
+.lb-settings-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background: var(--lb-purple-soft);
+  color: var(--lb-purple-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.lb-settings-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.lb-settings-avatar-row .meta strong { display: block; font-size: 13px; }
+.lb-settings-avatar-row .meta span { font-size: 12px; color: var(--lb-muted); }
+
 .lb-code-block {
   display: block;
   width: 100%;
@@ -614,14 +718,27 @@ body.lb-app {
     transition: transform 0.25s ease;
     z-index: 1000;
     padding-top: 56px;
-    padding-bottom: 100px; /* <--- Added: space to scroll to the footer */
-    overflow-y: auto;       /* <--- Fixed: CHANGED from hidden to auto */
-    -webkit-overflow-scrolling: touch; /* <--- Added: smooth scroll on iOS */
+    padding-bottom: 100px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .lb-sidebar.open { transform: translateX(0); }
   .lb-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .lb-analytics-grid,
-  .lb-settings-grid { grid-template-columns: 1fr; }
+  .lb-analytics-grid { grid-template-columns: 1fr; }
+   .lb-settings-shell { grid-template-columns: 1fr; }
+  .lb-settings-nav {
+    position: static;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 4px;
+    padding-bottom: 4px;
+  }
+  .lb-settings-nav a { white-space: nowrap; }
+  .lb-settings-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 18px;
+  }
   .lb-table-head,
   .lb-table-row { grid-template-columns: 1.5fr 1fr 1fr 1fr; }
 }
@@ -639,13 +756,13 @@ body.lb-app {
   .lb-topbar .sub { display: none; }
   .lb-topbar-title { flex: 0 1 auto; min-width: 0; }
   .lb-menu-toggle { flex-shrink: 0; }
-  .lb-top-actions { 
+  .lb-top-actions {
     gap: 6px;
     justify-content: flex-end;
     align-items: center;
     width: auto;
     flex: 0 1 auto;
-    margin-left: auto; /* PUSHES ACTIONS TO THE RIGHT */
+    margin-left: auto;
   }
   .lb-content { padding: 14px 16px 28px; }
   .lb-messages { margin: 0 16px; }
@@ -656,29 +773,26 @@ body.lb-app {
   .lb-userchip .meta { display: none !important; }
   .lb-userchip .meta span { color: var(--lb-muted); font-size: 12px; }
   .lb-userchip { padding-left: 8px; border-left: 1px solid var(--lb-border); }
-  
-  /* Buttons */
+
   .lb-btn { padding: 8px 12px; font-size: 12px; }
   .lb-btn-sm { padding: 6px 10px; font-size: 11px; }
-  
-  /* Forms */
+
   .lb-form input, .lb-form select, .lb-form textarea {
-    font-size: 16px; 
+    font-size: 16px;
   }
-  
-  /* Cards and panels */
+
   .lb-card { border-radius: 12px; }
   .lb-form .field { margin-bottom: 12px; }
-  
-  /* Analytics grid */
+
   .lb-analytics-panel { padding: 14px 16px; }
   .lb-chart { height: 140px; }
-  
-  /* Settings */
-  .lb-settings-panel { padding: 16px; }
-  .lb-settings-panel h2 { font-size: 15px; }
-  
-  /* Tables */
+
+  .lb-settings-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 16px;
+  }
+
   .lb-table-head { display: none; }
   .lb-table-row {
     grid-template-columns: 1fr 1fr;
@@ -694,7 +808,7 @@ body.lb-app {
     background: #FFFFFF;
     gap: 6px;
     flex-wrap: wrap;
-    justify-content: flex-start; 
+    justify-content: flex-start;
   }
   .lb-topbar h1 { font-size: 16px; margin: 0; }
   .lb-topbar .sub { display: none; }
@@ -722,18 +836,15 @@ body.lb-app {
   .lb-userchip .meta strong { display: none; }
   .lb-userchip .meta span { color: var(--lb-muted); font-size: 11px; }
   .lb-userchip { padding-left: 8px; }
-  
-  /* Buttons */
+
   .lb-btn { padding: 7px 10px; font-size: 11px; }
   .lb-btn-sm { padding: 5px 8px; font-size: 10px; }
-  
-  /* Cards */
+
   .lb-card { border-radius: 10px; }
   .lb-card-head { padding: 12px 14px; }
   .lb-panel-head { flex-wrap: wrap; }
   .lb-panel-head h2 { font-size: 14px; }
-  
-  /* Forms */
+
   .lb-form label { font-size: 12px; }
   .lb-form input, .lb-form select, .lb-form textarea {
     font-size: 16px;
@@ -742,8 +853,7 @@ body.lb-app {
   }
   .lb-form .field { margin-bottom: 10px; }
   .lb-code-block { font-size: 11px; padding: 8px 10px; }
-  
-  /* Responsive table */
+
   .lb-table-head { display: none; }
   .lb-table-row {
     grid-template-columns: 1fr;
@@ -751,7 +861,7 @@ body.lb-app {
     padding: 10px 12px;
     margin-bottom: 8px;
   }
-  
+
   .lb-resp-table thead { display: none; }
   .lb-resp-table, .lb-resp-table tbody, .lb-resp-table tr, .lb-resp-table td { display: block; width: 100%; }
   .lb-resp-table tr { padding: 10px 12px; border-top: 1px solid #EEEEF1; }
@@ -767,30 +877,28 @@ body.lb-app {
     color: var(--lb-muted);
     margin-bottom: 2px;
   }
-  
-  /* Analytics */
+
   .lb-analytics-grid { gap: 10px; }
   .lb-analytics-panel { padding: 12px 14px; }
   .lb-chart { height: 120px; }
   .lb-legend { flex-wrap: wrap; font-size: 10px; }
-  
-  /* Settings grid */
-  .lb-settings-grid { gap: 10px; }
-  .lb-settings-panel { padding: 14px; }
-  .lb-settings-panel h2 { font-size: 14px; margin-bottom: 8px; }
-  .lb-settings-panel .desc { font-size: 12px; margin-bottom: 12px; }
-  
-  /* Sidebar */
+
+  .lb-settings-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 14px;
+  }
+  .lb-settings-row-label h3 { font-size: 14px; }
+  .lb-settings-row-label .desc { font-size: 12px; }
+
   .lb-sidebar { width: 75vw; max-width: 250px; padding-bottom: 100px; }
   .lb-brand { padding: 6px 10px 16px; gap: 8px; }
   .lb-brand-mark { width: 32px; height: 32px; }
   .lb-brand strong { font-size: 13px; }
   .lb-nav a { padding: 8px 10px; font-size: 12.5px; }
-  
-  /* Badges */
+
   .lb-badge { font-size: 10px; padding: 2px 8px; }
-  
-  /* Flash messages */
+
   .lb-flash { padding: 8px 12px; font-size: 12px; margin-top: 10px; }
 }
 
@@ -801,12 +909,12 @@ body.lb-app {
     background: #FFFFFF;
     gap: 4px;
     flex-wrap: wrap;
-    justify-content: flex-start; 
+    justify-content: flex-start;
   }
   .lb-topbar h1 { font-size: 14px; margin: 0; }
   .lb-topbar-title { flex: 1 1 0; min-width: 0; }
   .lb-menu-toggle { width: 32px; height: 32px; font-size: 14px; flex-shrink: 0; }
-  .lb-top-actions { 
+  .lb-top-actions {
     gap: 4px;
     width: 100%;
     flex: 1 1 100%;
@@ -961,6 +1069,33 @@ body.lb-app {
 .lb-sidebar::-webkit-scrollbar-track {
   background: transparent;
 }
+
+
+/* Page scrollbar — thin and subtle, same treatment as sidebar */
+html,
+body.lb-app {
+  scrollbar-width: thin;
+  scrollbar-color: #D8D8DE transparent;
+}
+
+html::-webkit-scrollbar,
+body.lb-app::-webkit-scrollbar {
+  width: 6px;
+}
+
+html::-webkit-scrollbar-thumb,
+body.lb-app::-webkit-scrollbar-thumb {
+  background: #D2D2D8;
+  border-radius: 999px;
+}
+
+html::-webkit-scrollbar-track,
+body.lb-app::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+
+
 
 /* Mobile open sidebar should use the same readable theme */
 @media (max-width: 1100px) {

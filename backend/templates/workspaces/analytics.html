@@ -9,26 +9,185 @@
 {% endblock %}
 
 {% block content %}
+<style>
+  /* Scoped enhancements for the analytics page. Additive only — does not
+     redefine any existing .lb- component so it stays safe alongside the
+     shared stylesheet. */
+  .lb-analytics { --up: #1f9d55; --warn: #b8860b; --danger: #c0392b; }
+
+  .lb-analytics .lb-stat { position: relative; overflow: hidden; padding-left: 20px; }
+  .lb-analytics .lb-stat::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  }
+  .lb-analytics .lb-stat.m-conv::before { background: var(--lb-purple, #6c5ce7); }
+  .lb-analytics .lb-stat.m-lead::before { background: #2f9e6e; }
+  .lb-analytics .lb-stat.m-task::before { background: #cb8b1a; }
+  .lb-analytics .lb-stat.m-msg::before  { background: #2f7ed8; }
+
+  .lb-analytics .lb-stat-head { display: flex; align-items: center; gap: 10px; margin-bottom: 2px; }
+  .lb-analytics .lb-stat-icon {
+    width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0;
+  }
+  .lb-analytics .m-conv .lb-stat-icon { background: rgba(108,92,231,.12); color: var(--lb-purple, #6c5ce7); }
+  .lb-analytics .m-lead .lb-stat-icon { background: rgba(47,158,110,.12); color: #2f9e6e; }
+  .lb-analytics .m-task .lb-stat-icon { background: rgba(203,139,26,.14); color: #a9720f; }
+  .lb-analytics .m-msg .lb-stat-icon  { background: rgba(47,126,216,.12); color: #2f7ed8; }
+  .lb-analytics .lb-stat-icon svg { width: 16px; height: 16px; }
+
+  .lb-analytics .lb-chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .lb-analytics .lb-chip {
+    font-size: 11.5px; font-weight: 600; color: #5a5f6e; background: #f1f1f5;
+    border-radius: 999px; padding: 3px 9px; line-height: 1.4;
+  }
+  .lb-analytics .lb-chip.attn { background: rgba(192,57,43,.12); color: var(--danger); }
+
+  .lb-analytics .lb-badge-need {
+    position: absolute; top: 12px; right: 12px; font-size: 10.5px; font-weight: 700;
+    letter-spacing: .01em; color: #a9720f; background: rgba(203,139,26,.14);
+    padding: 3px 8px; border-radius: 999px;
+  }
+
+  .lb-analytics .lb-live-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: #2f9e6e; display: inline-block;
+    margin-right: 5px; position: relative; top: -1px;
+  }
+  .lb-analytics .lb-live-dot.on { animation: lb-pulse 1.8s ease-in-out infinite; }
+  @keyframes lb-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(47,158,110,.5); }
+    50% { box-shadow: 0 0 0 5px rgba(47,158,110,0); }
+  }
+
+  .lb-analytics .lb-chart { position: relative; }
+  .lb-analytics .lb-chart::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0; bottom: 22px;
+    background-image: repeating-linear-gradient(to top, transparent, transparent calc(25% - 1px), rgba(0,0,0,.05) calc(25% - 1px), rgba(0,0,0,.05) 25%);
+    pointer-events: none;
+  }
+  .lb-analytics .lb-chart-col { cursor: default; }
+  .lb-analytics .lb-chart-col:hover .bar { filter: brightness(0.92); }
+
+  .lb-analytics .meter { position: relative; background: #eef0f4; border-radius: 999px; overflow: hidden; }
+  .lb-analytics .meter i { display: block; height: 100%; border-radius: 999px; background: var(--lb-purple, #6c5ce7); transition: width .3s ease; }
+  .lb-analytics .meter.warn i { background: var(--warn); }
+  .lb-analytics .meter.danger i { background: var(--danger); }
+  .lb-analytics .row.warn strong { color: var(--warn); }
+  .lb-analytics .row.danger strong { color: var(--danger); }
+
+  .lb-analytics .lb-usage-mini { display: flex; gap: 18px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #ececf1; }
+  .lb-analytics .lb-usage-mini div { flex: 1; }
+  .lb-analytics .lb-usage-mini strong { display: block; font-size: 15px; }
+  .lb-analytics .lb-usage-mini span { font-size: 11.5px; color: #7a7f8c; }
+
+  .lb-analytics .lb-table-row { transition: background .12s ease; }
+  .lb-analytics .lb-table-row:hover { background: #fafafb; }
+  .lb-analytics .lb-avatar {
+    display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px;
+    border-radius: 50%; font-size: 11px; font-weight: 700; color: #fff; margin-right: 8px;
+    vertical-align: middle;
+  }
+  .lb-analytics .lb-avatar.c1 { background: #6c5ce7; }
+  .lb-analytics .lb-avatar.c2 { background: #2f9e6e; }
+  .lb-analytics .lb-avatar.c3 { background: #cb8b1a; }
+  .lb-analytics .lb-avatar.c4 { background: #2f7ed8; }
+  .lb-analytics .lb-table-row .open-count { font-weight: 700; }
+  .lb-analytics .lb-table-row .open-count.has-open { color: var(--warn); }
+
+  .lb-analytics .lb-feed li {
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .lb-analytics .lb-feed-dot {
+    width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; background: #c7cad3;
+  }
+  .lb-analytics .lb-feed-dot.status-open { background: #2f7ed8; }
+  .lb-analytics .lb-feed-dot.status-in_progress { background: #cb8b1a; }
+  .lb-analytics .lb-feed-dot.status-done { background: #2f9e6e; }
+  .lb-analytics .lb-feed-dot.status-handoff { background: #c0392b; }
+
+  .lb-analytics .lb-empty-state {
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    padding: 28px 16px; color: #7a7f8c; gap: 6px;
+  }
+  .lb-analytics .lb-empty-state svg { width: 26px; height: 26px; opacity: .5; margin-bottom: 4px; }
+  .lb-analytics .lb-empty-state .lb-empty-title { font-weight: 600; color: #4a4e5a; }
+  .lb-analytics .lb-empty-state .lb-empty-cta {
+    margin-top: 6px; font-size: 12.5px; font-weight: 600; color: var(--lb-purple, #6c5ce7); text-decoration: none;
+  }
+
+  .lb-analytics a:focus-visible,
+  .lb-analytics button:focus-visible { outline: 2px solid var(--lb-purple, #6c5ce7); outline-offset: 2px; }
+
+  @media (max-width: 720px) {
+    .lb-analytics .lb-stat-grid { grid-template-columns: 1fr 1fr; }
+    .lb-analytics .lb-analytics-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lb-analytics .lb-live-dot.on { animation: none; }
+    .lb-analytics .meter i { transition: none; }
+  }
+</style>
+
+<div class="lb-analytics">
+
 <div class="lb-stat-grid">
-  <div class="lb-card lb-stat">
-    <span class="lb-stat-label">Conversations</span>
+  <div class="lb-card lb-stat m-conv">
+    <div class="lb-stat-head">
+      <span class="lb-stat-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.4 0-2.7-.3-3.9-.9L3 21l1.9-5.6A8.5 8.5 0 1 1 21 11.5Z"/></svg>
+      </span>
+      <span class="lb-stat-label">Conversations</span>
+    </div>
     <strong class="lb-stat-value">{{ stats.conv_total }}</strong>
-    <span class="lb-stat-meta">{{ stats.conv_today }} today · {{ stats.conv_7d }} this week</span>
+    <div class="lb-chip-row">
+      <span class="lb-chip">{{ stats.conv_today }} today</span>
+      <span class="lb-chip">{{ stats.conv_7d }} this week</span>
+    </div>
   </div>
-  <div class="lb-card lb-stat">
-    <span class="lb-stat-label">Leads</span>
+
+  <div class="lb-card lb-stat m-lead">
+    <div class="lb-stat-head">
+      <span class="lb-stat-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
+      </span>
+      <span class="lb-stat-label">Leads</span>
+    </div>
     <strong class="lb-stat-value">{{ stats.lead_total }}</strong>
-    <span class="lb-stat-meta">{{ stats.lead_7d }} this week · {{ stats.lead_30d }} this month</span>
+    <div class="lb-chip-row">
+      <span class="lb-chip">{{ stats.lead_7d }} this week</span>
+      <span class="lb-chip">{{ stats.lead_30d }} this month</span>
+    </div>
   </div>
-  <div class="lb-card lb-stat">
-    <span class="lb-stat-label">Open tasks</span>
+
+  <div class="lb-card lb-stat m-task">
+    {% if stats.task_handoff > 0 %}<span class="lb-badge-need">Needs attention</span>{% endif %}
+    <div class="lb-stat-head">
+      <span class="lb-stat-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      </span>
+      <span class="lb-stat-label">Open tasks</span>
+    </div>
     <strong class="lb-stat-value">{{ stats.task_open }}</strong>
-    <span class="lb-stat-meta">{{ stats.task_done }} done · {{ stats.task_handoff }} handoffs</span>
+    <div class="lb-chip-row">
+      <span class="lb-chip">{{ stats.task_done }} done</span>
+      <span class="lb-chip {% if stats.task_handoff > 0 %}attn{% endif %}">{{ stats.task_handoff }} handoffs</span>
+    </div>
   </div>
-  <div class="lb-card lb-stat">
-    <span class="lb-stat-label">Messages</span>
+
+  <div class="lb-card lb-stat m-msg">
+    <div class="lb-stat-head">
+      <span class="lb-stat-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H7l-3 3V4Z"/></svg>
+      </span>
+      <span class="lb-stat-label">Messages</span>
+    </div>
     <strong class="lb-stat-value">{{ stats.msg_total }}</strong>
-    <span class="lb-stat-meta">{{ stats.msg_human }} human · {{ stats.human_sessions }} live takeovers</span>
+    <div class="lb-chip-row">
+      <span class="lb-chip">{{ stats.msg_human }} human</span>
+      <span class="lb-chip">
+        {% if stats.human_sessions > 0 %}<span class="lb-live-dot on"></span>{% else %}<span class="lb-live-dot"></span>{% endif %}{{ stats.human_sessions }} live takeovers
+      </span>
+    </div>
   </div>
 </div>
 
@@ -41,6 +200,7 @@
         <span><i class="dot lead"></i> Leads</span>
       </div>
     </div>
+    {% if chart_days %}
     <div class="lb-chart">
       {% for day in chart_days %}
       <div class="lb-chart-col" title="{{ day.date }}: {{ day.conversations }} conv, {{ day.leads }} leads">
@@ -52,6 +212,13 @@
       </div>
       {% endfor %}
     </div>
+    {% else %}
+    <div class="lb-empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-4 4"/></svg>
+      <span class="lb-empty-title">No activity yet</span>
+      <span>Your daily conversation and lead trends will show up here once visitors start chatting.</span>
+    </div>
+    {% endif %}
   </section>
 
   <section class="lb-card lb-analytics-panel">
@@ -60,17 +227,43 @@
       <a href="{% url 'billing' %}" style="font-size:12px;font-weight:600;color:var(--lb-purple);text-decoration:none;">Upgrade</a>
     </div>
     <div class="lb-usage-block">
-      <div class="row">
+      <div class="row {% if usage.conv_pct >= 90 %}danger{% elif usage.conv_pct >= 70 %}warn{% endif %}">
         <span>Conversations</span>
         <strong>{{ usage.conversations }} / {{ usage.conversation_limit }}</strong>
       </div>
-      <div class="meter"><i style="width:{{ usage.conv_pct }}%"></i></div>
-      <div class="row" style="margin-top:14px;">
+      <div class="meter {% if usage.conv_pct >= 90 %}danger{% elif usage.conv_pct >= 70 %}warn{% endif %}">
+        <i style="width:{{ usage.conv_pct }}%"></i>
+      </div>
+
+      <div class="row {% if usage.tok_pct >= 90 %}danger{% elif usage.tok_pct >= 70 %}warn{% endif %}" style="margin-top:14px;">
         <span>Tokens</span>
         <strong>{{ usage.tokens }} / {{ usage.token_limit }}</strong>
       </div>
-      <div class="meter"><i style="width:{{ usage.tok_pct }}%"></i></div>
-      <p class="hint">Overall usage {{ usage.overall_pct|floatformat:0 }}% · {{ stats.tokens_period }} tokens in the last 30 days · {{ stats.visitors }} remembered visitors · {{ stats.employees }} active AI Employees</p>
+      <div class="meter {% if usage.tok_pct >= 90 %}danger{% elif usage.tok_pct >= 70 %}warn{% endif %}">
+        <i style="width:{{ usage.tok_pct }}%"></i>
+      </div>
+
+      <div class="lb-usage-mini">
+        <div>
+          <strong>{{ usage.overall_pct|floatformat:0 }}%</strong>
+          <span>overall usage</span>
+        </div>
+        <div>
+          <strong>{{ stats.tokens_period }}</strong>
+          <span>tokens, last 30 days</span>
+        </div>
+        <div>
+          <strong>{{ stats.visitors }}</strong>
+          <span>remembered visitors</span>
+        </div>
+        <div>
+          <strong>{{ stats.employees }}</strong>
+          <span>active AI Employees</span>
+        </div>
+      </div>
+      {% if usage.conv_pct >= 90 or usage.tok_pct >= 90 %}
+      <p class="hint" style="color:var(--danger);margin-top:10px;">You're close to your plan limit — <a href="{% url 'billing' %}" style="color:inherit;font-weight:600;">upgrade your plan</a> to avoid interruptions.</p>
+      {% endif %}
     </div>
   </section>
 </div>
@@ -89,15 +282,21 @@
     {% for row in employee_rows %}
     <div class="lb-table-row">
       <span>
+        <span class="lb-avatar {% cycle 'c1' 'c2' 'c3' 'c4' %}" aria-hidden="true">{{ row.employee.name|slice:":1"|upper }}</span>
         <strong>{{ row.employee.name }}</strong>
         <small>{{ row.employee.get_role_display }}</small>
       </span>
       <span>{{ row.conversations }}</span>
       <span>{{ row.leads }}</span>
-      <span>{{ row.open_tasks }}</span>
+      <span class="open-count {% if row.open_tasks > 0 %}has-open{% endif %}">{{ row.open_tasks }}</span>
     </div>
     {% empty %}
-    <div class="lb-empty">Hire an AI Employee to start collecting analytics.</div>
+    <div class="lb-empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>
+      <span class="lb-empty-title">No AI Employees yet</span>
+      <span>Hire an AI Employee to start collecting conversations, leads, and tasks.</span>
+      <a class="lb-empty-cta" href="{% url 'employees' %}">Hire an AI Employee →</a>
+    </div>
     {% endfor %}
   </div>
 </section>
@@ -108,18 +307,25 @@
       <h2>Recent leads</h2>
       <a href="{% url 'leads' %}" style="font-size:12px;font-weight:600;color:var(--lb-purple);text-decoration:none;">View all</a>
     </div>
+    {% if recent_leads %}
     <ul class="lb-feed">
       {% for lead in recent_leads %}
       <li>
+        <span class="lb-avatar {% cycle 'c1' 'c2' 'c3' 'c4' %}" aria-hidden="true">{{ lead.name|default:lead.email|default:"V"|slice:":1"|upper }}</span>
         <div>
           <strong>{{ lead.name|default:lead.email|default:'Visitor' }}</strong>
           <span>{{ lead.employee.name|default:'—' }} · {{ lead.created_at|timesince }} ago</span>
         </div>
       </li>
-      {% empty %}
-      <li class="muted">No leads yet.</li>
       {% endfor %}
     </ul>
+    {% else %}
+    <div class="lb-empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      <span class="lb-empty-title">No leads yet</span>
+      <span>Leads captured by your AI Employees will appear here.</span>
+    </div>
+    {% endif %}
   </section>
 
   <section class="lb-card lb-analytics-panel">
@@ -127,18 +333,27 @@
       <h2>Recent tasks</h2>
       <a href="{% url 'employee_tasks' %}" style="font-size:12px;font-weight:600;color:var(--lb-purple);text-decoration:none;">View all</a>
     </div>
+    {% if recent_tasks %}
     <ul class="lb-feed">
       {% for task in recent_tasks %}
       <li>
+        <span class="lb-feed-dot status-{{ task.status }}" aria-hidden="true"></span>
         <div>
           <strong>{{ task.title }}</strong>
           <span>{{ task.employee.name }} · {{ task.get_status_display }} · {{ task.created_at|timesince }} ago</span>
         </div>
       </li>
-      {% empty %}
-      <li class="muted">No tasks yet.</li>
       {% endfor %}
     </ul>
+    {% else %}
+    <div class="lb-empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span class="lb-empty-title">No tasks yet</span>
+      <span>Tasks handed off or created by your AI Employees will show up here.</span>
+    </div>
+    {% endif %}
   </section>
+</div>
+
 </div>
 {% endblock %}

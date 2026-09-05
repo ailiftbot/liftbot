@@ -10,13 +10,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="{% static 'app.css' %}" />
   <style>
-    /* Critical mobile styles - ensure hamburger displays */
     @media (max-width: 1100px) {
       .lb-menu-toggle { display: flex !important; }
-    }
-    @media (max-width: 768px) {
-      .lb-topbar { flex-wrap: wrap; }
-      .lb-topbar h1 { max-width: 100%; }
     }
   </style>
   {% block extra_css %}{% endblock %}
@@ -35,24 +30,26 @@
       <button type="button" class="lb-sidebar-close" id="lbSidebarClose" aria-label="Close menu">×</button>
 
       <nav class="lb-nav">
-        <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><span class="ico">■</span> Dashboard</a>
-        <a href="{% url 'employee_list' %}" class="{% if 'employee' in request.resolver_match.url_name %}active{% endif %}"><span class="ico">◉</span> AI Employees</a>
+        {% with u=request.resolver_match.url_name %}
+        <a href="{% url 'dashboard' %}" class="{% if u == 'dashboard' %}active{% endif %}"><span class="ico">■</span> Dashboard</a>
+        <a href="{% url 'employee_list' %}" class="{% if u == 'employee_list' or u == 'employee_hire' %}active{% endif %}"><span class="ico">◉</span> AI Employees</a>
         {% if primary_employee %}
-        <a href="{% url 'knowledge_list' primary_employee.pk %}" class="{% if 'knowledge' in request.resolver_match.url_name %}active{% endif %}"><span class="ico">☰</span> Knowledge Base</a>
-        <a href="{% url 'employee_edit' primary_employee.pk %}" class="{% if request.resolver_match.url_name == 'employee_edit' %}active{% endif %}"><span class="ico">✦</span> Personality</a>
-        <a href="{% url 'employee_detail' primary_employee.pk %}" class="{% if request.resolver_match.url_name == 'employee_detail' %}active{% endif %}"><span class="ico">⧉</span> Website Widget</a>
-        <a href="{% url 'employee_playground' primary_employee.pk %}" class="{% if request.resolver_match.url_name == 'employee_playground' %}active{% endif %}"><span class="ico">▶</span> Playground</a>
+        <a href="{% url 'knowledge_list' primary_employee.pk %}" class="{% if 'knowledge' in u %}active{% endif %}"><span class="ico">☰</span> Knowledge Base</a>
+        <a href="{% url 'employee_edit' primary_employee.pk %}" class="{% if u == 'employee_edit' %}active{% endif %}"><span class="ico">✦</span> Personality</a>
+        <a href="{% url 'employee_detail' primary_employee.pk %}" class="{% if u == 'employee_detail' %}active{% endif %}"><span class="ico">⧉</span> Website Widget</a>
+        <a href="{% url 'employee_playground' primary_employee.pk %}" class="{% if u == 'employee_playground' %}active{% endif %}"><span class="ico">▶</span> Playground</a>
         {% else %}
         <a href="{% url 'employee_hire' %}"><span class="ico">☰</span> Knowledge Base</a>
         <a href="{% url 'employee_hire' %}"><span class="ico">✦</span> Personality</a>
         <a href="{% url 'employee_hire' %}"><span class="ico">⧉</span> Website Widget</a>
         {% endif %}
-        <a href="{% url 'leads' %}" class="{% if request.resolver_match.url_name == 'leads' %}active{% endif %}"><span class="ico">◎</span> Leads</a>
-        <a href="{% url 'employee_tasks' %}" class="{% if request.resolver_match.url_name == 'employee_tasks' %}active{% endif %}"><span class="ico">✓</span> Employee Tasks</a>
-        <a href="{% url 'conversations' %}" class="{% if request.resolver_match.url_name == 'conversations' %}active{% endif %}"><span class="ico">▤</span> Conversations</a>
-        <a href="{% url 'analytics' %}" class="{% if request.resolver_match.url_name == 'analytics' %}active{% endif %}"><span class="ico">◈</span> Analytics</a>
-        <a href="{% url 'billing' %}" class="{% if request.resolver_match.url_name == 'billing' %}active{% endif %}"><span class="ico">$</span> Billing</a>
-        <a href="{% url 'settings' %}" class="{% if request.resolver_match.url_name == 'settings' %}active{% endif %}"><span class="ico">⚙</span> Settings</a>
+        <a href="{% url 'leads' %}" class="{% if u == 'leads' %}active{% endif %}"><span class="ico">◎</span> Leads</a>
+        <a href="{% url 'employee_tasks' %}" class="{% if u == 'employee_tasks' %}active{% endif %}"><span class="ico">✓</span> Employee Tasks</a>
+        <a href="{% url 'conversations' %}" class="{% if u == 'conversations' %}active{% endif %}"><span class="ico">▤</span> Conversations</a>
+        <a href="{% url 'analytics' %}" class="{% if u == 'analytics' %}active{% endif %}"><span class="ico">◈</span> Analytics</a>
+        <a href="{% url 'billing' %}" class="{% if u == 'billing' %}active{% endif %}"><span class="ico">$</span> Billing</a>
+        <a href="{% url 'settings' %}" class="{% if u == 'settings' %}active{% endif %}"><span class="ico">⚙</span> Settings</a>
+        {% endwith %}
       </nav>
 
       <div class="lb-sidebar-foot">

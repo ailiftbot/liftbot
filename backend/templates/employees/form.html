@@ -1,19 +1,227 @@
 {% extends 'base_app.html' %}
+{% load static %}
+
 {% block title %}{{ title }} — LiftBot{% endblock %}
 {% block page_title %}{{ title }}{% endblock %}
-{% block page_subtitle %}Name, role, personality, and brand — never a generic assistant.{% endblock %}
+{% block page_subtitle %}{% if is_hire %}Name, role, personality, and brand — never a generic assistant.{% else %}Tune how {{ employee.name }} sounds, looks, and works on your website.{% endif %}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'employee_form.css' %}" />
+{% endblock %}
+
+{% block top_actions %}
+  {% if employee %}
+  <a class="lb-btn lb-btn-ghost" href="{% url 'employee_detail' employee.pk %}">Cancel</a>
+  {% else %}
+  <a class="lb-btn lb-btn-ghost" href="{% url 'employee_list' %}">Cancel</a>
+  {% endif %}
+  <button class="lb-btn lb-btn-primary" type="submit" form="employee-form">{% if is_hire %}Hire employee{% else %}Save changes{% endif %}</button>
+{% endblock %}
+
 {% block content %}
-<div class="lb-card" style="max-width:560px;padding:24px;">
-  <form method="post" enctype="multipart/form-data" class="lb-form">
-    {% csrf_token %}
-    {% for field in form %}
-    <div class="field">
-      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-      {{ field }}
-      {{ field.errors }}
+<form method="post" enctype="multipart/form-data" class="emp-form" id="employee-form" novalidate>
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+
+  <div class="emp-layout">
+    <div class="emp-main">
+      <nav class="emp-steps" aria-label="Form sections">
+        <a href="#identity">1 · Identity</a>
+        <a href="#voice">2 · Personality</a>
+        <a href="#look">3 · Look</a>
+        <a href="#skills">4 · Skills</a>
+      </nav>
+
+      <section class="emp-card" id="identity">
+        <header class="emp-card-head">
+          <div>
+            <p class="emp-kicker">Section 1</p>
+            <h2>Identity</h2>
+          </div>
+          <span class="emp-chip">Required</span>
+        </header>
+        <div class="emp-grid-2">
+          <div class="field">
+            <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+            {{ form.name }}
+            {{ form.name.errors }}
+          </div>
+          <div class="field">
+            <label for="{{ form.department.id_for_label }}">{{ form.department.label }}</label>
+            {{ form.department }}
+            {{ form.department.errors }}
+          </div>
+          <div class="field emp-span-2">
+            <label for="{{ form.role.id_for_label }}">{{ form.role.label }}</label>
+            {{ form.role }}
+            {{ form.role.errors }}
+          </div>
+        </div>
+      </section>
+
+      <section class="emp-card" id="voice">
+        <header class="emp-card-head">
+          <div>
+            <p class="emp-kicker">Section 2</p>
+            <h2>Personality &amp; voice</h2>
+          </div>
+        </header>
+        <div class="emp-grid-2">
+          <div class="field">
+            <label for="{{ form.personality.id_for_label }}">{{ form.personality.label }}</label>
+            {{ form.personality }}
+            {{ form.personality.errors }}
+          </div>
+          <div class="field">
+            <label for="{{ form.language.id_for_label }}">{{ form.language.label }}</label>
+            {{ form.language }}
+            {{ form.language.errors }}
+          </div>
+          <div class="field emp-span-2">
+            <label for="{{ form.greeting_message.id_for_label }}">{{ form.greeting_message.label }}</label>
+            {{ form.greeting_message }}
+            {% if form.greeting_message.help_text %}<p class="emp-help">{{ form.greeting_message.help_text }}</p>{% endif %}
+            {{ form.greeting_message.errors }}
+          </div>
+        </div>
+      </section>
+
+      <section class="emp-card" id="look">
+        <header class="emp-card-head">
+          <div>
+            <p class="emp-kicker">Section 3</p>
+            <h2>Look &amp; brand</h2>
+          </div>
+        </header>
+        <div class="emp-grid-2">
+          <div class="field">
+            <label for="{{ form.avatar.id_for_label }}">{{ form.avatar.label }}</label>
+            <div class="emp-file">
+              {{ form.avatar }}
+            </div>
+            {{ form.avatar.errors }}
+          </div>
+          <div class="field">
+            <label for="{{ form.brand_color.id_for_label }}">{{ form.brand_color.label }}</label>
+            <div class="emp-color">
+              <input type="color" id="emp-color-picker" value="{{ form.brand_color.value|default:'#7C3AED' }}" aria-label="Pick brand color" />
+              {{ form.brand_color }}
+            </div>
+            {% if form.brand_color.help_text %}<p class="emp-help">{{ form.brand_color.help_text }}</p>{% endif %}
+            {{ form.brand_color.errors }}
+          </div>
+        </div>
+      </section>
+
+      <section class="emp-card" id="skills">
+        <header class="emp-card-head">
+          <div>
+            <p class="emp-kicker">Section 4</p>
+            <h2>{{ form.capability_choices.label }}</h2>
+            {% if form.capability_choices.help_text %}<p>{{ form.capability_choices.help_text }}</p>{% endif %}
+          </div>
+        </header>
+        <div class="emp-caps">
+          {{ form.capability_choices }}
+        </div>
+        {{ form.capability_choices.errors }}
+
+        <div class="emp-grid-2 emp-handoff">
+          <div class="field">
+            <label for="{{ form.handoff_email.id_for_label }}">{{ form.handoff_email.label }}</label>
+            {{ form.handoff_email }}
+            {% if form.handoff_email.help_text %}<p class="emp-help">{{ form.handoff_email.help_text }}</p>{% endif %}
+            {{ form.handoff_email.errors }}
+          </div>
+          <div class="field emp-toggle-field">
+            <label class="emp-toggle">
+              {{ form.is_active }}
+              <span>
+                <strong>{{ form.is_active.label }}</strong>
+                <small>Visitors can talk to this employee when active.</small>
+              </span>
+            </label>
+            {{ form.is_active.errors }}
+          </div>
+        </div>
+      </section>
     </div>
-    {% endfor %}
-    <button class="lb-btn lb-btn-primary" type="submit">Save</button>
-  </form>
-</div>
+
+    <aside class="emp-aside">
+      <div class="emp-preview">
+        <h3>Live preview</h3>
+        <p>Updates as you type — this is how visitors will see them.</p>
+        <div class="emp-widget" id="emp-preview">
+          <div class="emp-widget-head" id="emp-preview-head">
+            <div class="emp-widget-av" id="emp-preview-av">A</div>
+            <div>
+              <strong id="emp-preview-name">AI Employee</strong>
+              <span id="emp-preview-role">Support Specialist · We're online</span>
+            </div>
+          </div>
+          <div class="emp-widget-body">
+            <div class="emp-bubble" id="emp-preview-greeting">Hi! How can I help you today?</div>
+          </div>
+          <div class="emp-widget-foot">
+            <span>Type a message…</span>
+            <button type="button" tabindex="-1" aria-hidden="true">➤</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  var name = document.getElementById('id_name');
+  var role = document.getElementById('id_role');
+  var greeting = document.getElementById('id_greeting_message');
+  var color = document.getElementById('id_brand_color');
+  var picker = document.getElementById('emp-color-picker');
+  var pName = document.getElementById('emp-preview-name');
+  var pRole = document.getElementById('emp-preview-role');
+  var pGreet = document.getElementById('emp-preview-greeting');
+  var pHead = document.getElementById('emp-preview-head');
+  var pAv = document.getElementById('emp-preview-av');
+
+  function roleLabel() {
+    if (!role) return 'Support Specialist';
+    var opt = role.options[role.selectedIndex];
+    return opt ? opt.text : 'Support Specialist';
+  }
+  function hex(v) {
+    v = (v || '').trim();
+    if (/^#[0-9A-Fa-f]{6}$/.test(v)) return v;
+    if (/^#[0-9A-Fa-f]{3}$/.test(v)) return v;
+    return '#7C3AED';
+  }
+  function sync() {
+    var n = (name && name.value.trim()) || 'AI Employee';
+    pName.textContent = n;
+    pAv.textContent = n.charAt(0).toUpperCase();
+    pRole.textContent = roleLabel() + " · We're online";
+    pGreet.textContent = (greeting && greeting.value.trim()) || 'Hi! How can I help you today?';
+    var c = hex(color && color.value);
+    pHead.style.background = c;
+    if (picker && picker.value.toLowerCase() !== c.toLowerCase() && /^#[0-9A-Fa-f]{6}$/.test(c)) {
+      picker.value = c;
+    }
+  }
+  [name, role, greeting, color].forEach(function (el) {
+    if (!el) return;
+    el.addEventListener('input', sync);
+    el.addEventListener('change', sync);
+  });
+  if (picker && color) {
+    picker.addEventListener('input', function () {
+      color.value = picker.value;
+      sync();
+    });
+  }
+  sync();
+})();
+</script>
 {% endblock %}

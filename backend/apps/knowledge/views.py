@@ -14,8 +14,16 @@ from .tasks import ingest_knowledge_source
 def knowledge_list(request, employee_id):
     workspace = user_workspace(request.user)
     employee = get_object_or_404(AIEmployee, pk=employee_id, workspace=workspace)
-    sources = employee.knowledge_sources.all()
-    return render(request, 'knowledge/list.html', {'employee': employee, 'sources': sources})
+    sources = list(employee.knowledge_sources.all())
+    ready = sum(1 for s in sources if s.status == KnowledgeSource.Status.READY)
+    chunks = sum(s.chunk_count for s in sources)
+    return render(request, 'knowledge/list.html', {
+        'employee': employee,
+        'sources': sources,
+        'source_count': len(sources),
+        'ready_count': ready,
+        'chunk_total': chunks,
+    })
 
 
 @login_required

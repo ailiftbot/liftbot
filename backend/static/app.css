@@ -38,6 +38,7 @@ body.lb-app {
   text-rendering: optimizeLegibility;
   overflow-x: clip;
   max-width: 100%;
+  
 }
 
 .lb-shell {
@@ -815,10 +816,12 @@ body.lb-app {
   .lb-menu-toggle { width: 34px; height: 34px; font-size: 16px; flex-shrink: 0; }
   .lb-top-actions { 
     gap: 5px; 
-    width: auto;
-    flex-shrink: 1;
-    flex: 0 1 auto;
-    margin-left: auto; /* PUSHES ACTIONS TO THE RIGHT */
+    width: 100%;
+    flex: 1 1 100%;
+    max-width: 100%;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    margin-left: 0;
   }
   .lb-content { padding: 10px 12px 20px; }
   .lb-messages { margin: 0 12px; }
@@ -829,8 +832,7 @@ body.lb-app {
   .lb-stat-meta { font-size: 11px; }
   
   /* Avatar on mobile */
-  .lb-avatar { width: 30px; height: 30px; font-size: 11px; }
-  .lb-userchip .meta { display: block !important; }
+  .lb-userchip .meta { display: none !important; }
   .lb-userchip .meta strong { display: none; }
   .lb-userchip .meta span { color: var(--lb-muted); font-size: 11px; }
   .lb-userchip { padding-left: 8px; }
@@ -914,10 +916,12 @@ body.lb-app {
   .lb-menu-toggle { width: 32px; height: 32px; font-size: 14px; flex-shrink: 0; }
   .lb-top-actions {
     gap: 4px;
-    width: auto;
-    flex-shrink: 1;
-    flex: 0 1 auto;
-    margin-left: auto; /* PUSHES ACTIONS TO THE RIGHT */
+    width: 100%;
+    flex: 1 1 100%;
+    max-width: 100%;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    margin-left: 0;
   }
   .lb-content { padding: 8px 10px 16px; }
   .lb-messages { margin: 0 10px; }
@@ -1065,6 +1069,33 @@ body.lb-app {
 .lb-sidebar::-webkit-scrollbar-track {
   background: transparent;
 }
+
+
+/* Page scrollbar — thin and subtle, same treatment as sidebar */
+html,
+body.lb-app {
+  scrollbar-width: thin;
+  scrollbar-color: #D8D8DE transparent;
+}
+
+html::-webkit-scrollbar,
+body.lb-app::-webkit-scrollbar {
+  width: 6px;
+}
+
+html::-webkit-scrollbar-thumb,
+body.lb-app::-webkit-scrollbar-thumb {
+  background: #D2D2D8;
+  border-radius: 999px;
+}
+
+html::-webkit-scrollbar-track,
+body.lb-app::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+
+
 
 /* Mobile open sidebar should use the same readable theme */
 @media (max-width: 1100px) {

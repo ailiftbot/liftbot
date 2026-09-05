@@ -9,6 +9,55 @@
 {% endblock %}
 
 {% block content %}
+<style>
+  /* Hide the browser's scrollbar chrome on this page. Scrolling still
+     works via wheel/trackpad/keyboard/touch — only the visible
+     track/thumb is removed. */
+  html {
+    scrollbar-width: none;       /* Firefox */
+    -ms-overflow-style: none;    /* old Edge / IE */
+  }
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {      /* Chrome, Safari, new Edge */
+    width: 0;
+    height: 0;
+    display: none;
+  }
+
+  /* Copy button: labeled pill sitting next to the field label, instead
+     of an icon squeezed into a small box (in case a shared .lb-copy-btn
+     rule elsewhere assumes an icon-only button). */
+  .lb-copy-wrap-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .lb-copy-wrap-head label { margin-bottom: 0; }
+  .lb-copy-wrap .lb-copy-btn {
+    width: auto;
+    height: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--lb-border, #E6E6EA);
+    background: #fff;
+    color: var(--lb-purple, #6D3DF5);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease;
+  }
+  .lb-copy-wrap .lb-copy-btn:hover {
+    background: var(--lb-purple-soft, #F0EBFF);
+    border-color: #C4B5FD;
+  }
+</style>
+
 <div class="lb-settings-shell">
 
   <nav class="lb-settings-nav">
@@ -52,7 +101,7 @@
     <div class="lb-settings-row" id="account">
       <div class="lb-settings-row-label">
         <div class="lb-settings-row-head">
-          <div class="lb-settings-icon lb-icon-blue">◎</div>
+          <div class="lb-settings-icon lb-icon-purple">◎</div>
           <h3 class="lb-settings-row-title">Your account</h3>
         </div>
         <p class="desc">Profile details for {{ user.email }}.</p>
@@ -106,7 +155,7 @@
     <div class="lb-settings-row" id="webhook">
       <div class="lb-settings-row-label">
         <div class="lb-settings-row-head">
-          <div class="lb-settings-icon lb-icon-green">⇄</div>
+          <div class="lb-settings-icon lb-icon-purple">⇄</div>
           <h3 class="lb-settings-row-title">Team webhook</h3>
         </div>
         <p class="desc">POST JSON when leads or tasks are created (Slack, Zapier, n8n, etc.).</p>
@@ -129,7 +178,7 @@
     <div class="lb-settings-row" id="embed">
       <div class="lb-settings-row-label">
         <div class="lb-settings-row-head">
-          <div class="lb-settings-icon lb-icon-green">⧉</div>
+          <div class="lb-settings-icon lb-icon-purple">⧉</div>
           <h3 class="lb-settings-row-title">Team embed</h3>
         </div>
         <p class="desc">One snippet for all AI Employees — visitors pick who to talk to.</p>
@@ -140,9 +189,11 @@
           <code class="lb-code-block">{{ workspace.widget_token }}</code>
         </div>
         <div class="field lb-copy-wrap">
-          <label>Embed snippet</label>
+          <div class="lb-copy-wrap-head">
+            <label>Embed snippet</label>
+            <button type="button" class="lb-copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('embed-snippet').value); this.textContent='Copied'; var b=this; setTimeout(function(){ b.textContent='Copy'; }, 1800);">Copy</button>
+          </div>
           <textarea id="embed-snippet" class="lb-code-block" rows="3" readonly>{{ team_embed_snippet }}</textarea>
-          <button type="button" class="lb-copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('embed-snippet').value); this.textContent='✓';" title="Copy">⧉</button>
         </div>
         <form method="post" onsubmit="return confirm('Regenerate the team token? Existing team embeds will stop working until you update them.');">
           {% csrf_token %}
@@ -157,7 +208,7 @@
     <div class="lb-settings-row" id="team">
       <div class="lb-settings-row-label">
         <div class="lb-settings-row-head">
-          <div class="lb-settings-icon lb-icon-pink">◑</div>
+          <div class="lb-settings-icon lb-icon-purple">◑</div>
           <h3 class="lb-settings-row-title">Team members</h3>
         </div>
         <p class="desc">People with access to this workspace.</p>
@@ -182,7 +233,7 @@
     <div class="lb-settings-row" id="billing">
       <div class="lb-settings-row-label">
         <div class="lb-settings-row-head">
-          <div class="lb-settings-icon lb-icon-amber">♛</div>
+          <div class="lb-settings-icon lb-icon-purple">♛</div>
           <h3 class="lb-settings-row-title">Plan & billing</h3>
         </div>
         <p class="desc">Current plan: <strong>{{ workspace.plan.name|default:'Unassigned' }}</strong></p>

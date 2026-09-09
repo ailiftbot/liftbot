@@ -1,21 +1,254 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Sign up — LiftBot{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Full-bleed page — same pattern used on other marketing pages */
+  main:has(.lb-signup-page) {
+    max-width: none;
+    width: 100%;
+    padding: 0;
+  }
+
+  .lb-signup-page {
+    position: relative;
+    min-height: calc(100vh - 70px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #f8f7fb;
+    padding: 40px 20px;
+    box-sizing: border-box;
+  }
+
+  /* ── Background carousel — 5 cards, duplicated once so the track can
+     loop seamlessly, scrolling continuously right to left. ── */
+  .lb-signup-carousel {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .lb-signup-track {
+    display: flex;
+    align-items: center;
+    gap: 64px;
+    width: max-content;
+    animation: lb-carousel-scroll 45s linear infinite;
+    will-change: transform;
+  }
+
+  .lb-signup-track img {
+    height: 380px;
+    width: auto;
+    border-radius: 20px;
+    box-shadow: 0 16px 40px -14px rgba(16, 24, 40, 0.18);
+    flex-shrink: 0;
+    display: block;
+  }
+
+  @keyframes lb-carousel-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lb-signup-track { animation: none; }
+  }
+
+  @media (max-width: 768px) {
+    .lb-signup-track img { height: 280px; }
+    .lb-signup-track { gap: 40px; }
+  }
+
+  /* Very light wash — just softens the edge nearest the form, images
+     should otherwise stay clearly visible (not washed out). */
+  .lb-signup-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: radial-gradient(
+      55% 55% at 50% 50%,
+      rgba(248, 247, 251, 0.32) 0%,
+      rgba(248, 247, 251, 0.18) 45%,
+      rgba(248, 247, 251, 0.05) 75%,
+      rgba(248, 247, 251, 0) 100%
+    );
+  }
+
+  /* ── Rotating pastel halo — fixed-size circle centered behind the
+     card, independent of the card's tall rectangle shape. ── */
+  .lb-signup-halo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 640px;
+    height: 640px;
+    transform: translate(-50%, -50%) rotate(0deg);
+    transform-origin: center;
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: 0.75;
+    z-index: 2;
+    pointer-events: none;
+    background: conic-gradient(
+      from 0deg,
+      #FDE1C7,
+      #FBCFE8,
+      #DDD6FE,
+      #BFDBFE,
+      #FDE1C7
+    );
+    animation: lb-halo-spin 10s linear infinite;
+  }
+
+  @keyframes lb-halo-spin {
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lb-signup-halo { animation: none; }
+  }
+
+  @media (max-width: 560px) {
+    .lb-signup-halo { width: 420px; height: 420px; filter: blur(50px); }
+  }
+
+  .lb-signup-wrap {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    max-width: 460px;
+  }
+
+  /* Slightly shorter card — tighter padding and field spacing */
+  .lb-signup-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 22px 28px;
+    box-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
+  }
+
+  .lb-signup-title {
+    margin: 0 0 4px;
+    font-size: 23px;
+    font-weight: 800;
+    color: #111827;
+  }
+
+  .lb-signup-subtitle {
+    margin: 0 0 14px;
+    color: #6B7280;
+    font-size: 13px;
+  }
+
+  .lb-signup-form {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .lb-signup-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .lb-signup-field input,
+  .lb-signup-field select,
+  .lb-signup-field textarea {
+    width: 100%;
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    padding: 9px 12px;
+    font: inherit;
+    box-sizing: border-box;
+    background: #fff;
+  }
+
+  .lb-signup-errors {
+    color: #DC2626;
+    font-size: 12px;
+    margin-top: 4px;
+  }
+
+  .lb-signup-submit {
+    margin-top: 4px;
+    background: #7C3AED;
+    color: #fff;
+    border: 0;
+    border-radius: 999px;
+    padding: 11px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .lb-signup-footer {
+    font-size: 13px;
+    color: #6B7280;
+    margin: 12px 0 0;
+  }
+  .lb-signup-footer a {
+    color: #7C3AED;
+    font-weight: 600;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div style="max-width:420px;margin:20px auto;background:#fff;border:1px solid #E5E7EB;border-radius:16px;padding:28px;box-shadow:0 8px 24px rgba(16,24,40,.06);">
-  <h1 style="margin:0 0 6px;font-size:24px;font-weight:800;">Create your workspace</h1>
-  <p style="margin:0 0 18px;color:#6B7280;font-size:13px;">Hire AI Employees for your business.</p>
-  <form method="post" style="display:flex;flex-direction:column;gap:12px;">
-    {% csrf_token %}
-    {% for field in form %}
-    <div>
-      <label style="display:block;font-size:13px;font-weight:600;margin-bottom:5px;">{{ field.label }}</label>
-      {{ field }}
-      {% if field.errors %}<div style="color:#DC2626;font-size:12px;">{{ field.errors|striptags }}</div>{% endif %}
+<section class="lb-signup-page">
+
+  <div class="lb-signup-carousel" aria-hidden="true">
+    <div class="lb-signup-track">
+      {# First copy #}
+      <img src="{% static 'img/carousel/step-1-business.png' %}" alt="">
+      <img src="{% static 'img/carousel/step-2-challenge.png' %}" alt="">
+      <img src="{% static 'img/carousel/step-3-ai-employee.png' %}" alt="">
+      <img src="{% static 'img/carousel/step-4-implementation.png' %}" alt="">
+      <img src="{% static 'img/carousel/step-5-result.png' %}" alt="">
+      {# Duplicate copy — makes the -50% translateX loop seamless #}
+      <img src="{% static 'img/carousel/step-1-business.png' %}" alt="">
+      <img src="{% static 'img/carousel/step-2-challenge.png' %}" alt="">
+      <img src="{% static 'img/carousel/step-3-ai-employee.png' %}" alt="">
+      <img src="{% static 'img/carousel/step-4-implementation.png' %}" alt="">
+      <img src="{% static 'img/carousel/step-5-result.png' %}" alt="">
     </div>
-    {% endfor %}
-    <button style="margin-top:6px;background:#7C3AED;color:#fff;border:0;border-radius:999px;padding:12px;font-weight:700;cursor:pointer;">Create account</button>
-  </form>
-  <p style="font-size:13px;color:#6B7280;margin:14px 0 0;">Already have an account? <a href="{% url 'login' %}" style="color:#7C3AED;font-weight:600;">Log in</a></p>
-</div>
-<style>input,select,textarea{width:100%;border:1px solid #E5E7EB;border-radius:10px;padding:10px 12px;font:inherit}</style>
+  </div>
+
+  <div class="lb-signup-overlay" aria-hidden="true"></div>
+
+  <div class="lb-signup-halo" aria-hidden="true"></div>
+
+  <div class="lb-signup-wrap">
+    <div class="lb-signup-card">
+      <h1 class="lb-signup-title">Create your workspace</h1>
+      <p class="lb-signup-subtitle">Hire AI Employees for your business.</p>
+
+      <form method="post" class="lb-signup-form">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="lb-signup-field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+              <div class="lb-signup-errors">{{ field.errors|striptags }}</div>
+            {% endif %}
+          </div>
+        {% endfor %}
+        <button type="submit" class="lb-signup-submit">Create account</button>
+      </form>
+
+      <p class="lb-signup-footer">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
+    </div>
+  </div>
+
+</section>
 {% endblock %}

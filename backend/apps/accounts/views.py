@@ -9,12 +9,13 @@ from django.contrib.auth.views import (
 )
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.conf import settings
 
-from apps.billing.models import BillingPlan
+from apps.billing.models import BillingPlan, Transaction
 from apps.workspaces.models import Workspace, WorkspaceMembership
+from apps.workspaces.views import user_workspace
 
 from .forms import LoginForm, SignUpForm, OTPVerifyForm
 from .models import OTP, UserProfile
@@ -64,18 +65,29 @@ class SignUpView(View):
                 name=form.cleaned_data['company_name'],
                 owner=user,
                 plan=plan,
+                is_active=False,  # payment abhi baaki hai
             )
             WorkspaceMembership.objects.create(
                 workspace=workspace,
                 user=user,
                 role=WorkspaceMembership.Role.OWNER,
             )
-            login(request, user)
-            messages.success(
-                request,
-                'Account created. Click Verify on the dashboard to receive your email code.',
+
+            # Onboarding payment record — placeholder, koi gateway abhi nahi hai
+            transaction = Transaction.objects.create(
+                workspace=workspace,
+                plan=plan,
+                amount=plan.price_monthly if plan else 0,
+                status=Transaction.Status.PENDING,
             )
-            return redirect('dashboard')
+
+            # NOTE: jaan-boojh kar yahan login(request, user) call nahi kiya —
+            # user sirf payment successful hone ke baad login page se login karega.
+            request.session['onboarding_workspace_id'] = workspace.id
+            request.session['onboarding_transaction_id'] = transaction.id
+
+            messages.info(request, 'Account created. Complete payment to activate your workspace.')
+            return redirect('billing_onboarding')
         return render(request, self.template_name, {'form': form})
 
 
@@ -83,6 +95,21 @@ class EmailLoginView(LoginView):
     template_name = 'accounts/login.html'
     authentication_form = LoginForm
     redirect_authenticated_user = True
+
+    def get_success_url(self):
+        """
+        Safety net: agar user beech mein payment chhod ke baad mein login
+        karta hai, use dashboard ki jagah wapas billing page pe bhejo.
+        """
+        workspace = user_workspace(self.request.user)
+        if workspace and not workspace.is_active:
+            self.request.session['onboarding_workspace_id'] = workspace.id
+            last_txn = workspace.transactions.order_by('-created_at').first()
+            if last_txn:
+                self.request.session['onboarding_transaction_id'] = last_txn.id
+            messages.warning(self.request, 'Please complete payment to activate your workspace.')
+            return reverse('billing_onboarding')
+        return super().get_success_url()
 
 
 class EmailLogoutView(LogoutView):

@@ -16,6 +16,10 @@ class Workspace(models.Model):
         blank=True,
         related_name='workspaces',
     )
+    is_active = models.BooleanField(
+        default=False,
+        help_text='True once the onboarding payment has succeeded. Dashboard access is gated on this.',
+    )
     brand_color = models.CharField(max_length=7, default='#0F766E')
     widget_token = models.CharField(max_length=64, unique=True, editable=False)
     webhook_url = models.URLField(blank=True, help_text='POST JSON when leads/tasks are created')

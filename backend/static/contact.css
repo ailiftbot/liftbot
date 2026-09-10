@@ -123,7 +123,7 @@ main:has(.lb) {
 }
 
 /* ============================================================
-   MAIN (topics + form)
+   MAIN (integrated topics + form shell)
    ============================================================ */
 .cnt-main {
   background: var(--paper-dim);
@@ -131,80 +131,93 @@ main:has(.lb) {
   border-top: 1px solid var(--paper-line);
 }
 .cnt-main__inner {
-  max-width: 780px;
+  max-width: 980px;
   margin: 0 auto;
 }
 
-/* ── Topic cards — restyled to match feat-card ── */
-.cnt-topics {
+/* ── Shared shell: sidebar + form fused as ONE visual block ── */
+.cnt-shell {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 14px;
-  margin-bottom: 56px;
-}
-@media (max-width: 760px) {
-  .cnt-topics { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 480px) {
-  .cnt-topics { grid-template-columns: 1fr; }
-}
-
-.cnt-topic {
+  grid-template-columns: 300px 1fr;
   background: #fff;
   border: 1px solid var(--paper-line);
-  border-radius: 18px;
-  padding: 22px 16px;
-  text-align: center;
-  transition: border-color 0.18s, transform 0.18s, box-shadow 0.18s;
-}
-.cnt-topic:hover {
-  border-color: var(--brand);
-  transform: translateY(-3px);
-  box-shadow: 0 12px 36px -16px rgba(75,58,255,0.22);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 48px -18px rgba(21,22,27,0.16);
 }
 
-.cnt-topic__icon {
-  width: 40px;
-  height: 40px;
-  margin: 0 auto 14px;
+/* ── Sidebar (topics) ── */
+.cnt-side {
+  background: linear-gradient(165deg, #0B1220 0%, #1c1445 100%);
+  color: #fff;
+  padding: 40px 30px;
+}
+.cnt-side__eyebrow {
+  background: rgba(255,255,255,0.1);
+  color: #C4B5FD;
+  border-color: rgba(255,255,255,0.15);
+}
+.cnt-side__h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 14px 0 28px;
+  letter-spacing: -0.01em;
+}
+
+.cnt-topics {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cnt-topic {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 12px 8px;
   border-radius: 12px;
+  transition: background 0.15s;
+}
+.cnt-topic:hover {
+  background: rgba(255,255,255,0.06);
+}
+.cnt-topic__icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 600;
-  color: var(--ink);
+  background: rgba(255,255,255,0.1);
+  color: #fff;
 }
-.cnt-topic__icon--1 { background: #eeecff; }
-.cnt-topic__icon--2 { background: #e6fbf0; }
-.cnt-topic__icon--3 { background: #ffeaf2; }
-.cnt-topic__icon--4 { background: #fff8e5; }
-.cnt-topic__icon--5 { background: #f0f4ff; }
-
 .cnt-topic__title {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 700;
-  color: var(--ink);
-  margin: 0 0 6px;
+  color: #fff;
+  margin: 0 0 3px;
 }
-
 .cnt-topic__desc {
   font-family: 'Inter', sans-serif;
-  font-size: 0.8rem;
-  color: #53555f;
-  line-height: 1.55;
+  font-size: 0.78rem;
+  color: #A5A7B8;
+  line-height: 1.5;
   margin: 0;
 }
 
-/* ── Form card ── */
+/* ── Form card — now sits inside .cnt-shell, no own border/shadow ── */
 .cnt-form-card {
   background: #fff;
-  border: 1px solid var(--paper-line);
-  border-radius: 18px;
+  border: 0;
+  border-radius: 0;
   padding: 44px 40px;
-  box-shadow: 0 12px 36px -16px rgba(21,22,27,0.12);
+  box-shadow: none;
 }
 .cnt-form-card__h2 {
   font-family: 'Space Grotesk', sans-serif;
@@ -276,8 +289,15 @@ main:has(.lb) {
   box-shadow: 0 12px 36px -16px rgba(21,22,27,0.12);
 }
 .cnt-success__icon {
-  font-size: 2.4rem;
-  margin-bottom: 20px;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--brand);
+  box-shadow: 0 8px 20px rgba(75,58,255,0.25);
 }
 .cnt-success__h2 {
   font-family: 'Space Grotesk', sans-serif;
@@ -297,8 +317,37 @@ main:has(.lb) {
 /* ============================================================
    RESPONSIVE
    ============================================================ */
+@media (max-width: 860px) {
+  .cnt-shell {
+    grid-template-columns: 1fr;
+    border-radius: 18px;
+  }
+  .cnt-side {
+    padding: 32px 26px;
+  }
+  .cnt-topics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .cnt-form-card {
+    padding: 32px 24px;
+  }
+}
+
 @media (max-width: 640px) {
   .cnt-hero { padding: 96px 20px 72px; }
   .cnt-main { padding: 72px 20px 80px; }
-  .cnt-form-card { padding: 28px 22px; }
+}
+
+@media (max-width: 480px) {
+  .cnt-topics {
+    grid-template-columns: 1fr;
+  }
+  .cnt-side {
+    padding: 26px 20px;
+  }
+  .cnt-form-card {
+    padding: 26px 18px;
+  }
 }

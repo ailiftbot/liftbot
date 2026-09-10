@@ -71,6 +71,19 @@
 
     .nav-toggle { display:none; background:none; border:1px solid #D1D5DB; color:#fff; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:18px; }
 
+    /* Mobile-only Login/Start hiring visible directly in the header bar */
+    .header-right-mobile { display: flex; align-items: center; gap: 10px; }
+
+    .header-mobile-actions { display: none; align-items: center; gap: 6px; }
+    .hma-btn {
+      text-decoration: none; font-size: 12.5px; font-weight: 700;
+      padding: 7px 12px; border-radius: 999px; white-space: nowrap;
+    }
+    .hma-btn--ghost { color: #fff; border: 1px solid rgba(255,255,255,0.25); }
+    .hma-btn--ghost:hover { background: rgba(255,255,255,0.08); }
+    .hma-btn--cta { background: var(--p); color: #fff; }
+    .hma-btn--cta:hover { background: var(--pd); }
+
     .nav-overlay { display:none; position:fixed; inset:0; background:rgba(11,18,32,.8); z-index:1080; opacity:0; transition:opacity 0.2s; }
     .nav-overlay.open { display:block; opacity:1; }
 
@@ -123,6 +136,7 @@
     @media (max-width: 1024px) {
       nav { display: none; }
       .nav-toggle { display: block; flex-shrink: 0; }
+      .header-mobile-actions { display: flex; }
       .lb-footer-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 28px 32px; width: 100%; }
     }
     @media (max-width: 768px) {
@@ -143,6 +157,10 @@
     @media (max-width: 400px) {
       header { padding: 10px 12px; }
       .brand { font-size: 15px; }
+      .hma-btn { font-size: 11.5px; padding: 6px 10px; }
+    }
+    @media (max-width: 340px) {
+      .hma-btn { font-size: 11px; padding: 5px 9px; }
     }
   </style>
   {% block extra_css %}{% endblock %}
@@ -258,7 +276,17 @@
       {% endif %}
     </nav>
 
-    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+    <div class="header-right-mobile">
+      <div class="header-mobile-actions">
+        {% if user.is_authenticated %}
+          <a class="hma-btn hma-btn--cta" href="{% url 'dashboard' %}">Dashboard</a>
+        {% else %}
+          <a class="hma-btn hma-btn--ghost" href="{% url 'login' %}">Log in</a>
+          <a class="hma-btn hma-btn--cta" href="{% url 'signup' %}">Start hiring</a>
+        {% endif %}
+      </div>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+    </div>
   </header>
   {% endwith %}
 

@@ -4,9 +4,10 @@ from django.urls import resolve, Resolver404
 
 from .views import user_workspace
 
-# URL names jo bina active workspace ke bhi accessible rehne chahiye
+# URL names jo bina verified email / bina active workspace ke bhi accessible rehne chahiye
 EXEMPT_URL_NAMES = {
     'login', 'logout', 'signup',
+    'signup_verify_otp', 'signup_resend_otp',
     'verify_otp', 'send_otp', 'resend_verification', 'verify_email',
     'password_reset', 'password_reset_done', 'password_reset_confirm', 'password_reset_complete',
     'billing_onboarding', 'billing_onboarding_pay', 'billing_onboarding_status',
@@ -20,9 +21,11 @@ EXEMPT_PATH_PREFIXES = ('/admin', '/api/widget/', '/static/', '/media/')
 
 class OnboardingGateMiddleware:
     """
-    Blocks dashboard/app access until the workspace's onboarding payment
-    has succeeded (Workspace.is_active). Marketing pages, auth pages, the
-    onboarding billing flow, admin, and the public widget API stay open.
+    Blocks dashboard/app access until:
+      1. The user's email is verified (UserProfile.is_verified), then
+      2. The workspace's onboarding payment has succeeded (Workspace.is_active).
+    Marketing pages, auth pages, the signup-verify flow, the onboarding
+    billing flow, admin, and the public widget API stay open.
     """
 
     def __init__(self, get_response):
@@ -37,6 +40,15 @@ class OnboardingGateMiddleware:
                     url_name = None
 
                 if url_name not in EXEMPT_URL_NAMES:
+                    profile = getattr(request.user, 'profile', None)
+
+                    # Gate 1: email verify pehle
+                    if profile and not (profile.is_verified or profile.email_verified):
+                        request.session['onboarding_user_id'] = request.user.id
+                        messages.warning(request, 'Please verify your email to continue.')
+                        return redirect('signup_verify_otp')
+
+                    # Gate 2: payment ke baad hi dashboard
                     workspace = user_workspace(request.user)
                     if workspace and not workspace.is_active:
                         request.session['onboarding_workspace_id'] = workspace.id

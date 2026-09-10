@@ -1,7 +1,7 @@
 import logging
 
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import login, get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import (
     LoginView, LogoutView, PasswordResetView, PasswordResetDoneView,
@@ -73,22 +73,106 @@ class SignUpView(View):
                 role=WorkspaceMembership.Role.OWNER,
             )
 
-            # Onboarding payment record — placeholder, koi gateway abhi nahi hai
-            transaction = Transaction.objects.create(
+            # NOTE: yahan Transaction jaan-boojh kar create NAHI kiya —
+            # ab payment se pehle email verify karwana hai. Transaction
+            # ab SignupVerifyOtpView._proceed_to_billing() mein banti hai,
+            # verify hone ke baad.
+
+            # NOTE: yahan login(request, user) bhi jaan-boojh kar call
+            # nahi kiya — user pehle email verify karega, phir payment
+            # karega, tabhi login page se login karega.
+            issue_and_send_otp(user)
+            request.session['onboarding_user_id'] = user.id
+
+            messages.info(request, 'Account created. Enter the code we emailed you to verify your address.')
+            return redirect('signup_verify_otp')
+        return render(request, self.template_name, {'form': form})
+
+
+class SignupVerifyOtpView(View):
+    """Pre-login email verification, right after signup (session-based, no auth required)."""
+    template_name = 'accounts/signup_verify_otp.html'
+
+    def _get_pending_user(self, request):
+        user_id = request.session.get('onboarding_user_id')
+        if not user_id:
+            return None
+        return get_user_model().objects.filter(id=user_id).first()
+
+    def get(self, request):
+        user = self._get_pending_user(request)
+        if not user:
+            return redirect('signup')
+        if user.profile.is_verified or user.profile.email_verified:
+            return self._proceed_to_billing(request, user)
+        return render(request, self.template_name, {'form': OTPVerifyForm(), 'email': user.email})
+
+    def post(self, request):
+        user = self._get_pending_user(request)
+        if not user:
+            return redirect('signup')
+
+        form = OTPVerifyForm(request.POST)
+        if not form.is_valid():
+            return render(request, self.template_name, {'form': form, 'email': user.email})
+
+        otp = OTP.match_for_user(user, form.cleaned_data['code'])
+        if otp is None:
+            form.add_error('code', 'That code is invalid or has expired.')
+            return render(request, self.template_name, {'form': form, 'email': user.email})
+
+        otp.is_used = True
+        otp.save(update_fields=['is_used'])
+        user.profile.mark_verified()
+        return self._proceed_to_billing(request, user)
+
+    def _proceed_to_billing(self, request, user):
+        workspace = user_workspace(user)
+
+        # Email verify ho gaya — ab payment ki Transaction banao
+        txn = workspace.transactions.order_by('-created_at').first()
+        if txn is None:
+            txn = Transaction.objects.create(
                 workspace=workspace,
-                plan=plan,
-                amount=plan.price_monthly if plan else 0,
+                plan=workspace.plan,
+                amount=workspace.plan.price_monthly if workspace.plan else 0,
                 status=Transaction.Status.PENDING,
             )
 
-            # NOTE: jaan-boojh kar yahan login(request, user) call nahi kiya —
-            # user sirf payment successful hone ke baad login page se login karega.
-            request.session['onboarding_workspace_id'] = workspace.id
-            request.session['onboarding_transaction_id'] = transaction.id
+        request.session.pop('onboarding_user_id', None)
+        request.session['onboarding_workspace_id'] = workspace.id
+        request.session['onboarding_transaction_id'] = txn.id
 
-            messages.info(request, 'Account created. Complete payment to activate your workspace.')
-            return redirect('billing_onboarding')
-        return render(request, self.template_name, {'form': form})
+        messages.success(request, 'Email verified! Now complete payment to activate your workspace.')
+        return redirect('billing_onboarding')
+
+
+class SignupResendOtpView(View):
+    """Resend code during the pre-login signup verification step."""
+
+    def post(self, request):
+        user_id = request.session.get('onboarding_user_id')
+        user = get_user_model().objects.filter(id=user_id).first() if user_id else None
+        if not user:
+            return redirect('signup')
+
+        wait = OTP.cooldown_remaining(user)
+        if wait > 0:
+            messages.error(request, f'Please wait {wait} seconds before requesting another code.')
+            return redirect('signup_verify_otp')
+
+        try:
+            issue_and_send_otp(user)
+        except OTP.CooldownActive as exc:
+            messages.error(request, f'Please wait {exc.seconds_left} seconds before requesting another code.')
+            return redirect('signup_verify_otp')
+        except Exception:
+            logger.exception('Signup OTP email failed for user %s', user.pk)
+            messages.error(request, 'We could not send the verification code. Please try again.')
+            return redirect('signup_verify_otp')
+
+        messages.success(request, 'A new verification code was sent to your email.')
+        return redirect('signup_verify_otp')
 
 
 class EmailLoginView(LoginView):
@@ -98,10 +182,20 @@ class EmailLoginView(LoginView):
 
     def get_success_url(self):
         """
-        Safety net: agar user beech mein payment chhod ke baad mein login
-        karta hai, use dashboard ki jagah wapas billing page pe bhejo.
+        Safety net for direct/bookmarked logins:
+        1. Email verify nahi hai -> signup verify page pe bhejo.
+        2. Verified hai lekin workspace active nahi -> billing pe bhejo.
+        3. Dono clear -> normal dashboard redirect.
         """
-        workspace = user_workspace(self.request.user)
+        user = self.request.user
+        profile = getattr(user, 'profile', None)
+
+        if profile and not (profile.is_verified or profile.email_verified):
+            self.request.session['onboarding_user_id'] = user.id
+            messages.warning(self.request, 'Please verify your email to continue.')
+            return reverse('signup_verify_otp')
+
+        workspace = user_workspace(user)
         if workspace and not workspace.is_active:
             self.request.session['onboarding_workspace_id'] = workspace.id
             last_txn = workspace.transactions.order_by('-created_at').first()
@@ -109,6 +203,7 @@ class EmailLoginView(LoginView):
                 self.request.session['onboarding_transaction_id'] = last_txn.id
             messages.warning(self.request, 'Please complete payment to activate your workspace.')
             return reverse('billing_onboarding')
+
         return super().get_success_url()
 
 
@@ -157,6 +252,7 @@ class SendOtpView(LoginRequiredMixin, View):
 
 
 class VerifyOtpView(LoginRequiredMixin, View):
+    """Legacy in-dashboard verify flow — kept for users who signed up before this gate existed."""
     template_name = 'accounts/verify_otp.html'
 
     def dispatch(self, request, *args, **kwargs):

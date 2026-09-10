@@ -1,24 +1,6 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Log in — LiftBot{% endblock %}
-<<<<<<< Updated upstream
-{% block content %}
-<div style="max-width:420px;margin:20px auto;background:#fff;border:1px solid #E5E7EB;border-radius:16px;padding:28px;box-shadow:0 8px 24px rgba(16,24,40,.06);">
-  <h1 style="margin:0 0 18px;font-size:24px;font-weight:800;">Welcome back</h1>
-  <form method="post" style="display:flex;flex-direction:column;gap:12px;">
-    {% csrf_token %}
-    {% for field in form %}
-    <div>
-      <label style="display:block;font-size:13px;font-weight:600;margin-bottom:5px;">{{ field.label }}</label>
-      {{ field }}
-      {% if field.errors %}<div style="color:#DC2626;font-size:12px;">{{ field.errors|striptags }}</div>{% endif %}
-    </div>
-    {% endfor %}
-    <button style="margin-top:6px;background:#7C3AED;color:#fff;border:0;border-radius:999px;padding:12px;font-weight:700;cursor:pointer;">Log in</button>
-  </form>
-  <p style="font-size:13px;margin:14px 0 0;"><a href="{% url 'password_reset' %}" style="color:#7C3AED;font-weight:600;">Forgot password?</a></p>
-</div>
-<style>input{width:100%;border:1px solid #E5E7EB;border-radius:10px;padding:10px 12px;font:inherit}</style>
-=======
 
 {% block extra_css %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,39 +15,42 @@
     padding: 0;
   }
 
-  /* Split layout: visual panel + form panel, side by side on desktop.
-     Grid-based instead of the old vw-height/absolute-overlay hack, so it
-     never crops or leaves blank space at any screen size. */
+  /* The section's size is now driven by the image itself (width:100%, height:auto
+     on .lb-auth__bg-img below) — no fixed vh height, so there is never leftover
+     blank space and the image is never cropped. */
   .lb-auth {
-    display: grid;
-    grid-template-columns: 1.1fr 1fr;
-    min-height: calc(100dvh - 70px);
-    background: #0B1220;
-  }
-
-  .lb-auth__visual {
     position: relative;
-    overflow: hidden;
-  }
-
-  .lb-auth__visual img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
+    height: calc(100vw * 0.545);
+    max-height: none;
+    overflow: hidden;
+    line-height: 0;
+    margin-bottom: -95px;
   }
 
-  .lb-auth__panel {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #fff;
-    padding: 40px 24px;
+  .lb-auth__bg-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    position: absolute;
+    top: -95px;
+    left: 0;
   }
 
   .lb-auth__card {
+    position: absolute;
+    top: 50%;
+    right: clamp(20px, 7vw, 90px);
+    transform: translateY(-50%);
+    z-index: 1;
     width: 100%;
-    max-width: 400px;
+    max-width: 420px;
+    background: #ffffff;
+    border-radius: 22px;
+    padding: 40px 36px;
+    box-shadow: 0 30px 70px -16px rgba(16, 24, 40, 0.22);
+    line-height: normal;
+    /* reset the line-height:0 trick from the parent */
   }
 
   .lb-auth__title {
@@ -233,34 +218,23 @@
     text-decoration: underline;
   }
 
-  /* Tablet: stack visual on top, shrink its height, form full-width below */
-  @media (max-width: 900px) {
+  @media (max-width: 860px) {
     .lb-auth {
-      grid-template-columns: 1fr;
-      min-height: auto;
-    }
-
-    .lb-auth__visual {
-      height: 220px;
-    }
-
-    .lb-auth__panel {
-      padding: 36px 24px 48px;
-    }
-  }
-
-  /* Mobile: shorter visual strip, full-bleed card */
-  @media (max-width: 480px) {
-    .lb-auth__visual {
-      height: 160px;
-    }
-
-    .lb-auth__panel {
-      padding: 28px 18px 40px;
+      margin-bottom: 0;
     }
 
     .lb-auth__card {
+      position: static;
+      transform: none;
+      margin: -60px auto 30px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .lb-auth__card {
       max-width: none;
+      width: calc(100% - 32px);
+      padding: 30px 22px;
     }
   }
 </style>
@@ -268,73 +242,68 @@
 
 {% block content %}
 <section class="lb-auth">
-  <div class="lb-auth__visual">
-    <img src="{% static 'img/liftbot-login-bg.png' %}" alt="">
-  </div>
+  <img src="{% static 'img/liftbot-login-bg.png' %}" alt="" class="lb-auth__bg-img">
 
-  <div class="lb-auth__panel">
-    <div class="lb-auth__card">
-      <h1 class="lb-auth__title">Welcome back</h1>
-      <p class="lb-auth__subtitle">Log in to your LiftBot account</p>
+  <div class="lb-auth__card">
+    <h1 class="lb-auth__title">Welcome back</h1>
+    <p class="lb-auth__subtitle">Log in to your LiftBot account</p>
 
-      <form method="post" class="lb-auth__form">
-        {% csrf_token %}
+    <form method="post" class="lb-auth__form">
+      {% csrf_token %}
 
-        {% if form.non_field_errors %}
-        <div class="lb-auth__form-errors">
-          {{ form.non_field_errors|striptags }}
-        </div>
-        {% endif %}
+      {% if form.non_field_errors %}
+      <div class="lb-auth__form-errors">
+        {{ form.non_field_errors|striptags }}
+      </div>
+      {% endif %}
 
-        {% for field in form %}
-        <div class="lb-auth__field">
-          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-          <div class="lb-auth__input-wrap">
-            {% if field.name == 'password' %}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-              stroke-linejoin="round">
-              <rect x="4" y="11" width="16" height="10" rx="2" />
-              <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-            </svg>
-            {% else %}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-              stroke-linejoin="round">
-              <rect x="3" y="5" width="18" height="14" rx="2" />
-              <path d="m3 7 9 6 9-6" />
-            </svg>
-            {% endif %}
-            {{ field }}
-          </div>
-          {% if field.errors %}
-          <div class="lb-auth__field-errors">{{ field.errors|striptags }}</div>
+      {% for field in form %}
+      <div class="lb-auth__field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        <div class="lb-auth__input-wrap">
+          {% if field.name == 'password' %}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+            stroke-linejoin="round">
+            <rect x="4" y="11" width="16" height="10" rx="2" />
+            <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+          </svg>
+          {% else %}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+            stroke-linejoin="round">
+            <rect x="3" y="5" width="18" height="14" rx="2" />
+            <path d="m3 7 9 6 9-6" />
+          </svg>
           {% endif %}
+          {{ field }}
         </div>
-        {% endfor %}
+        {% if field.errors %}
+        <div class="lb-auth__field-errors">{{ field.errors|striptags }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
 
-        <button type="submit" class="lb-auth__submit">Log in</button>
-      </form>
+      <button type="submit" class="lb-auth__submit">Log in</button>
+    </form>
 
-      <div class="lb-auth__divider">OR</div>
+    <div class="lb-auth__divider">OR</div>
 
-      {# TODO: point this at your Google OAuth start URL once wired up #}
-      <a href="#" class="lb-auth__google">
-        <svg width="18" height="18" viewBox="0 0 24 24">
-          <path fill="#4285F4"
-            d="M23.49 12.27c0-.85-.08-1.66-.22-2.44H12v4.62h6.47a5.54 5.54 0 0 1-2.4 3.63v3h3.88c2.27-2.09 3.54-5.17 3.54-8.81z" />
-          <path fill="#34A853"
-            d="M12 24c3.24 0 5.96-1.07 7.95-2.92l-3.88-3c-1.08.72-2.46 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.27v3.1A11.99 11.99 0 0 0 12 24z" />
-          <path fill="#FBBC05" d="M5.27 14.27a7.2 7.2 0 0 1 0-4.54v-3.1H1.27a12 12 0 0 0 0 10.74l4-3.1z" />
-          <path fill="#EA4335"
-            d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.44-3.44C17.95 1.19 15.24 0 12 0A11.99 11.99 0 0 0 1.27 6.63l4 3.1C6.22 6.86 8.87 4.75 12 4.75z" />
-        </svg>
-        Continue with Google
-      </a>
+    {# TODO: point this at your Google OAuth start URL once wired up #}
+    <a href="#" class="lb-auth__google">
+      <svg width="18" height="18" viewBox="0 0 24 24">
+        <path fill="#4285F4"
+          d="M23.49 12.27c0-.85-.08-1.66-.22-2.44H12v4.62h6.47a5.54 5.54 0 0 1-2.4 3.63v3h3.88c2.27-2.09 3.54-5.17 3.54-8.81z" />
+        <path fill="#34A853"
+          d="M12 24c3.24 0 5.96-1.07 7.95-2.92l-3.88-3c-1.08.72-2.46 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.27v3.1A11.99 11.99 0 0 0 12 24z" />
+        <path fill="#FBBC05" d="M5.27 14.27a7.2 7.2 0 0 1 0-4.54v-3.1H1.27a12 12 0 0 0 0 10.74l4-3.1z" />
+        <path fill="#EA4335"
+          d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.44-3.44C17.95 1.19 15.24 0 12 0A11.99 11.99 0 0 0 1.27 6.63l4 3.1C6.22 6.86 8.87 4.75 12 4.75z" />
+      </svg>
+      Continue with Google
+    </a>
 
-      <p class="lb-auth__forgot">
-        <a href="{% url 'password_reset' %}">Forgot password?</a>
-      </p>
-    </div>
+    <p class="lb-auth__forgot">
+      <a href="{% url 'password_reset' %}">Forgot password?</a>
+    </p>
   </div>
 </section>
->>>>>>> Stashed changes
 {% endblock %}

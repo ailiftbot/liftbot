@@ -39,6 +39,12 @@ class SignUpForm(UserCreationForm):
 class LoginForm(AuthenticationForm):
     username = forms.EmailField(label='Email')
 
+    def clean_username(self):
+        # Signup time email lowercase karke username mein save hoti hai,
+        # isliye login pe bhi same normalize karna zaroori hai warna
+        # case mismatch ki wajah se authenticate() silently fail ho jayega.
+        return self.cleaned_data['username'].lower().strip()
+
 
 class OTPVerifyForm(forms.Form):
     code = forms.CharField(

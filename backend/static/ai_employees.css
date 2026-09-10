@@ -107,18 +107,22 @@ main:has(.lb) {
   border-color: #4b3aff; transform: translateY(-3px);
   box-shadow: 0 12px 36px -16px rgba(75,58,255,0.22);
 }
+
+/* Icon boxes — light tint background with a colored line icon */
 .aie-role-card__icon {
   width: 46px; height: 46px; border-radius: 13px;
   display: grid; place-items: center; margin-bottom: 18px;
-  font-weight: 700; font-size: 16px; color: #fff;
-  font-family: "Space Grotesk", sans-serif;
 }
-.aie-role-card__icon--1 { background: #4b3aff; }
-.aie-role-card__icon--2 { background: #0e8f52; }
-.aie-role-card__icon--3 { background: #ff4d8d; }
-.aie-role-card__icon--4 { background: #d9a62e; }
-.aie-role-card__icon--5 { background: #15161b; }
-.aie-role-card__icon--6 { background: linear-gradient(135deg,#4b3aff,#ff4d8d); }
+.aie-role-card__icon svg {
+  width: 22px; height: 22px;
+}
+.aie-role-card__icon--1 { background: #EEECFF; color: #4b3aff; }
+.aie-role-card__icon--2 { background: #E3F6ED; color: #0e8f52; }
+.aie-role-card__icon--3 { background: #FFE9F1; color: #ff4d8d; }
+.aie-role-card__icon--4 { background: #FDF3DC; color: #d9a62e; }
+.aie-role-card__icon--5 { background: #ECECEE; color: #15161b; }
+.aie-role-card__icon--6 { background: linear-gradient(135deg,#eeecff,#ffeaf2); color: #4b3aff; }
+
 .aie-role-card__title {
   font-family: "Space Grotesk", sans-serif; font-weight: 700;
   font-size: 1.1rem; margin: 0 0 8px; color: #15161b;

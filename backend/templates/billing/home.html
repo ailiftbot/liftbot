@@ -9,52 +9,395 @@
 {% endblock %}
 
 {% block content %}
+<style>
+  /* ---- Scoped design for Billing (uses existing app.css tokens; app.css itself untouched) ---- */
+
+  .lb-bill-current {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 22px;
+    padding: 22px 24px;
+    margin-bottom: 18px;
+  }
+  @media (max-width: 768px) {
+    .lb-bill-current { grid-template-columns: 1fr; text-align: left; }
+  }
+
+  .lb-bill-ring {
+    --pct: 0;
+    width: 76px;
+    height: 76px;
+    border-radius: 999px;
+    flex-shrink: 0;
+    background: conic-gradient(var(--lb-purple) calc(var(--pct) * 1%), #EFEFF3 0);
+    display: grid;
+    place-items: center;
+  }
+  .lb-bill-ring span {
+    width: 58px;
+    height: 58px;
+    border-radius: 999px;
+    background: #fff;
+    display: grid;
+    place-items: center;
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--lb-ink);
+  }
+
+  .lb-bill-current-mid { min-width: 0; }
+  .lb-bill-current-label {
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--lb-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .lb-bill-current-label svg { width: 13px; height: 13px; }
+  .lb-bill-current-name {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 4px 0 12px;
+    color: var(--lb-ink);
+  }
+  .lb-bill-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+  .lb-bill-metric {
+    min-width: 150px;
+  }
+  .lb-bill-metric .top {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 5px;
+  }
+  .lb-bill-metric .top strong { color: var(--lb-ink); font-variant-numeric: tabular-nums; }
+  .lb-bill-metric .top span { color: var(--lb-muted); }
+  .lb-bill-metric .meter {
+    height: 6px;
+    border-radius: 999px;
+    background: #EFEFF3;
+    overflow: hidden;
+  }
+  .lb-bill-metric .meter > i {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #A78BFA, var(--lb-purple));
+  }
+  .lb-bill-metric .meter.usage-high > i { background: linear-gradient(90deg, #FBBF24, var(--lb-orange)); }
+  .lb-bill-metric .meter.usage-critical > i { background: linear-gradient(90deg, #F87171, #DC2626); }
+
+  .lb-bill-current-cta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+  }
+  @media (max-width: 768px) { .lb-bill-current-cta { align-items: flex-start; } }
+  .lb-bill-current-cta a.lb-link {
+    font-size: 12.5px;
+    font-weight: 650;
+    color: var(--lb-purple);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .lb-bill-current-cta a.lb-link svg { width: 12px; height: 12px; }
+
+  .lb-bill-nowarn {
+    padding: 22px 24px;
+    color: var(--lb-muted);
+    font-size: 13px;
+    margin-bottom: 18px;
+  }
+
+  /* Plans grid */
+  .lb-plans-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin: 4px 0 12px;
+  }
+  .lb-plans-heading h3 { margin: 0; font-size: 16px; font-weight: 750; color: var(--lb-ink); }
+  .lb-plans-heading span { font-size: 12px; color: var(--lb-muted); }
+
+  .lb-plans-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 26px;
+    align-items: stretch;
+  }
+  @media (max-width: 900px) { .lb-plans-grid { grid-template-columns: 1fr; } }
+
+  .lb-plan-card {
+    position: relative;
+    padding: 22px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    transition: transform .18s ease, box-shadow .18s ease;
+  }
+  .lb-plan-card:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(0,0,0,.07); }
+  .lb-plan-card.is-current {
+    border: 1.5px solid var(--lb-purple);
+    box-shadow: 0 0 0 4px var(--lb-purple-soft);
+  }
+  .lb-plan-card.is-featured::before {
+    content: 'Most popular';
+    position: absolute;
+    top: -11px;
+    left: 20px;
+    background: var(--lb-purple);
+    color: #fff;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+    box-shadow: 0 4px 10px rgba(124,58,237,.3);
+  }
+
+  .lb-plan-name {
+    font-weight: 750;
+    font-size: 17px;
+    color: var(--lb-ink);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .lb-plan-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    background: var(--lb-purple-soft);
+    color: var(--lb-purple-dark);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+  .lb-plan-icon svg { width: 15px; height: 15px; }
+
+  .lb-plan-price {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin: 14px 0 4px;
+    color: var(--lb-ink);
+  }
+  .lb-plan-price span {
+    font-size: 13px;
+    color: var(--lb-muted);
+    font-weight: 600;
+  }
+
+  .lb-plan-features {
+    list-style: none;
+    margin: 14px 0 18px;
+    padding: 14px 0 0;
+    border-top: 1px solid var(--lb-border);
+    font-size: 13px;
+    color: #3F4048;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+  }
+  .lb-plan-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.4;
+  }
+  .lb-plan-features li svg {
+    width: 15px;
+    height: 15px;
+    color: var(--lb-green);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .lb-plan-card form { margin-top: auto; }
+  .lb-plan-card .lb-btn { width: 100%; }
+  .lb-plan-current-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+    width: 100%;
+    margin-top: auto;
+    padding: 9px 0;
+  }
+  .lb-plan-current-tag svg { width: 13px; height: 13px; }
+
+  /* Invoices */
+  .lb-invoices-card { overflow: hidden; margin-bottom: 8px; }
+  .lb-invoice-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid #F3F4F6;
+    font-size: 13px;
+    transition: background .12s ease;
+  }
+  .lb-invoice-row:last-child { border-bottom: 0; }
+  .lb-invoice-row:hover { background: #FAFAFB; }
+  .lb-invoice-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .lb-invoice-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: var(--lb-purple-soft);
+    color: var(--lb-purple-dark);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+  .lb-invoice-icon svg { width: 16px; height: 16px; }
+  .lb-invoice-left .info strong { display: block; font-size: 13px; }
+  .lb-invoice-left .info span { display: block; font-size: 11.5px; color: var(--lb-muted); }
+  .lb-invoice-amount {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--lb-ink);
+    flex-shrink: 0;
+  }
+  .lb-status-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #F0F0F3;
+    color: #55565E;
+    text-transform: capitalize;
+    flex-shrink: 0;
+  }
+  .lb-status-badge.status-paid, .lb-status-badge.status-succeeded { background: var(--lb-green-soft); color: var(--lb-green); }
+  .lb-status-badge.status-pending, .lb-status-badge.status-open { background: var(--lb-orange-soft); color: var(--lb-orange); }
+  .lb-status-badge.status-failed, .lb-status-badge.status-void { background: #FDE8E8; color: #C13333; }
+
+  .lb-invoices-empty {
+    padding: 30px 16px;
+    text-align: center;
+    color: var(--lb-muted);
+    font-size: 13px;
+  }
+  .lb-invoices-empty svg { width: 24px; height: 24px; margin-bottom: 8px; opacity: .45; }
+</style>
+
 {% if workspace %}
-<div class="lb-card" style="padding:20px;margin-bottom:16px;">
-  <div style="font-size:12px;color:var(--lb-muted);">Current plan</div>
-  <div style="font-size:22px;font-weight:750;margin:4px 0 8px;">{{ workspace.plan.name|default:'None' }}</div>
-  <div style="font-size:13px;color:var(--lb-muted);margin-bottom:10px;">
-    Usage {{ workspace.usage_percent|floatformat:0 }}% ·
-    {{ workspace.conversations_used }}/{{ workspace.conversation_limit }} conversations ·
-    {{ workspace.tokens_used }}/{{ workspace.token_limit }} tokens
+<div class="lb-card lb-bill-current">
+  <div class="lb-bill-ring" style="--pct: {{ workspace.usage_percent|floatformat:0 }};">
+    <span>{{ workspace.usage_percent|floatformat:0 }}%</span>
   </div>
-  <div style="height:8px;border-radius:999px;background:#F3F4F6;overflow:hidden;">
-    <i style="display:block;height:100%;width:{{ workspace.usage_percent|floatformat:0 }}%;background:linear-gradient(90deg,#A78BFA,#7C3AED);"></i>
+
+  <div class="lb-bill-current-mid">
+    <div class="lb-bill-current-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+      Current plan
+    </div>
+    <div class="lb-bill-current-name">{{ workspace.plan.name|default:'None' }}</div>
+    <div class="lb-bill-metrics">
+      <div class="lb-bill-metric">
+        <div class="top"><span>Conversations</span><strong>{{ workspace.conversations_used }}/{{ workspace.conversation_limit }}</strong></div>
+        <div class="meter{% if workspace.usage_percent >= 90 %} usage-critical{% elif workspace.usage_percent >= 70 %} usage-high{% endif %}"><i style="width:{{ workspace.usage_percent|floatformat:0 }}%"></i></div>
+      </div>
+      <div class="lb-bill-metric">
+        <div class="top"><span>Tokens</span><strong>{{ workspace.tokens_used }}/{{ workspace.token_limit }}</strong></div>
+        <div class="meter{% if workspace.usage_percent >= 90 %} usage-critical{% elif workspace.usage_percent >= 70 %} usage-high{% endif %}"><i style="width:{{ workspace.usage_percent|floatformat:0 }}%"></i></div>
+      </div>
+    </div>
   </div>
-  <p style="margin:12px 0 0;font-size:12px;"><a href="{% url 'analytics' %}" style="color:var(--lb-purple);font-weight:600;text-decoration:none;">View full analytics →</a></p>
+
+  <div class="lb-bill-current-cta">
+    <a href="{% url 'analytics' %}" class="lb-link">
+      View full analytics
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
 </div>
+{% else %}
+<div class="lb-card lb-bill-nowarn">No workspace found yet — pick a plan below to get started.</div>
 {% endif %}
 
-<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px;">
+<div class="lb-plans-heading">
+  <h3>Choose a plan</h3>
+  <span>Cancel or change anytime</span>
+</div>
+
+<div class="lb-plans-grid">
   {% for plan in plans %}
-  <div class="lb-card" style="padding:18px;{% if workspace.plan_id == plan.id %}outline:2px solid #7C3AED;{% endif %}">
-    <div style="font-weight:750;font-size:18px;">{{ plan.name }}</div>
-    <div style="font-size:28px;font-weight:800;margin:8px 0;">${{ plan.price_monthly }}<span style="font-size:14px;color:var(--lb-muted);font-weight:500;">/mo</span></div>
-    <ul style="margin:0 0 14px;padding-left:18px;font-size:13px;color:#4B5563;line-height:1.7;">
-      <li>{% if plan.employee_limit >= 999 %}Unlimited{% else %}{{ plan.employee_limit }}{% endif %} AI Employee{{ plan.employee_limit|pluralize }}</li>
-      <li>{{ plan.conversation_limit }} conversations</li>
-      <li>{{ plan.token_limit }} tokens</li>
+  <div class="lb-card lb-plan-card{% if workspace.plan_id == plan.id %} is-current{% elif forloop.counter0 == 1 %} is-featured{% endif %}">
+    <div class="lb-plan-name">
+      <span class="lb-plan-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 6 1-4.5 4.4L17.5 20 12 17l-5.5 3 1-6.6L3 9l6-1z"/></svg>
+      </span>
+      {{ plan.name }}
+      {% if workspace.plan_id == plan.id %}<span class="lb-badge lb-badge-purple" style="margin-left:auto;">Current</span>{% endif %}
+    </div>
+    <div class="lb-plan-price">${{ plan.price_monthly }}<span>/mo</span></div>
+    <ul class="lb-plan-features">
+      <li>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        {% if plan.employee_limit >= 999 %}Unlimited{% else %}{{ plan.employee_limit }}{% endif %} AI Employee{{ plan.employee_limit|pluralize }}
+      </li>
+      <li>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        {{ plan.conversation_limit }} conversations
+      </li>
+      <li>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        {{ plan.token_limit }} tokens
+      </li>
     </ul>
     {% if workspace.plan_id != plan.id %}
     <form method="post" action="{% url 'billing_checkout' plan.slug %}">{% csrf_token %}
       <button class="lb-btn lb-btn-primary lb-btn-sm" type="submit">{% if stripe_enabled %}Subscribe{% else %}Select plan{% endif %}</button>
     </form>
     {% else %}
-    <span class="lb-badge lb-badge-purple">Current</span>
+    <span class="lb-plan-current-tag lb-badge lb-badge-purple">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+      Current plan
+    </span>
     {% endif %}
   </div>
   {% endfor %}
 </div>
 
-<h3 style="font-size:15px;margin:0 0 10px;">Invoices</h3>
-<div class="lb-card" style="overflow:hidden;">
+<div class="lb-plans-heading">
+  <h3>Invoices</h3>
+</div>
+<div class="lb-card lb-invoices-card">
   {% for inv in invoices %}
-  <div style="display:flex;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #F3F4F6;font-size:13px;">
-    <span>#{{ inv.id }} · {{ inv.plan.name }} · ${{ inv.amount }}</span>
-    <span class="lb-badge lb-badge-purple">{{ inv.get_status_display }}</span>
+  <div class="lb-invoice-row">
+    <div class="lb-invoice-left">
+      <span class="lb-invoice-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+      </span>
+      <div class="info">
+        <strong>#{{ inv.id }}</strong>
+        <span>{{ inv.plan.name }}</span>
+      </div>
+    </div>
+    <span class="lb-invoice-amount">${{ inv.amount }}</span>
+    <span class="lb-status-badge status-{{ inv.status|lower }}">{{ inv.get_status_display }}</span>
   </div>
   {% empty %}
-  <div style="padding:22px 16px;color:var(--lb-muted);font-size:13px;">No invoices yet.</div>
+  <div class="lb-invoices-empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+    <div>No invoices yet.</div>
+  </div>
   {% endfor %}
 </div>
 {% endblock %}

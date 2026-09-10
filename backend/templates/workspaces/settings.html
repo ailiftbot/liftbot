@@ -9,39 +9,394 @@
 {% endblock %}
 
 {% block content %}
+<style>
+  /* ---- Scoped enhancements for the Settings page only (uses existing app.css tokens) ---- */
+  .lb-settings-quicknav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 14px;
+  }
+  .lb-settings-quicknav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--lb-border);
+    background: #fff;
+    color: var(--lb-muted);
+    font-size: 12.5px;
+    font-weight: 650;
+    text-decoration: none;
+    transition: border-color .15s ease, color .15s ease, background .15s ease;
+    scroll-margin-top: 90px;
+  }
+  .lb-settings-quicknav a:hover {
+    border-color: #C4B5FD;
+    color: var(--lb-purple-dark);
+    background: var(--lb-purple-soft);
+  }
+  .lb-settings-panel { scroll-margin-top: 90px; }
+
+  .lb-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .lb-panel-icon {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border-radius: 9px;
+    display: grid;
+    place-items: center;
+    background: var(--lb-purple-soft);
+    color: var(--lb-purple-dark);
+  }
+  .lb-panel-icon svg { width: 16px; height: 16px; }
+  .lb-panel-title h2 { margin: 0; }
+
+  .lb-field-hint {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 5px;
+    font-size: 11.5px;
+    color: var(--lb-muted);
+  }
+  .lb-char-count.is-near-limit { color: var(--lb-orange); font-weight: 650; }
+
+  .lb-color-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .lb-color-swatch {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px 6px 6px;
+    border: 1px solid var(--lb-border);
+    border-radius: 999px;
+    background: #fff;
+  }
+  .lb-color-swatch .dot {
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    border: 1px solid rgba(0,0,0,0.08);
+    flex-shrink: 0;
+  }
+  .lb-color-swatch code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    color: var(--lb-ink);
+    text-transform: uppercase;
+  }
+
+  .lb-avatar-preview {
+    width: 46px;
+    height: 46px;
+    border-radius: 999px;
+    background: var(--lb-purple-soft);
+    color: var(--lb-purple-dark);
+    display: grid;
+    place-items: center;
+    font-weight: 750;
+    font-size: 15px;
+    flex-shrink: 0;
+    border: 1px solid #E4DEFF;
+  }
+  .lb-account-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .lb-account-head .who { min-width: 0; }
+  .lb-account-head .who strong { display: block; font-size: 14px; }
+  .lb-account-head .who span { font-size: 12px; color: var(--lb-muted); }
+
+  .lb-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    font-weight: 650;
+    padding: 3px 9px;
+    border-radius: 999px;
+  }
+  .lb-status-pill.ok { background: var(--lb-green-soft); color: var(--lb-green); }
+  .lb-status-pill.warn { background: var(--lb-orange-soft); color: var(--lb-orange); }
+  .lb-status-pill .dot { width: 6px; height: 6px; border-radius: 999px; background: currentColor; }
+
+  .lb-input-error {
+    font-size: 11.5px;
+    color: #DC2626;
+    margin-top: 5px;
+    display: none;
+  }
+  .lb-input-error.show { display: block; }
+  input.lb-invalid { border-color: #DC2626 !important; }
+
+  details.lb-webhook-example {
+    margin-top: 12px;
+    border: 1px solid var(--lb-border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  details.lb-webhook-example summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 10px 12px;
+    font-size: 12.5px;
+    font-weight: 650;
+    color: var(--lb-muted);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #FAFAFB;
+  }
+  details.lb-webhook-example summary::-webkit-details-marker { display: none; }
+  details.lb-webhook-example summary::after {
+    content: '+';
+    font-size: 15px;
+    color: var(--lb-muted);
+  }
+  details.lb-webhook-example[open] summary::after { content: '–'; }
+  details.lb-webhook-example pre {
+    margin: 0;
+    padding: 12px;
+    font-size: 11.5px;
+    background: #F8F8FA;
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  .lb-token-row {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .lb-token-row .lb-code-block { flex: 1; margin: 0; }
+  .lb-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    border: 1px solid var(--lb-border);
+    background: #fff;
+    cursor: pointer;
+    color: var(--lb-muted);
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .lb-icon-btn:hover { border-color: #C4B5FD; color: var(--lb-purple-dark); }
+  .lb-icon-btn svg { width: 15px; height: 15px; }
+  .lb-icon-btn.copied { color: var(--lb-green); border-color: var(--lb-green); }
+
+  .lb-danger-zone {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border: 1px dashed #F3C6C6;
+    background: #FFF8F8;
+    border-radius: 10px;
+  }
+  .lb-danger-zone p {
+    margin: 0 0 10px;
+    font-size: 12px;
+    color: #A83A3A;
+    line-height: 1.5;
+  }
+  .lb-btn-danger {
+    background: #fff;
+    border: 1px solid #E5A6A6;
+    color: #C13333;
+  }
+  .lb-btn-danger:hover { background: #FDEDED; border-color: #DC2626; color: #B91C1C; }
+
+  .lb-members-search {
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .lb-members-search input {
+    width: 100%;
+    padding: 9px 12px 9px 32px;
+    border: 1px solid var(--lb-border);
+    border-radius: 10px;
+    font-size: 13px;
+    background: #fff;
+  }
+  .lb-members-search input:focus {
+    outline: 2px solid #DDD6FE;
+    border-color: #A78BFA;
+  }
+  .lb-members-search svg {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    color: var(--lb-muted);
+    pointer-events: none;
+  }
+  .lb-member-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #EEEEF1;
+  }
+  .lb-member-row:last-child { border-bottom: 0; }
+  .lb-member-row.is-hidden { display: none; }
+  .lb-member-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .lb-member-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: var(--lb-purple-soft);
+    color: var(--lb-purple-dark);
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .lb-member-left .info { min-width: 0; }
+  .lb-member-left strong { display: block; font-size: 13px; }
+  .lb-member-left span { display: block; font-size: 11.5px; color: var(--lb-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lb-role-badge {
+    font-size: 11px;
+    font-weight: 650;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: #F0F0F3;
+    color: #55565E;
+    flex-shrink: 0;
+    text-transform: capitalize;
+  }
+  .lb-role-badge.role-owner { background: var(--lb-purple-soft); color: var(--lb-purple-dark); }
+  .lb-role-badge.role-admin { background: #E5F7EE; color: var(--lb-green); }
+  .lb-empty-state {
+    text-align: center;
+    padding: 22px 10px;
+    color: var(--lb-muted);
+    font-size: 13px;
+  }
+  .lb-empty-state svg { width: 26px; height: 26px; margin-bottom: 8px; opacity: .5; }
+
+  .lb-usage-row { margin-bottom: 14px; }
+  .lb-usage-row .top {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12.5px;
+    margin-bottom: 6px;
+  }
+  .lb-usage-row .top strong { color: var(--lb-ink); }
+  .lb-usage-row .top span { color: var(--lb-muted); }
+  .lb-usage-bar {
+    height: 8px;
+    border-radius: 999px;
+    background: #F0F0F3;
+    overflow: hidden;
+  }
+  .lb-usage-bar > i {
+    display: block;
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #A78BFA, var(--lb-purple));
+    transition: width .5s ease;
+  }
+  .lb-usage-bar.high > i { background: linear-gradient(90deg, #FBBF24, var(--lb-orange)); }
+  .lb-usage-bar.critical > i { background: linear-gradient(90deg, #F87171, #DC2626); }
+  .lb-plan-name-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+</style>
+
+<nav class="lb-settings-quicknav" aria-label="Settings sections">
+  <a href="#sec-workspace">🏢 Workspace</a>
+  <a href="#sec-account">👤 Account</a>
+  <a href="#sec-webhook">🔗 Webhook</a>
+  <a href="#sec-embed">💬 Team embed</a>
+  <a href="#sec-members">👥 Members</a>
+  <a href="#sec-billing">💳 Plan &amp; billing</a>
+</nav>
+
 <div class="lb-settings-grid">
-  <section class="lb-card lb-settings-panel">
-    <h2>Workspace</h2>
+
+  <section class="lb-card lb-settings-panel" id="sec-workspace">
+    <div class="lb-panel-title">
+      <span class="lb-panel-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M3 7l2-4h14l2 4"/><path d="M9 21v-6h6v6"/></svg>
+      </span>
+      <h2>Workspace</h2>
+    </div>
     <p class="desc">Company name and default brand color used across embeds.</p>
-    <form method="post" class="lb-form">
+    <form method="post" class="lb-form" data-dirty-guard>
       {% csrf_token %}
       <input type="hidden" name="section" value="workspace" />
       <div class="field">
         <label for="ws-name">Workspace name</label>
-        <input id="ws-name" name="name" value="{{ workspace.name }}" required maxlength="200" />
+        <input id="ws-name" name="name" value="{{ workspace.name }}" required maxlength="200" data-counter="ws-name-count" />
+        <div class="lb-field-hint">
+          <span>Shown to visitors in the chat header.</span>
+          <span class="lb-char-count" id="ws-name-count">0/200</span>
+        </div>
       </div>
       <div class="field">
         <label for="ws-color">Brand color</label>
-        <input id="ws-color" name="brand_color" type="color" value="{{ workspace.brand_color|default:'#0F766E' }}" style="width:72px;height:40px;padding:4px;" />
+        <div class="lb-color-row">
+          <input id="ws-color" name="brand_color" type="color" value="{{ workspace.brand_color|default:'#0F766E' }}" style="width:56px;height:40px;padding:4px;flex-shrink:0;" data-color-sync="ws-color-preview" />
+          <div class="lb-color-swatch">
+            <span class="dot" id="ws-color-dot" style="background:{{ workspace.brand_color|default:'#0F766E' }};"></span>
+            <code id="ws-color-preview">{{ workspace.brand_color|default:'#0F766E'|upper }}</code>
+          </div>
+        </div>
+        <div class="lb-field-hint"><span>Used for buttons and accents in your chat widget.</span></div>
       </div>
       <button class="lb-btn lb-btn-primary" type="submit">Save workspace</button>
     </form>
   </section>
 
-  <section class="lb-card lb-settings-panel">
-    <h2>Your account</h2>
-    <p class="desc">Profile details for {{ user.email }}.</p>
-    <form method="post" class="lb-form">
+  <section class="lb-card lb-settings-panel" id="sec-account">
+    <div class="lb-panel-title">
+      <span class="lb-panel-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+      </span>
+      <h2>Your account</h2>
+    </div>
+    <div class="lb-account-head">
+      <div class="lb-avatar-preview" id="acct-avatar-preview">{{ user.first_name|slice:":1"|default:user.email|slice:":1"|upper }}</div>
+      <div class="who">
+        <strong>{{ profile.full_name|default:user.get_full_name|default:user.email }}</strong>
+        <span>{{ user.email }}</span>
+      </div>
+    </div>
+    <form method="post" class="lb-form" data-dirty-guard>
       {% csrf_token %}
       <input type="hidden" name="section" value="account" />
       <div class="field">
         <label for="full-name">Display name</label>
-        <input id="full-name" name="full_name" value="{{ profile.full_name|default:'' }}" maxlength="150" />
+        <input id="full-name" name="full_name" value="{{ profile.full_name|default:'' }}" maxlength="150" data-counter="full-name-count" data-avatar-source />
+        <div class="lb-field-hint">
+          <span>Optional — falls back to your first/last name.</span>
+          <span class="lb-char-count" id="full-name-count">0/150</span>
+        </div>
       </div>
       <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div>
           <label for="first-name">First name</label>
-          <input id="first-name" name="first_name" value="{{ user.first_name }}" maxlength="150" />
+          <input id="first-name" name="first_name" value="{{ user.first_name }}" maxlength="150" data-avatar-source />
         </div>
         <div>
           <label for="last-name">Last name</label>
@@ -64,66 +419,294 @@
     </form>
   </section>
 
-  <section class="lb-card lb-settings-panel">
-    <h2>Team webhook</h2>
+  <section class="lb-card lb-settings-panel" id="sec-webhook">
+    <div class="lb-panel-title">
+      <span class="lb-panel-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.07 0l2.83-2.83a5 5 0 10-7.07-7.07l-1.41 1.41"/><path d="M14 11a5 5 0 00-7.07 0L4.1 13.83a5 5 0 107.07 7.07l1.41-1.41"/></svg>
+      </span>
+      <h2>Team webhook</h2>
+    </div>
     <p class="desc">POST JSON when leads or tasks are created (Slack, Zapier, n8n, etc.).</p>
-    <form method="post" class="lb-form">
+    <form method="post" class="lb-form" data-dirty-guard id="webhook-form">
       {% csrf_token %}
       <input type="hidden" name="section" value="webhook" />
       <div class="field">
         <label for="webhook">Webhook URL</label>
-        <input id="webhook" name="webhook_url" value="{{ workspace.webhook_url }}" placeholder="https://hooks.slack.com/services/…" />
+        <input id="webhook" name="webhook_url" value="{{ workspace.webhook_url }}" placeholder="https://hooks.slack.com/services/…" inputmode="url" />
+        <div class="lb-input-error" id="webhook-error">Please enter a valid https:// URL.</div>
       </div>
       <button class="lb-btn lb-btn-primary" type="submit">Save webhook</button>
+      <details class="lb-webhook-example">
+        <summary>What does the payload look like?</summary>
+        <pre>{
+  "event": "lead.created",
+  "workspace_id": "{{ workspace.id|default:'ws_123' }}",
+  "data": { "name": "Jane Doe", "email": "jane@example.com" }
+}</pre>
+      </details>
     </form>
   </section>
 
-  <section class="lb-card lb-settings-panel">
-    <h2>Team embed</h2>
+  <section class="lb-card lb-settings-panel" id="sec-embed">
+    <div class="lb-panel-title">
+      <span class="lb-panel-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      </span>
+      <h2>Team embed</h2>
+    </div>
     <p class="desc">One snippet for all AI Employees — visitors pick who to talk to.</p>
     <div class="field">
       <label>Workspace widget token</label>
-      <code class="lb-code-block">{{ workspace.widget_token }}</code>
+      <div class="lb-token-row">
+        <code class="lb-code-block" id="ws-token-display" data-full="{{ workspace.widget_token }}">••••••••••••••••••••••••</code>
+        <button type="button" class="lb-icon-btn" id="token-toggle-btn" title="Show token" aria-label="Show token">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        <button type="button" class="lb-icon-btn" id="token-copy-btn" title="Copy token" aria-label="Copy token" data-copy-target="{{ workspace.widget_token }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        </button>
+      </div>
+      <div class="lb-field-hint"><span>Keep this private — anyone with it can embed your team widget.</span></div>
     </div>
     <div class="field">
       <label>Embed snippet</label>
-      <textarea class="lb-code-block" rows="3" readonly onclick="this.select()">{{ team_embed_snippet }}</textarea>
+      <div class="lb-token-row">
+        <textarea class="lb-code-block" rows="3" readonly onclick="this.select()" id="embed-snippet-text">{{ team_embed_snippet }}</textarea>
+        <button type="button" class="lb-icon-btn" id="snippet-copy-btn" title="Copy snippet" aria-label="Copy snippet">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        </button>
+      </div>
     </div>
-    <form method="post" onsubmit="return confirm('Regenerate the team token? Existing team embeds will stop working until you update them.');">
-      {% csrf_token %}
-      <input type="hidden" name="section" value="regenerate_workspace_token" />
-      <button class="lb-btn lb-btn-ghost" type="submit">Regenerate team token</button>
-    </form>
+    <div class="lb-danger-zone">
+      <p>Regenerating the token immediately invalidates the current one. Existing team embeds will stop working until you update the snippet on your site.</p>
+      <form method="post" onsubmit="return confirm('Regenerate the team token? Existing team embeds will stop working until you update them.');">
+        {% csrf_token %}
+        <input type="hidden" name="section" value="regenerate_workspace_token" />
+        <button class="lb-btn lb-btn-danger" type="submit">Regenerate team token</button>
+      </form>
+    </div>
   </section>
 
-  <section class="lb-card lb-settings-panel">
-    <h2>Team members</h2>
+  <section class="lb-card lb-settings-panel" id="sec-members">
+    <div class="lb-panel-title">
+      <span class="lb-panel-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      </span>
+      <h2>Team members</h2>
+    </div>
     <p class="desc">People with access to this workspace.</p>
-    <ul class="lb-feed" style="margin:0;">
+    {% if memberships %}
+    <div class="lb-members-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" id="member-search" placeholder="Search members by name or email…" aria-label="Search team members" />
+    </div>
+    {% endif %}
+    <ul class="lb-feed" id="member-list" style="margin:0;">
       {% for m in memberships %}
-      <li>
-        <div>
-          <strong>{{ m.user.get_full_name|default:m.user.email }}</strong>
-          <span>{{ m.user.email }} · {{ m.get_role_display }}</span>
+      <li class="lb-member-row" data-search="{{ m.user.get_full_name|default:m.user.email }} {{ m.user.email }}">
+        <div class="lb-member-left">
+          <span class="lb-member-avatar">{{ m.user.get_full_name|default:m.user.email|slice:":1"|upper }}</span>
+          <div class="info">
+            <strong>{{ m.user.get_full_name|default:m.user.email }}</strong>
+            <span>{{ m.user.email }}</span>
+          </div>
         </div>
+        <span class="lb-role-badge role-{{ m.role|lower }}">{{ m.get_role_display }}</span>
       </li>
       {% empty %}
-      <li class="muted">No members.</li>
+      <li class="lb-empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <div>No members yet.</div>
+      </li>
       {% endfor %}
     </ul>
+    <p id="member-no-results" class="lb-empty-state" style="display:none;">No members match your search.</p>
   </section>
 
-  <section class="lb-card lb-settings-panel">
-    <h2>Plan & billing</h2>
-    <p class="desc">Current plan: <strong>{{ workspace.plan.name|default:'Unassigned' }}</strong></p>
-    <p style="font-size:13px;color:var(--lb-muted);margin:0 0 14px;">
-      {{ workspace.conversations_used }}/{{ workspace.conversation_limit }} conversations ·
-      {{ workspace.tokens_used }}/{{ workspace.token_limit }} tokens
-    </p>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+  <section class="lb-card lb-settings-panel" id="sec-billing">
+    <div class="lb-panel-title">
+      <span class="lb-panel-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
+      </span>
+      <h2>Plan &amp; billing</h2>
+    </div>
+    <div class="lb-plan-name-row">
+      <p class="desc" style="margin:0;">Current plan: <strong style="color:var(--lb-ink);">{{ workspace.plan.name|default:'Unassigned' }}</strong></p>
+      <span class="lb-badge lb-badge-purple"><span class="lb-dot"></span>{{ workspace.plan.name|default:'Free' }}</span>
+    </div>
+
+    <div class="lb-usage-row">
+      <div class="top"><strong>Conversations</strong><span data-usage-used="{{ workspace.conversations_used|default:0 }}" data-usage-limit="{{ workspace.conversation_limit|default:0 }}">{{ workspace.conversations_used }}/{{ workspace.conversation_limit }}</span></div>
+      <div class="lb-usage-bar" id="conv-usage-bar"><i></i></div>
+    </div>
+    <div class="lb-usage-row">
+      <div class="top"><strong>Tokens</strong><span data-usage-used="{{ workspace.tokens_used|default:0 }}" data-usage-limit="{{ workspace.token_limit|default:0 }}">{{ workspace.tokens_used }}/{{ workspace.token_limit }}</span></div>
+      <div class="lb-usage-bar" id="token-usage-bar"><i></i></div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;">
       <a class="lb-btn lb-btn-primary" href="{% url 'billing' %}">Manage billing</a>
       <a class="lb-btn lb-btn-ghost" href="{% url 'analytics' %}">View analytics</a>
     </div>
   </section>
+
 </div>
+
+<script>
+(function () {
+  // --- Character counters ---
+  document.querySelectorAll('input[data-counter]').forEach(function (input) {
+    var counter = document.getElementById(input.getAttribute('data-counter'));
+    if (!counter) return;
+    var max = input.getAttribute('maxlength') || 0;
+    function update() {
+      var len = input.value.length;
+      counter.textContent = len + '/' + max;
+      counter.classList.toggle('is-near-limit', max && len >= max * 0.9);
+    }
+    input.addEventListener('input', update);
+    update();
+  });
+
+  // --- Brand color live preview ---
+  var colorInput = document.getElementById('ws-color');
+  var colorDot = document.getElementById('ws-color-dot');
+  var colorCode = document.getElementById('ws-color-preview');
+  if (colorInput) {
+    colorInput.addEventListener('input', function () {
+      var val = colorInput.value.toUpperCase();
+      if (colorDot) colorDot.style.background = val;
+      if (colorCode) colorCode.textContent = val;
+    });
+  }
+
+  // --- Avatar initial preview from name fields ---
+  var avatarPreview = document.getElementById('acct-avatar-preview');
+  document.querySelectorAll('[data-avatar-source]').forEach(function (input) {
+    input.addEventListener('input', function () {
+      var fullName = document.getElementById('full-name');
+      var firstName = document.getElementById('first-name');
+      var source = (fullName && fullName.value) || (firstName && firstName.value) || '';
+      if (avatarPreview && source.trim().length) {
+        avatarPreview.textContent = source.trim().charAt(0).toUpperCase();
+      }
+    });
+  });
+
+  // --- Webhook URL validation (non-blocking hint) ---
+  var webhookForm = document.getElementById('webhook-form');
+  if (webhookForm) {
+    var webhookInput = document.getElementById('webhook');
+    var webhookError = document.getElementById('webhook-error');
+    webhookForm.addEventListener('submit', function (e) {
+      var val = webhookInput.value.trim();
+      var valid = val === '' || /^https:\/\/.+/i.test(val);
+      webhookInput.classList.toggle('lb-invalid', !valid);
+      webhookError.classList.toggle('show', !valid);
+      if (!valid) e.preventDefault();
+    });
+    webhookInput.addEventListener('input', function () {
+      webhookInput.classList.remove('lb-invalid');
+      webhookError.classList.remove('show');
+    });
+  }
+
+  // --- Widget token show/hide + copy ---
+  var tokenDisplay = document.getElementById('ws-token-display');
+  var tokenToggleBtn = document.getElementById('token-toggle-btn');
+  var tokenCopyBtn = document.getElementById('token-copy-btn');
+  var tokenVisible = false;
+  if (tokenToggleBtn && tokenDisplay) {
+    tokenToggleBtn.addEventListener('click', function () {
+      tokenVisible = !tokenVisible;
+      var full = tokenDisplay.getAttribute('data-full') || '';
+      tokenDisplay.textContent = tokenVisible ? full : '•'.repeat(Math.max(full.length, 24));
+      tokenToggleBtn.setAttribute('aria-label', tokenVisible ? 'Hide token' : 'Show token');
+      tokenToggleBtn.title = tokenVisible ? 'Hide token' : 'Show token';
+    });
+  }
+
+  function wireCopyButton(btn, getText) {
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var text = getText();
+      if (!text) return;
+      var done = function () {
+        btn.classList.add('copied');
+        var original = btn.getAttribute('title');
+        btn.setAttribute('title', 'Copied!');
+        setTimeout(function () {
+          btn.classList.remove('copied');
+          btn.setAttribute('title', original);
+        }, 1400);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(function () {});
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(ta);
+        done();
+      }
+    });
+  }
+  wireCopyButton(tokenCopyBtn, function () { return tokenDisplay.getAttribute('data-full') || ''; });
+  wireCopyButton(document.getElementById('snippet-copy-btn'), function () {
+    var el = document.getElementById('embed-snippet-text');
+    return el ? el.value : '';
+  });
+
+  // --- Member search filter ---
+  var memberSearch = document.getElementById('member-search');
+  if (memberSearch) {
+    memberSearch.addEventListener('input', function () {
+      var q = memberSearch.value.trim().toLowerCase();
+      var rows = document.querySelectorAll('.lb-member-row');
+      var visibleCount = 0;
+      rows.forEach(function (row) {
+        var haystack = (row.getAttribute('data-search') || '').toLowerCase();
+        var match = haystack.indexOf(q) !== -1;
+        row.classList.toggle('is-hidden', !match);
+        if (match) visibleCount++;
+      });
+      var noResults = document.getElementById('member-no-results');
+      if (noResults) noResults.style.display = (visibleCount === 0 && rows.length > 0) ? 'block' : 'none';
+    });
+  }
+
+  // --- Usage bars ---
+  function setUsageBar(barId, used, limit) {
+    var bar = document.getElementById(barId);
+    if (!bar) return;
+    var fill = bar.querySelector('i');
+    var pct = limit > 0 ? Math.min(100, (used / limit) * 100) : 0;
+    fill.style.width = pct + '%';
+    bar.classList.remove('high', 'critical');
+    if (pct >= 90) bar.classList.add('critical');
+    else if (pct >= 70) bar.classList.add('high');
+  }
+  document.querySelectorAll('[data-usage-used]').forEach(function (el) {
+    var used = parseFloat(el.getAttribute('data-usage-used')) || 0;
+    var limit = parseFloat(el.getAttribute('data-usage-limit')) || 0;
+    var barId = el.closest('.lb-usage-row').querySelector('.lb-usage-bar').id;
+    setUsageBar(barId, used, limit);
+  });
+
+  // --- Warn on unsaved form changes before navigating away ---
+  document.querySelectorAll('form[data-dirty-guard]').forEach(function (form) {
+    var dirty = false;
+    form.addEventListener('input', function () { dirty = true; });
+    form.addEventListener('submit', function () { dirty = false; });
+    window.addEventListener('beforeunload', function (e) {
+      if (dirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
+  });
+})();
+</script>
 {% endblock %}

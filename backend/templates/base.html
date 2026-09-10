@@ -172,6 +172,7 @@
     <button class="nav-close" id="navClose" aria-label="Close menu">×</button>
 
     <a class="{% if current == 'ai_employees' %}active{% endif %}" href="{% url 'ai_employees' %}">AI Employees</a>
+    <a class="{% if current == 'pricing' %}active{% endif %}" href="{% url 'pricing' %}">Pricing</a>
     <a class="{% if current == 'features' %}active{% endif %}" href="{% url 'features' %}">Features</a>
     <a class="{% if current == 'pricing' %}active{% endif %}" href="{% url 'pricing' %}">Pricing</a>
     <a class="{% if current == 'how_it_works' %}active{% endif %}" href="{% url 'how_it_works' %}">How It Works</a>
@@ -213,6 +214,9 @@
 
     <nav id="navDesktop">
       <div class="nav-item"><a class="nav-link {% if current == 'ai_employees' %}active{% endif %}" href="{% url 'ai_employees' %}">AI Employees</a></div>
+
+      <div class="nav-item"><a class="nav-link {% if current == 'pricing' %}active{% endif %}" href="{% url 'pricing' %}">Pricing</a></div>
+
       <div class="nav-item"><a class="nav-link {% if current == 'features' %}active{% endif %}" href="{% url 'features' %}">Features</a></div>
       <div class="nav-item"><a class="nav-link {% if current == 'pricing' %}active{% endif %}" href="{% url 'pricing' %}">Pricing</a></div>
       <div class="nav-item"><a class="nav-link {% if current == 'how_it_works' %}active{% endif %}" href="{% url 'how_it_works' %}">How It Works</a></div>

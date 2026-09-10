@@ -39,6 +39,10 @@ body.lb-app {
   overflow-x: clip;
   max-width: 100%;
 }
+body.lb-app::-webkit-scrollbar {
+  display: none;
+}
+
 
 .lb-shell {
   display: grid;

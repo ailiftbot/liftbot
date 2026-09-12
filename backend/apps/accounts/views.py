@@ -44,7 +44,12 @@ def _send_otp_email(user, code):
 
 def issue_and_send_otp(user):
     otp = OTP.issue_for(user)
-    _send_otp_email(user, otp.code)
+    try:
+        _send_otp_email(user, otp.code)
+    except Exception:
+        # Do not leave a code active when the email provider rejected it.
+        otp.delete()
+        raise
     return otp
 
 

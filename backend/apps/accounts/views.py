@@ -65,7 +65,7 @@ class SignUpView(View):
                 name=form.cleaned_data['company_name'],
                 owner=user,
                 plan=plan,
-                is_active=False,  # payment abhi baaki hai
+                is_active=False,
             )
             WorkspaceMembership.objects.create(
                 workspace=workspace,
@@ -73,18 +73,22 @@ class SignUpView(View):
                 role=WorkspaceMembership.Role.OWNER,
             )
 
-            # NOTE: yahan Transaction jaan-boojh kar create NAHI kiya —
-            # ab payment se pehle email verify karwana hai. Transaction
-            # ab SignupVerifyOtpView._proceed_to_billing() mein banti hai,
-            # verify hone ke baad.
-
-            # NOTE: yahan login(request, user) bhi jaan-boojh kar call
-            # nahi kiya — user pehle email verify karega, phir payment
-            # karega, tabhi login page se login karega.
-            issue_and_send_otp(user)
             request.session['onboarding_user_id'] = user.id
 
-            messages.info(request, 'Account created. Enter the code we emailed you to verify your address.')
+            # SMTP fail ho toh bhi signup crash na ho — GET pe verify page
+            # khud dobara try karega (neeche SignupVerifyOtpView.get dekho).
+            try:
+                issue_and_send_otp(user)
+            except Exception:
+                logger.exception('OTP email failed for user %s at signup', user.pk)
+                messages.warning(
+                    request,
+                    'Account created, but we had trouble emailing your code. '
+                    'Use "Resend code" on the next screen.',
+                )
+            else:
+                messages.info(request, 'Account created. Enter the code we emailed you to verify your address.')
+
             return redirect('signup_verify_otp')
         return render(request, self.template_name, {'form': form})
 
@@ -105,6 +109,18 @@ class SignupVerifyOtpView(View):
             return redirect('signup')
         if user.profile.is_verified or user.profile.email_verified:
             return self._proceed_to_billing(request, user)
+
+        # Fix: agar koi valid (unexpired, unused) OTP pending nahi hai —
+        # jaise login se redirect hua ho, ya purana code expire ho chuka ho —
+        # yahin automatically ek naya bhej do. Cooldown respect karta hai.
+        if not OTP.has_valid_pending(user) and OTP.cooldown_remaining(user) == 0:
+            try:
+                issue_and_send_otp(user)
+                messages.info(request, f'A verification code was sent to {user.email}.')
+            except Exception:
+                logger.exception('OTP email failed for user %s', user.pk)
+                messages.error(request, 'We could not send the verification code. Try "Resend code" below.')
+
         return render(request, self.template_name, {'form': OTPVerifyForm(), 'email': user.email})
 
     def post(self, request):
@@ -129,7 +145,6 @@ class SignupVerifyOtpView(View):
     def _proceed_to_billing(self, request, user):
         workspace = user_workspace(user)
 
-        # Email verify ho gaya — ab payment ki Transaction banao
         txn = workspace.transactions.order_by('-created_at').first()
         if txn is None:
             txn = Transaction.objects.create(
@@ -183,7 +198,8 @@ class EmailLoginView(LoginView):
     def get_success_url(self):
         """
         Safety net for direct/bookmarked logins:
-        1. Email verify nahi hai -> signup verify page pe bhejo.
+        1. Email verify nahi hai -> signup verify page pe bhejo
+           (wahan GET handler khud fresh OTP bhej dega agar zaroorat ho).
         2. Verified hai lekin workspace active nahi -> billing pe bhejo.
         3. Dono clear -> normal dashboard redirect.
         """
@@ -239,7 +255,6 @@ class SendOtpView(LoginRequiredMixin, View):
         try:
             issue_and_send_otp(request.user)
         except OTP.CooldownActive as exc:
-            # race-condition safety net in case two requests slipped past the check above
             messages.error(request, f'Please wait {exc.seconds_left} seconds before requesting another code.')
             return redirect('verify_otp')
         except Exception:

@@ -70,6 +70,13 @@ class OTP(models.Model):
         return max(0, int(remaining))
 
     @classmethod
+    def has_valid_pending(cls, user):
+        """True if there's already an unused, unexpired OTP waiting for this user."""
+        return cls.objects.filter(
+            user=user, is_used=False, expires_at__gt=timezone.now()
+        ).exists()
+
+    @classmethod
     def issue_for(cls, user):
         minutes = getattr(settings, 'OTP_EXPIRY_MINUTES', 10)
         wait = cls.cooldown_remaining(user)

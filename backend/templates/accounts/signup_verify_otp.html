@@ -28,7 +28,12 @@
   </form>
 
   <p style="text-align:center;margin-top:16px;font-size:13px;color:#6B7280;">
-    Wrong account? <a href="{% url 'logout' %}" style="color:#7C3AED;font-weight:600;text-decoration:none;">Log out</a> and start over
+    Wrong account?
+    <form method="post" action="{% url 'logout' %}" style="display:inline;margin:0;">
+      {% csrf_token %}
+      <button type="submit" style="background:none;border:0;padding:0;color:#7C3AED;font-weight:600;font-size:13px;text-decoration:underline;cursor:pointer;font-family:inherit;">Log out</button>
+    </form>
+    and start over
   </p>
 </div>
 <style>

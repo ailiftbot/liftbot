@@ -247,9 +247,8 @@
       '<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">' +
       '<style>' +
       '*{box-sizing:border-box}' +
-      'html,body{margin:0;height:100%;width:100%;overflow:hidden;font-family:"Plus Jakarta Sans",ui-sans-serif,system-ui,sans-serif;background:transparent!important;pointer-events:none;color-scheme:normal;}' +
+      'html,body{margin:0;height:100%;width:100%;overflow:hidden;font-family:"Plus Jakarta Sans",ui-sans-serif,system-ui,sans-serif;background:transparent!important;color-scheme:normal;}' +
       'body{display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-end;}' +
-      '.lb-mini,.lb-panel{pointer-events:auto}' +
 
       /* ---- closed state: mini employee card + search bar ---- */
       '.lb-mini{all:unset;display:flex;flex-direction:column;gap:10px;width:100%;align-self:stretch;cursor:pointer;font-family:inherit;}' +

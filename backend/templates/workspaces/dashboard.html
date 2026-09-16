@@ -163,7 +163,7 @@
   <aside class="dash-right">
     <div class="preview-card">
       <h3>AI Employee Preview</h3>
-      <div class="widget-frame" id="dash-preview"
+      <div class="widget-frame lb-expanded-preview" id="dash-preview"
            {% if primary_employee %}
            data-token="{{ primary_employee.widget_token }}"
            data-api="{{ public_widget_api }}/"
@@ -173,22 +173,22 @@
            data-color="{{ primary_employee.brand_color|default:workspace.brand_color }}"
            {% endif %}>
         {% if primary_employee %}
-        <div class="widget-head" style="background:{{ primary_employee.brand_color|default:workspace.brand_color|default:'#7C3AED' }}">
-          <div class="bot-av">{{ primary_employee.name|slice:":1" }}</div>
+        <div class="widget-head lb-expanded-head" style="background:{{ primary_employee.brand_color|default:workspace.brand_color|default:'#7C3AED' }}">
+          <div class="bot-av lb-expanded-avatar">{{ primary_employee.name|slice:":1" }}</div>
           <div>
             <strong>{{ primary_employee.name }}</strong>
             <span><i class="online-dot"></i>{{ primary_employee.get_role_display }} · We're online</span>
           </div>
         </div>
-        <div class="widget-messages" id="dash-msgs">
-          <div class="bubble-bot" id="dash-greeting"></div>
+        <div class="widget-messages lb-expanded-messages" id="dash-msgs">
+          <div class="bubble-bot lb-expanded-bubble" id="dash-greeting"></div>
           <div class="quick-replies" id="dash-quick">
             <button type="button" data-q="What services do you offer?">About our services</button>
             <button type="button" data-q="What are your prices?">Pricing information</button>
             <button type="button" data-q="How can I contact you?">Contact support</button>
           </div>
         </div>
-        <form class="widget-form" id="dash-form">
+        <form class="widget-form lb-expanded-form" id="dash-form">
           <input id="dash-input" type="text" placeholder="Type your message..." autocomplete="off" />
           <button type="submit" aria-label="Send">➤</button>
         </form>

@@ -200,6 +200,79 @@
     color: #7C3AED;
     font-weight: 600;
   }
+
+  /* ===================== MOBILE FIXES ONLY ===================== */
+  /* Everything above is the original desktop styling and is completely
+     untouched (still applies above 768px exactly as before).
+
+     On mobile the carousel was a full-page absolute background, which
+     the card (near full width) mostly hid — only slivers of it showed
+     at the edges. Below, the carousel is switched to a normal, in-flow
+     horizontal strip that sits ABOVE the form, with the form stacked
+     right below it — instead of behind/underneath it. The card itself
+     (.lb-signup-card) is untouched, so it still looks exactly as it
+     did before. */
+  @media (max-width: 768px) {
+    .lb-signup-page {
+      display: block;
+      min-height: auto;
+      padding: 0 0 32px;
+    }
+
+    .lb-signup-carousel {
+      position: relative;
+      inset: auto;
+      z-index: auto;
+      width: 100%;
+      height: 170px;
+      overflow: hidden;
+    }
+
+    .lb-signup-track img {
+      height: 150px;
+    }
+
+    /* These were background decoration meant to sit behind the card
+       when the carousel filled the whole page. In the stacked mobile
+       layout they'd just float oddly between the strip and the card,
+       so they're hidden here — the carousel strip + card are enough. */
+    .lb-signup-overlay,
+    .lb-signup-halo {
+      display: none;
+    }
+
+    .lb-signup-wrap {
+      position: static;
+      z-index: auto;
+      width: 100%;
+      max-width: none;
+      margin: 0 auto;
+      padding: 22px 16px 0;
+      box-sizing: border-box;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .lb-signup-carousel {
+      height: 140px;
+    }
+
+    .lb-signup-track img {
+      height: 120px;
+    }
+
+    .lb-signup-track {
+      gap: 24px;
+    }
+
+    .lb-signup-wrap {
+      padding: 18px 12px 0;
+    }
+
+    .lb-signup-card {
+      padding: 20px 20px;
+    }
+  }
 </style>
 {% endblock %}
 

@@ -218,23 +218,76 @@
     text-decoration: underline;
   }
 
+  /* ===================== MOBILE FIXES ONLY ===================== */
+  /* Everything above this point is the original desktop styling and
+     is completely untouched. Below, .lb-auth is switched from the
+     absolute-overlay layout (which relies on a wide, short hero image)
+     to a normal stacked flow: image on top at a fixed height, card
+     below it with a slight overlap. This prevents the card's content
+     from being clipped by the section's overflow:hidden, which is
+     what was cutting off the form on phones. */
   @media (max-width: 860px) {
     .lb-auth {
+      position: relative;
+      height: auto;
+      max-height: none;
+      overflow: visible;
       margin-bottom: 0;
     }
 
+    .lb-auth__bg-img {
+      position: relative;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 260px;
+      object-fit: cover;
+    }
+
+    /* Fades the bottom of the image into white so it blends smoothly
+       into the card below instead of ending with a hard edge. */
+    .lb-auth::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 170px;
+      height: 90px;
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #ffffff);
+      pointer-events: none;
+    }
+
     .lb-auth__card {
-      position: static;
+      position: relative;
+      z-index: 1;
+      top: auto;
       transform: none;
-      margin: -60px auto 30px;
+      right: auto;
+      width: calc(100% - 40px);
+      max-width: 420px;
+      margin: 0 auto 40px;
     }
   }
 
   @media (max-width: 480px) {
+    .lb-auth__bg-img {
+      height: 200px;
+    }
+
+    .lb-auth::after {
+      top: 120px;
+      height: 80px;
+    }
+
     .lb-auth__card {
       max-width: none;
-      width: calc(100% - 32px);
-      padding: 30px 22px;
+      width: calc(100% - 24px);
+      padding: 26px 22px 30px;
+      margin: 0 auto 32px;
+    }
+
+    .lb-auth__title {
+      font-size: 22px;
     }
   }
 </style>

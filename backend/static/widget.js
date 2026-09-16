@@ -178,11 +178,11 @@
     if (document.getElementById('liftbot-shell-' + token)) return;
     var shell = createShell('liftbot-shell-' + token);
     var open = false;
-    var mobileExpanded = false;
+    var expanded = false;
 
     function closedRect() {
       var mobile = isMobileViewport();
-      if (mobile && !mobileExpanded) {
+      if (!expanded) {
         return anchorStyle({
           width: '64px',
           height: '64px',
@@ -240,12 +240,12 @@
 
     shell.iframe.addEventListener('lb-toggle', function (e) {
       open = !!(e.detail && e.detail.open);
-      mobileExpanded = false;
+      expanded = false;
       reposition();
     });
 
     shell.iframe.addEventListener('lb-expand', function () {
-      mobileExpanded = true;
+      expanded = true;
       reposition();
     });
 
@@ -270,8 +270,8 @@
       /* ---- closed state: mini employee card + search bar ---- */
       '.lb-mini{all:unset;display:flex;flex-direction:column;gap:10px;width:100%;align-self:stretch;cursor:pointer;font-family:inherit;}' +
       '.lb-mobile-launcher{display:none;}' +
-      'body.mobile.closed:not(.expanded) .lb-mini{display:none;}' +
-      'body.mobile.closed:not(.expanded) .lb-mobile-launcher{display:grid;place-items:center;width:64px;height:64px;border:0;border-radius:50%;' +
+      'body.closed:not(.expanded) .lb-mini{display:none;}' +
+      'body.closed:not(.expanded) .lb-mobile-launcher{display:grid;place-items:center;width:64px;height:64px;border:0;border-radius:50%;' +
       'background:' + color + ';color:#fff;box-shadow:0 10px 28px rgba(15,23,42,.24);cursor:pointer;}' +
       '.lb-mobile-launcher svg{width:28px;height:28px;}' +
       '.lb-mini-card{background:#fff;border-radius:18px;padding:14px 16px;box-shadow:0 10px 30px rgba(15,23,42,.18);' +
@@ -511,8 +511,8 @@
       'if(v){if(!isMobile())input.focus();if(humanMode)startPolling();}}' +
       'var mobileLauncher=document.getElementById("lbMobileLauncher");' +
       'if(mobileLauncher)mobileLauncher.addEventListener("click",function(){setExpanded();});' +
-      'mini.addEventListener("click",function(){if(isMobile()&&!document.body.classList.contains("expanded")){setExpanded();}else{setOpen(true);}});' +
-      'mini.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();if(isMobile()&&!document.body.classList.contains("expanded")){setExpanded();}else{setOpen(true);}}});' +
+      'mini.addEventListener("click",function(){setOpen(true);});' +
+      'mini.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();setOpen(true);}});' +
       'closeBtn.addEventListener("click",function(){setOpen(false);});' +
       'if(moreBtn&&moreMenu){moreBtn.addEventListener("click",function(e){e.stopPropagation();moreMenu.classList.toggle("open");});' +
       'document.addEventListener("click",function(){moreMenu.classList.remove("open");});}' +

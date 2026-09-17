@@ -225,11 +225,13 @@
           overflow: 'hidden',
         };
       }
-      var h = Math.min(720, Math.max(520, window.innerHeight - 40));
+      var bottomOffset = offsetY + 76;
+      var availableHeight = window.innerHeight - bottomOffset - 16;
+      var h = Math.min(720, Math.max(360, availableHeight));
       return anchorStyle({
         width: '400px',
         height: h + 'px',
-        bottom: (offsetY + 76) + 'px',
+        bottom: bottomOffset + 'px',
         borderRadius: '24px',
         boxShadow: '0 24px 64px rgba(15,23,42,.28)',
         overflow: 'hidden',

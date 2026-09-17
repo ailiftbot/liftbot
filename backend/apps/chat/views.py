@@ -147,12 +147,12 @@ def _article_payload(source: KnowledgeSource) -> dict:
 
 @require_GET
 def widget_articles(request):
-    """Help-center articles for the Articles tab — backed by this employee's FAQ knowledge sources."""
+    """Help-center articles for the Articles tab, backed by ready knowledge sources."""
     token = request.GET.get('token', '')
     employee = _get_employee(token)
     sources = (
         employee.knowledge_sources
-        .filter(source_type=KnowledgeSource.SourceType.FAQ, status=KnowledgeSource.Status.READY)
+        .filter(status=KnowledgeSource.Status.READY)
         .order_by('title')
     )
     return JsonResponse({'articles': [_article_payload(s) for s in sources]})
@@ -160,12 +160,11 @@ def widget_articles(request):
 
 @require_GET
 def widget_search(request):
-    """Keyword search across this employee's FAQ articles, for the Search tab."""
+    """Keyword search across this employee's ready knowledge, for the Search tab."""
     token = request.GET.get('token', '')
     query = (request.GET.get('q') or '').strip()
     employee = _get_employee(token)
     sources = employee.knowledge_sources.filter(
-        source_type=KnowledgeSource.SourceType.FAQ,
         status=KnowledgeSource.Status.READY,
     )
     if query:

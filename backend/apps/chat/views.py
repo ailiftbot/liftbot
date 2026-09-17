@@ -7,6 +7,7 @@ import requests
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -14,6 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
 from apps.employees.models import AIEmployee
+from apps.knowledge.models import KnowledgeSource
 from apps.workspaces.models import Workspace
 from apps.workspaces.views import user_workspace
 
@@ -139,75 +141,37 @@ def widget_config(request):
     return JsonResponse(payload)
 
 
-@require_GET
-def widget_search_articles(request):
-    """Crisp-style Help Center search — public, read-only, scoped to one
-    employee's knowledge base. Simple substring match (title/content) is
-    enough for a widget search box; the RAG semantic search stays reserved
-    for actual chat replies."""
-    from apps.knowledge.models import KnowledgeSource
-    from django.db.models import Q
+def _article_payload(source: KnowledgeSource) -> dict:
+    return {'id': source.id, 'title': source.title, 'content': source.content}
 
+
+@require_GET
+def widget_articles(request):
+    """Help-center articles for the Articles tab — backed by this employee's FAQ knowledge sources."""
+    token = request.GET.get('token', '')
+    employee = _get_employee(token)
+    sources = (
+        employee.knowledge_sources
+        .filter(source_type=KnowledgeSource.SourceType.FAQ, status=KnowledgeSource.Status.READY)
+        .order_by('title')
+    )
+    return JsonResponse({'articles': [_article_payload(s) for s in sources]})
+
+
+@require_GET
+def widget_search(request):
+    """Keyword search across this employee's FAQ articles, for the Search tab."""
     token = request.GET.get('token', '')
     query = (request.GET.get('q') or '').strip()
     employee = _get_employee(token)
-
-    sources = KnowledgeSource.objects.filter(
-        employee=employee,
-        status=KnowledgeSource.Status.READY,
-    ).exclude(source_type=KnowledgeSource.SourceType.FAQ)
-
-    if query:
-        sources = sources.filter(Q(title__icontains=query) | Q(content__icontains=query))
-
-    sources = sources.order_by('title')[:20]
-
-    def _snippet(text, q, length=160):
-        text = (text or '').strip()
-        if not text:
-            return ''
-        if q:
-            idx = text.lower().find(q.lower())
-            if idx != -1:
-                start = max(0, idx - 40)
-                text = text[start:start + length]
-                return ('…' if start > 0 else '') + text.strip() + '…'
-        return text[:length] + ('…' if len(text) > length else '')
-
-    return JsonResponse({
-        'query': query,
-        'articles': [
-            {
-                'id': s.id,
-                'title': s.title or 'Untitled',
-                'snippet': _snippet(s.content, query),
-                'source_type': s.source_type,
-            }
-            for s in sources
-        ],
-    })
-
-
-@require_GET
-def widget_article_detail(request):
-    """Full article body for the widget's article reader view."""
-    from apps.knowledge.models import KnowledgeSource
-
-    token = request.GET.get('token', '')
-    article_id = request.GET.get('id', '')
-    employee = _get_employee(token)
-    source = get_object_or_404(
-        KnowledgeSource,
-        pk=article_id,
-        employee=employee,
+    sources = employee.knowledge_sources.filter(
+        source_type=KnowledgeSource.SourceType.FAQ,
         status=KnowledgeSource.Status.READY,
     )
-    return JsonResponse({
-        'id': source.id,
-        'title': source.title or 'Untitled',
-        'content': source.content or '',
-        'source_type': source.source_type,
-    })
+    if query:
+        sources = sources.filter(Q(title__icontains=query) | Q(content__icontains=query))
+    sources = sources.order_by('title')[:20]
+    return JsonResponse({'query': query, 'results': [_article_payload(s) for s in sources]})
 
 
 @csrf_exempt

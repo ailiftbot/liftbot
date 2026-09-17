@@ -195,9 +195,20 @@
     if (document.getElementById('liftbot-shell-' + token)) return;
     var shell = createShell('liftbot-shell-' + token);
     var open = false;
+    var expanded = false;
     var fabSize = function () { return isMobileViewport() ? 60 : 64; };
 
     function closedRect() {
+      if (expanded) {
+        return anchorStyle({
+          width: isMobileViewport() ? 'min(320px, calc(100vw - 24px))' : '312px',
+          height: '184px',
+          bottom: isMobileViewport() ? (offsetY + 76) + 'px' : offsetY + 'px',
+          borderRadius: '20px',
+          boxShadow: 'none',
+          overflow: 'visible',
+        });
+      }
       var size = fabSize();
       return anchorStyle({
         width: size + 'px',
@@ -249,6 +260,11 @@
 
     shell.iframe.addEventListener('lb-toggle', function (e) {
       open = !!(e.detail && e.detail.open);
+      expanded = false;
+      reposition();
+    });
+    shell.iframe.addEventListener('lb-expand', function () {
+      expanded = true;
       reposition();
     });
 
@@ -275,6 +291,23 @@
       '.lb-launcher__pulse{position:absolute;inset:-5px;border-radius:50%;border:2px solid ' + color + ';opacity:.45;animation:lbPulse 2s ease-out infinite;pointer-events:none}' +
       '.lb-launcher svg{width:28px;height:28px;position:relative;z-index:1}' +
       '@keyframes lbPulse{0%{transform:scale(.92);opacity:.5}70%{transform:scale(1.18);opacity:0}100%{opacity:0}}' +
+      '.lb-preview{display:none;flex-direction:column;gap:10px;width:100%;height:100%;pointer-events:auto;cursor:pointer}' +
+      'body.expanded .lb-launcher,body.expanded .lb-panel{display:none!important}' +
+      'body.expanded .lb-preview{display:flex}' +
+      '.lb-preview-card{padding:14px 16px;background:#fff;border-radius:18px;box-shadow:0 10px 30px rgba(15,23,42,.18)}' +
+      '.lb-preview-top{display:flex;align-items:flex-start;gap:10px}' +
+      '.lb-preview-avatar{width:38px;height:38px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;background:' + color + ';color:#fff;font-weight:800;font-size:14px}' +
+      '.lb-preview-info{min-width:0;flex:1;padding-top:1px}' +
+      '.lb-preview-name{font-weight:800;font-size:14.5px;color:#111827}' +
+      '.lb-preview-online{display:inline-flex;align-items:center;gap:4px;margin-left:7px;color:#059669;font-size:10.5px;font-weight:700}' +
+      '.lb-preview-online i{width:6px;height:6px;border-radius:50%;background:#22c55e}' +
+      '.lb-preview-role{margin-top:2px;color:#6b7280;font-size:11.5px}' +
+      '.lb-preview-greeting{margin:11px 0 0;color:#374151;font-size:12.5px;line-height:1.45}' +
+      '.lb-preview-search{display:flex;align-items:center;gap:10px;padding:10px 8px 10px 16px;background:#fff;border-radius:999px;box-shadow:0 10px 30px rgba(15,23,42,.18);color:#6b7280;font-size:13.5px}' +
+      '.lb-preview-search svg{width:17px;height:17px;flex-shrink:0;color:#9ca3af}' +
+      '.lb-preview-search-text{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+      '.lb-preview-arrow{display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px;border-radius:50%;background:' + color + ';color:#fff}' +
+      '.lb-preview-arrow svg{width:14px;height:14px}' +
       '.lb-panel{display:none;position:relative;flex-direction:column;width:100%;height:100%;background:#f3f4f6;border-radius:24px;overflow:hidden}' +
       'body.open{align-items:stretch}' +
       'body.open .lb-launcher{display:none!important}' +
@@ -330,7 +363,7 @@
       '.lb-brandfoot{flex-shrink:0;text-align:center;padding:7px 0 calc(7px + env(safe-area-inset-bottom,0px));' +
       'font-size:10.5px;color:#b3b6bd;background:#fff;border-top:1px solid #f1f3f5;letter-spacing:.01em}' +
       '.lb-brandfoot b{color:#8a8d97;font-weight:800}' +
-      '.lb-header{background:' + color + ';color:#fff;padding:12px 10px 12px 16px;' +
+      '.lb-header{position:relative;background:' + color + ';color:#fff;padding:12px 10px 12px 16px;' +
       'display:flex;gap:12px;align-items:center;flex-shrink:0}' +
       '.lb-avatar{position:relative;width:44px;height:44px;flex-shrink:0}' +
       '.lb-avatar-img,.lb-avatar-fallback{width:44px;height:44px;border-radius:50%;object-fit:cover;display:grid;place-items:center;' +
@@ -394,7 +427,26 @@
       '<span class="lb-launcher__pulse" aria-hidden="true"></span>' +
       '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.5 19.5V6.75A2.75 2.75 0 0 1 7.25 4h9.5A2.75 2.75 0 0 1 19.5 6.75v7A2.75 2.75 0 0 1 16.75 16.5H8.12L4.5 19.5Z"/></svg>' +
       '</button>' +
+      '<div class="lb-preview" id="lbPreview" role="button" tabindex="0" aria-label="Open chat with ' + escapeAttr(cfg.name || '') + '">' +
+      '<div class="lb-preview-card"><div class="lb-preview-top">' +
+      '<div class="lb-preview-avatar">' + avatar + '</div>' +
+      '<div class="lb-preview-info"><div><span class="lb-preview-name">' + escapeHtml(cfg.name || '') + '</span><span class="lb-preview-online"><i></i>Online</span></div>' +
+      '<div class="lb-preview-role">' + escapeHtml(cfg.role || 'AI Employee') + '</div></div></div>' +
+      '<div class="lb-preview-greeting">' + escapeHtml(cfg.greeting || 'Hi! Need help with something?') + '</div></div>' +
+      '<div class="lb-preview-search"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.75"/><path d="m20 20-3.2-3.2" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>' +
+      '<span class="lb-preview-search-text">Ask ' + escapeHtml((cfg.name || 'AI').split(' ')[0]) + '...</span><span class="lb-preview-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>' +
+      '</div>' +
       '<div class="lb-panel">' +
+      '<div class="lb-header">' +
+      '<div class="lb-avatar">' + avatar + '<span class="lb-online" aria-hidden="true"></span></div>' +
+      '<div class="lb-head-copy"><div class="lb-name">' + escapeHtml(cfg.name || '') + '</div>' +
+      '<div class="lb-status" id="lbStatus">Online • ' + escapeHtml(cfg.role || 'AI Employee') + '</div></div>' +
+      '<div class="lb-head-actions">' +
+      '<button type="button" class="lb-iconbtn" id="lbMore" aria-label="More">&#8942;</button>' +
+      '<button type="button" class="lb-iconbtn" id="lbClose" aria-label="Close">&times;</button>' +
+      '</div>' +
+      '<div class="lb-more-menu" id="lbMoreMenu"><button type="button" id="lbFresh">Start fresh</button></div>' +
+      '</div>' +
       '<div class="lb-tabbar">' +
       '<button type="button" class="lb-tabbar__home" id="lbHome" aria-label="Home">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/></svg>' +
@@ -409,16 +461,6 @@
       '</div>' +
       '</div>' +
       '<div class="lb-view active" id="lbViewMessages">' +
-      '<div class="lb-header">' +
-      '<div class="lb-avatar">' + avatar + '<span class="lb-online" aria-hidden="true"></span></div>' +
-      '<div class="lb-head-copy"><div class="lb-name">' + escapeHtml(cfg.name || '') + '</div>' +
-      '<div class="lb-status" id="lbStatus">Online • ' + escapeHtml(cfg.role || 'AI Employee') + '</div></div>' +
-      '<div class="lb-head-actions">' +
-      '<button type="button" class="lb-iconbtn" id="lbMore" aria-label="More">&#8942;</button>' +
-      '<button type="button" class="lb-iconbtn" id="lbClose" aria-label="Close">&times;</button>' +
-      '</div>' +
-      '<div class="lb-more-menu" id="lbMoreMenu"><button type="button" id="lbFresh">Start fresh</button></div>' +
-      '</div>' +
       (cfg.returning_visitor && cfg.resume_message ? '<div class="lb-resume" id="lbResume"></div>' : '') +
       '<div class="lb-messages" id="lbMessages"></div>' +
       '<div class="lb-actions" id="lbActions"></div>' +
@@ -470,7 +512,7 @@
       'var D=window.__LB__,cfg=D.cfg,token=D.token,apiBase=D.apiBase,visitorId=D.visitorId,sessionKey=D.sessionKey;' +
       'var sessionId=D.sessionId,humanMode=false,lastMsgId=0,pollTimer=null,sending=false,seenIds={};' +
       'var messages=document.getElementById("lbMessages"),actions=document.getElementById("lbActions");' +
-      'var statusEl=document.getElementById("lbStatus"),launcher=document.getElementById("lbLauncher");' +
+      'var statusEl=document.getElementById("lbStatus"),launcher=document.getElementById("lbLauncher"),preview=document.getElementById("lbPreview");' +
       'var closeBtn=document.getElementById("lbClose"),form=document.getElementById("lbForm"),input=document.getElementById("lbInput");' +
       'var sendBtn=document.getElementById("lbSend"),moreBtn=document.getElementById("lbMore"),moreMenu=document.getElementById("lbMoreMenu");' +
       'var initial=((cfg.name||"AI").slice(0,1)||"A").toUpperCase();' +
@@ -550,18 +592,22 @@
       'var s=document.createElement("span");s.className="lb-mini";s.textContent=initial;return s;}' +
 
       'function isMobile(){try{return window.parent.matchMedia("(max-width:768px)").matches;}catch(e){return window.matchMedia("(max-width:768px)").matches;}}' +
-      'function syncChrome(){var open=document.body.classList.contains("open");' +
-      'document.body.className=(open?"open":"closed")+(isMobile()?" mobile":"");}' +
+      'function syncChrome(){var open=document.body.classList.contains("open"),expanded=document.body.classList.contains("expanded");' +
+      'document.body.className=(open?"open":expanded?"expanded":"closed")+(isMobile()?" mobile":"");}' +
       'syncChrome();window.addEventListener("resize",syncChrome);' +
       'try{if(window.parent&&window.parent.visualViewport){window.parent.visualViewport.addEventListener("resize",syncChrome);}}catch(e){}' +
 
       'function fetchJson(url,opts){return fetch(url,Object.assign({mode:"cors",credentials:"omit"},opts||{})).then(function(r){' +
       'return r.json().then(function(data){if(!r.ok)throw new Error((data&&data.error)||("HTTP "+r.status));return data;});});}' +
 
-      'function setOpen(v){document.body.classList.toggle("open",!!v);document.body.classList.toggle("closed",!v);syncChrome();' +
+      'function setExpanded(){document.body.classList.remove("closed");document.body.classList.add("expanded");syncChrome();' +
+      'window.frameElement.dispatchEvent(new CustomEvent("lb-expand"));}' +
+      'function setOpen(v){document.body.classList.toggle("open",!!v);document.body.classList.toggle("closed",!v);document.body.classList.remove("expanded");syncChrome();' +
       'window.frameElement.dispatchEvent(new CustomEvent("lb-toggle",{detail:{open:!!v}}));' +
       'if(v){if(!isMobile())input.focus();if(humanMode)startPolling();}}' +
-      'launcher.addEventListener("click",function(){setOpen(true);});' +
+      'launcher.addEventListener("click",function(){setExpanded();});' +
+      'preview.addEventListener("click",function(){setOpen(true);});' +
+      'preview.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();setOpen(true);}});' +
       'closeBtn.addEventListener("click",function(){setOpen(false);});' +
       'if(moreBtn&&moreMenu){moreBtn.addEventListener("click",function(e){e.stopPropagation();moreMenu.classList.toggle("open");});' +
       'document.addEventListener("click",function(){moreMenu.classList.remove("open");});}' +

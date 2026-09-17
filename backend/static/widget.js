@@ -195,9 +195,20 @@
     if (document.getElementById('liftbot-shell-' + token)) return;
     var shell = createShell('liftbot-shell-' + token);
     var open = false;
+    var expanded = false;
     var fabSize = function () { return isMobileViewport() ? 60 : 64; };
 
     function closedRect() {
+      if (expanded) {
+        return anchorStyle({
+          width: isMobileViewport() ? 'min(320px, calc(100vw - 24px))' : '312px',
+          height: '184px',
+          bottom: isMobileViewport() ? (offsetY + 76) + 'px' : offsetY + 'px',
+          borderRadius: '20px',
+          boxShadow: 'none',
+          overflow: 'visible',
+        });
+      }
       var size = fabSize();
       return anchorStyle({
         width: size + 'px',
@@ -225,11 +236,13 @@
           overflow: 'hidden',
         };
       }
-      var h = Math.min(720, Math.max(520, window.innerHeight - 40));
+      var bottomOffset = offsetY + 76;
+      var availableHeight = window.innerHeight - bottomOffset - 16;
+      var h = Math.min(720, Math.max(360, availableHeight));
       return anchorStyle({
         width: '400px',
         height: h + 'px',
-        bottom: (offsetY + 76) + 'px',
+        bottom: bottomOffset + 'px',
         borderRadius: '24px',
         boxShadow: '0 24px 64px rgba(15,23,42,.28)',
         overflow: 'hidden',
@@ -247,6 +260,11 @@
 
     shell.iframe.addEventListener('lb-toggle', function (e) {
       open = !!(e.detail && e.detail.open);
+      expanded = false;
+      reposition();
+    });
+    shell.iframe.addEventListener('lb-expand', function () {
+      expanded = true;
       reposition();
     });
 
@@ -273,12 +291,79 @@
       '.lb-launcher__pulse{position:absolute;inset:-5px;border-radius:50%;border:2px solid ' + color + ';opacity:.45;animation:lbPulse 2s ease-out infinite;pointer-events:none}' +
       '.lb-launcher svg{width:28px;height:28px;position:relative;z-index:1}' +
       '@keyframes lbPulse{0%{transform:scale(.92);opacity:.5}70%{transform:scale(1.18);opacity:0}100%{opacity:0}}' +
+      '.lb-preview{display:none;flex-direction:column;gap:10px;width:100%;height:100%;pointer-events:auto;cursor:pointer}' +
+      'body.expanded .lb-launcher,body.expanded .lb-panel{display:none!important}' +
+      'body.expanded .lb-preview{display:flex}' +
+      '.lb-preview-card{padding:14px 16px;background:#fff;border-radius:18px;box-shadow:0 10px 30px rgba(15,23,42,.18)}' +
+      '.lb-preview-top{display:flex;align-items:flex-start;gap:10px}' +
+      '.lb-preview-avatar{width:38px;height:38px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;background:' + color + ';color:#fff;font-weight:800;font-size:14px}' +
+      '.lb-preview-info{min-width:0;flex:1;padding-top:1px}' +
+      '.lb-preview-name{font-weight:800;font-size:14.5px;color:#111827}' +
+      '.lb-preview-online{display:inline-flex;align-items:center;gap:4px;margin-left:7px;color:#059669;font-size:10.5px;font-weight:700}' +
+      '.lb-preview-online i{width:6px;height:6px;border-radius:50%;background:#22c55e}' +
+      '.lb-preview-role{margin-top:2px;color:#6b7280;font-size:11.5px}' +
+      '.lb-preview-greeting{margin:11px 0 0;color:#374151;font-size:12.5px;line-height:1.45}' +
+      '.lb-preview-search{display:flex;align-items:center;gap:10px;padding:10px 8px 10px 16px;background:#fff;border-radius:999px;box-shadow:0 10px 30px rgba(15,23,42,.18);color:#6b7280;font-size:13.5px}' +
+      '.lb-preview-search svg{width:17px;height:17px;flex-shrink:0;color:#9ca3af}' +
+      '.lb-preview-search-text{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+      '.lb-preview-arrow{display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px;border-radius:50%;background:' + color + ';color:#fff}' +
+      '.lb-preview-arrow svg{width:14px;height:14px}' +
       '.lb-panel{display:none;position:relative;flex-direction:column;width:100%;height:100%;background:#f3f4f6;border-radius:24px;overflow:hidden}' +
       'body.open{align-items:stretch}' +
       'body.open .lb-launcher{display:none!important}' +
       'body.open .lb-panel{display:flex;flex:1;min-height:0;height:100%;width:100%;margin:0}' +
       'body.open.mobile .lb-panel{border-radius:0}' +
-      '.lb-header{background:' + color + ';color:#fff;padding:12px 10px 12px 16px;' +
+      '.lb-tabbar{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#fff;' +
+      'border-bottom:1px solid #eceff3;flex-shrink:0}' +
+      '.lb-tabbar__home{border:0;background:#F3F4F6;color:#374151;width:34px;height:34px;border-radius:50%;' +
+      'display:grid;place-items:center;cursor:pointer;flex-shrink:0;padding:0}' +
+      '.lb-tabbar__home svg{width:16px;height:16px}' +
+      '.lb-tabs{display:flex;gap:3px;background:#F3F4F6;border-radius:999px;padding:3px;flex:1;min-width:0}' +
+      '.lb-tab{flex:1;min-width:0;border:0;background:transparent;color:#6B7280;font-size:12px;font-weight:700;' +
+      'padding:7px 6px;border-radius:999px;cursor:pointer;font-family:inherit;display:flex;align-items:center;' +
+      'justify-content:center;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+      '.lb-tab svg{width:13px;height:13px;flex-shrink:0}' +
+      '.lb-tab.active{background:' + color + ';color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.18)}' +
+      '.lb-tabbar__home:hover{background:#E5E7EB}' +
+      '.lb-view{flex:1;min-height:0;display:none;flex-direction:column;overflow:hidden}' +
+      '.lb-view.active{display:flex}' +
+      '.lb-subheader{padding:16px 18px 6px;font-weight:800;font-size:16px;color:#111827;flex-shrink:0;background:#fff;' +
+      'letter-spacing:-.01em}' +
+      '.lb-list{flex:1;min-height:0;overflow-y:auto;padding:4px 10px 14px;-webkit-overflow-scrolling:touch;background:#fff}' +
+      '.lb-article{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;border-radius:14px;' +
+      'background:#fff;padding:12px 10px;cursor:pointer;font-family:inherit;transition:background .12s ease}' +
+      '.lb-article:hover{background:#F8F7FF}' +
+      '.lb-article__icon{width:34px;height:34px;border-radius:10px;background:#F3F4F6;color:' + color + ';flex-shrink:0;' +
+      'display:grid;place-items:center}' +
+      '.lb-article__icon svg{width:16px;height:16px}' +
+      '.lb-article__title{font-size:13.5px;font-weight:650;color:#111827;line-height:1.4;flex:1;min-width:0}' +
+      '.lb-article__chevron{flex-shrink:0;color:#d1d5db}' +
+      '.lb-article__chevron svg{width:14px;height:14px;display:block}' +
+      '.lb-spinner{width:15px;height:15px;border:2px solid #E5E7EB;border-top-color:' + color + ';border-radius:50%;' +
+      'display:inline-block;animation:lbSpin .65s linear infinite;vertical-align:-3px;margin-right:8px}' +
+      '@keyframes lbSpin{to{transform:rotate(360deg)}}' +
+      '.lb-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;' +
+      'padding:44px 24px;color:#9ca3af;font-size:13px;text-align:center;line-height:1.5}' +
+      '.lb-empty--row{flex-direction:row;padding:20px 16px;gap:0}' +
+      '.lb-empty__icon{width:48px;height:48px;border-radius:50%;background:#F3F4F6;display:grid;place-items:center;color:#c7cbd1;flex-shrink:0}' +
+      '.lb-empty__icon svg{width:22px;height:22px}' +
+      '.lb-detail{flex:1;min-height:0;display:flex;flex-direction:column;background:#fff}' +
+      '.lb-detail__back{display:flex;align-items:center;gap:6px;border:0;background:transparent;color:' + color + ';' +
+      'font-weight:700;font-size:13px;padding:12px 14px 4px;cursor:pointer;font-family:inherit;flex-shrink:0}' +
+      '.lb-detail__back svg{width:14px;height:14px}' +
+      '.lb-detail__body{flex:1;min-height:0;overflow-y:auto;padding:8px 20px 24px}' +
+      '.lb-detail__title{font-size:17px;font-weight:800;color:#111827;margin:8px 0 14px;line-height:1.35;letter-spacing:-.01em}' +
+      '.lb-detail__content{font-size:13.5px;color:#374151;line-height:1.65;white-space:pre-wrap}' +
+      '.lb-searchbar{padding:12px 14px;flex-shrink:0;background:#fff;border-bottom:1px solid #f1f3f5}' +
+      '.lb-searchbar__wrap{position:relative;display:flex;align-items:center}' +
+      '.lb-searchbar__wrap svg{position:absolute;left:13px;width:15px;height:15px;color:#9ca3af;pointer-events:none}' +
+      '.lb-searchbar input{width:100%;border:1.5px solid #e5e7eb;background:#f8fafc;border-radius:22px;' +
+      'padding:11px 14px 11px 36px;outline:none;font-size:14px;font-family:inherit;transition:border-color .15s,background .15s}' +
+      '.lb-searchbar input:focus{border-color:' + color + ';background:#fff;box-shadow:0 0 0 3px rgba(124,58,237,.10)}' +
+      '.lb-brandfoot{flex-shrink:0;text-align:center;padding:7px 0 calc(7px + env(safe-area-inset-bottom,0px));' +
+      'font-size:10.5px;color:#b3b6bd;background:#fff;border-top:1px solid #f1f3f5;letter-spacing:.01em}' +
+      '.lb-brandfoot b{color:#8a8d97;font-weight:800}' +
+      '.lb-header{position:relative;background:' + color + ';color:#fff;padding:12px 10px 12px 16px;' +
       'display:flex;gap:12px;align-items:center;flex-shrink:0}' +
       '.lb-avatar{position:relative;width:44px;height:44px;flex-shrink:0}' +
       '.lb-avatar-img,.lb-avatar-fallback{width:44px;height:44px;border-radius:50%;object-fit:cover;display:grid;place-items:center;' +
@@ -342,6 +427,15 @@
       '<span class="lb-launcher__pulse" aria-hidden="true"></span>' +
       '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.5 19.5V6.75A2.75 2.75 0 0 1 7.25 4h9.5A2.75 2.75 0 0 1 19.5 6.75v7A2.75 2.75 0 0 1 16.75 16.5H8.12L4.5 19.5Z"/></svg>' +
       '</button>' +
+      '<div class="lb-preview" id="lbPreview" role="button" tabindex="0" aria-label="Open chat with ' + escapeAttr(cfg.name || '') + '">' +
+      '<div class="lb-preview-card"><div class="lb-preview-top">' +
+      '<div class="lb-preview-avatar">' + avatar + '</div>' +
+      '<div class="lb-preview-info"><div><span class="lb-preview-name">' + escapeHtml(cfg.name || '') + '</span><span class="lb-preview-online"><i></i>Online</span></div>' +
+      '<div class="lb-preview-role">' + escapeHtml(cfg.role || 'AI Employee') + '</div></div></div>' +
+      '<div class="lb-preview-greeting">' + escapeHtml(cfg.greeting || 'Hi! Need help with something?') + '</div></div>' +
+      '<div class="lb-preview-search"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.75"/><path d="m20 20-3.2-3.2" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>' +
+      '<span class="lb-preview-search-text">Ask ' + escapeHtml((cfg.name || 'AI').split(' ')[0]) + '...</span><span class="lb-preview-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>' +
+      '</div>' +
       '<div class="lb-panel">' +
       '<div class="lb-header">' +
       '<div class="lb-avatar">' + avatar + '<span class="lb-online" aria-hidden="true"></span></div>' +
@@ -353,6 +447,20 @@
       '</div>' +
       '<div class="lb-more-menu" id="lbMoreMenu"><button type="button" id="lbFresh">Start fresh</button></div>' +
       '</div>' +
+      '<div class="lb-tabbar">' +
+      '<button type="button" class="lb-tabbar__home" id="lbHome" aria-label="Home">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/></svg>' +
+      '</button>' +
+      '<div class="lb-tabs">' +
+      '<button type="button" class="lb-tab active" id="lbTabMessages" data-tab="messages">' +
+      '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 19.5V6.75A2.75 2.75 0 0 1 7.25 4h9.5A2.75 2.75 0 0 1 19.5 6.75v7A2.75 2.75 0 0 1 16.75 16.5H8.12L4.5 19.5Z"/></svg>Messages</button>' +
+      '<button type="button" class="lb-tab" id="lbTabArticles" data-tab="articles">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l5 5v13H6z"/><path d="M9 12h6M9 16h6M9 8h3"/></svg>Articles</button>' +
+      '<button type="button" class="lb-tab" id="lbTabSearch" data-tab="search">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>Search</button>' +
+      '</div>' +
+      '</div>' +
+      '<div class="lb-view active" id="lbViewMessages">' +
       (cfg.returning_visitor && cfg.resume_message ? '<div class="lb-resume" id="lbResume"></div>' : '') +
       '<div class="lb-messages" id="lbMessages"></div>' +
       '<div class="lb-actions" id="lbActions"></div>' +
@@ -362,6 +470,33 @@
       '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.6 21 12 3.4 3.4l.1 6.7L14 12 3.5 13.9z"/></svg>' +
       '</button>' +
       '</form>' +
+      '</div>' +
+      '<div class="lb-view" id="lbViewArticles">' +
+      '<div class="lb-subheader" id="lbArticlesTitle">Help Articles</div>' +
+      '<div class="lb-list" id="lbArticlesList"></div>' +
+      '<div class="lb-detail" id="lbArticleDetail" style="display:none">' +
+      '<button type="button" class="lb-detail__back" id="lbArticleBack">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>All articles</button>' +
+      '<div class="lb-detail__body">' +
+      '<div class="lb-detail__title" id="lbArticleTitle"></div>' +
+      '<div class="lb-detail__content" id="lbArticleContent"></div>' +
+      '</div></div>' +
+      '</div>' +
+      '<div class="lb-view" id="lbViewSearch">' +
+      '<div class="lb-searchbar"><div class="lb-searchbar__wrap">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>' +
+      '<input id="lbSearchInput" type="text" placeholder="Search for help…" autocomplete="off">' +
+      '</div></div>' +
+      '<div class="lb-list" id="lbSearchResults"></div>' +
+      '<div class="lb-detail" id="lbSearchDetail" style="display:none">' +
+      '<button type="button" class="lb-detail__back" id="lbSearchBack">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>Back to results</button>' +
+      '<div class="lb-detail__body">' +
+      '<div class="lb-detail__title" id="lbSearchDetailTitle"></div>' +
+      '<div class="lb-detail__content" id="lbSearchDetailContent"></div>' +
+      '</div></div>' +
+      '</div>' +
+      '<div class="lb-brandfoot">We run on <b>LiftBot</b></div>' +
       '</div>' +
       '<script>window.__LB__=' + safeJSON({
         cfg: cfg, token: token, apiBase: apiBase, visitorId: visitorId, color: color,
@@ -377,28 +512,102 @@
       'var D=window.__LB__,cfg=D.cfg,token=D.token,apiBase=D.apiBase,visitorId=D.visitorId,sessionKey=D.sessionKey;' +
       'var sessionId=D.sessionId,humanMode=false,lastMsgId=0,pollTimer=null,sending=false,seenIds={};' +
       'var messages=document.getElementById("lbMessages"),actions=document.getElementById("lbActions");' +
-      'var statusEl=document.getElementById("lbStatus"),launcher=document.getElementById("lbLauncher");' +
+      'var statusEl=document.getElementById("lbStatus"),launcher=document.getElementById("lbLauncher"),preview=document.getElementById("lbPreview");' +
       'var closeBtn=document.getElementById("lbClose"),form=document.getElementById("lbForm"),input=document.getElementById("lbInput");' +
       'var sendBtn=document.getElementById("lbSend"),moreBtn=document.getElementById("lbMore"),moreMenu=document.getElementById("lbMoreMenu");' +
       'var initial=((cfg.name||"AI").slice(0,1)||"A").toUpperCase();' +
+      'var homeBtn=document.getElementById("lbHome"),tabMessages=document.getElementById("lbTabMessages");' +
+      'var tabArticles=document.getElementById("lbTabArticles"),tabSearch=document.getElementById("lbTabSearch");' +
+      'var viewMessages=document.getElementById("lbViewMessages"),viewArticles=document.getElementById("lbViewArticles");' +
+      'var viewSearch=document.getElementById("lbViewSearch");' +
+      'var articlesList=document.getElementById("lbArticlesList"),articleDetail=document.getElementById("lbArticleDetail");' +
+      'var articleBack=document.getElementById("lbArticleBack"),articleTitleEl=document.getElementById("lbArticleTitle");' +
+      'var articleContentEl=document.getElementById("lbArticleContent");' +
+      'var searchInput=document.getElementById("lbSearchInput"),searchResults=document.getElementById("lbSearchResults");' +
+      'var searchDetail=document.getElementById("lbSearchDetail"),searchBack=document.getElementById("lbSearchBack");' +
+      'var searchDetailTitle=document.getElementById("lbSearchDetailTitle"),searchDetailContent=document.getElementById("lbSearchDetailContent");' +
+      'var articlesCache=null,searchTimer=null;' +
+
+      '/* ---- Tabs: Messages / Articles / Search (Crisp-style) ---- */' +
+      'function activateTab(name){' +
+      '[tabMessages,tabArticles,tabSearch].forEach(function(t){t.classList.toggle("active",t.getAttribute("data-tab")===name);});' +
+      '[viewMessages,viewArticles,viewSearch].forEach(function(v){v.classList.remove("active");});' +
+      'if(name==="messages"){viewMessages.classList.add("active");if(!isMobile())input.focus();}' +
+      'else if(name==="articles"){viewArticles.classList.add("active");loadArticles();}' +
+      'else if(name==="search"){viewSearch.classList.add("active");if(!isMobile())searchInput.focus();}' +
+      '}' +
+      'tabMessages.addEventListener("click",function(){activateTab("messages");});' +
+      'tabArticles.addEventListener("click",function(){activateTab("articles");});' +
+      'tabSearch.addEventListener("click",function(){activateTab("search");});' +
+      'homeBtn.addEventListener("click",function(){activateTab("messages");});' +
+
+      'function articleIconSvg(){return "<svg viewBox=\\"0 0 24 24\\" fill=\\"none\\" stroke=\\"currentColor\\" stroke-width=\\"2\\" ' +
+      'stroke-linecap=\\"round\\" stroke-linejoin=\\"round\\"><path d=\\"M6 3h9l5 5v13H6z\\"/><path d=\\"M9 12h6M9 16h6M9 8h3\\"/></svg>";}' +
+      'function chevronSvg(){return "<svg viewBox=\\"0 0 24 24\\" fill=\\"none\\" stroke=\\"currentColor\\" stroke-width=\\"2.2\\" ' +
+      'stroke-linecap=\\"round\\" stroke-linejoin=\\"round\\"><path d=\\"m9 6 6 6-6 6\\"/></svg>";}' +
+      'function searchSvg(){return "<svg viewBox=\\"0 0 24 24\\" fill=\\"none\\" stroke=\\"currentColor\\" stroke-width=\\"1.8\\" ' +
+      'stroke-linecap=\\"round\\" stroke-linejoin=\\"round\\"><circle cx=\\"11\\" cy=\\"11\\" r=\\"7\\"/><path d=\\"m21 21-4.3-4.3\\"/></svg>";}' +
+      'function docSvg(){return "<svg viewBox=\\"0 0 24 24\\" fill=\\"none\\" stroke=\\"currentColor\\" stroke-width=\\"1.8\\" ' +
+      'stroke-linecap=\\"round\\" stroke-linejoin=\\"round\\"><path d=\\"M6 3h9l5 5v13H6z\\"/><path d=\\"M9 12h6M9 16h6M9 8h3\\"/></svg>";}' +
+
+      'function emptyState(container,iconSvg,text){container.innerHTML="";var e=document.createElement("div");e.className="lb-empty";' +
+      'var i=document.createElement("div");i.className="lb-empty__icon";i.innerHTML=iconSvg;' +
+      'var t=document.createElement("div");t.textContent=text;e.appendChild(i);e.appendChild(t);container.appendChild(e);}' +
+      'function loadingState(container,text){container.innerHTML="<div class=\\"lb-empty lb-empty--row\\">' +
+      '<span class=\\"lb-spinner\\"></span><span>"+text+"</span></div>";}' +
+
+      'function renderArticleRows(container,items,onPick,emptyIcon,emptyText){container.innerHTML="";' +
+      'if(!items.length){emptyState(container,emptyIcon,emptyText);return;}' +
+      'items.forEach(function(a){var b=document.createElement("button");b.type="button";b.className="lb-article";' +
+      'var icon=document.createElement("span");icon.className="lb-article__icon";icon.innerHTML=articleIconSvg();' +
+      'var t=document.createElement("span");t.className="lb-article__title";t.textContent=a.title;' +
+      'var chev=document.createElement("span");chev.className="lb-article__chevron";chev.innerHTML=chevronSvg();' +
+      'b.appendChild(icon);b.appendChild(t);b.appendChild(chev);b.addEventListener("click",function(){onPick(a);});container.appendChild(b);});}' +
+
+      'function loadArticles(){if(articlesCache){renderArticleRows(articlesList,articlesCache,openArticle,docSvg(),"No articles yet.");return;}' +
+      'loadingState(articlesList,"Loading articles…");' +
+      'fetchJson(apiBase+"/articles/?token="+encodeURIComponent(token)).then(function(data){' +
+      'articlesCache=data.articles||[];renderArticleRows(articlesList,articlesCache,openArticle,docSvg(),"No articles yet.");' +
+      '}).catch(function(){emptyState(articlesList,docSvg(),"Could not load articles.");});}' +
+
+      'function openArticle(a){articleTitleEl.textContent=a.title;articleContentEl.textContent=a.content;' +
+      'articlesList.style.display="none";articleDetail.style.display="flex";}' +
+      'articleBack.addEventListener("click",function(){articleDetail.style.display="none";articlesList.style.display="block";});' +
+
+      'function openSearchResult(a){searchDetailTitle.textContent=a.title;searchDetailContent.textContent=a.content;' +
+      'searchResults.style.display="none";searchDetail.style.display="flex";}' +
+      'searchBack.addEventListener("click",function(){searchDetail.style.display="none";searchResults.style.display="block";});' +
+
+      'function runSearch(q){if(!q){emptyState(searchResults,searchSvg(),"Start typing to search help articles.");return;}' +
+      'loadingState(searchResults,"Searching…");' +
+      'fetchJson(apiBase+"/search/?token="+encodeURIComponent(token)+"&q="+encodeURIComponent(q)).then(function(data){' +
+      'renderArticleRows(searchResults,data.results||[],openSearchResult,searchSvg(),"No results for \\""+q+"\\".");' +
+      '}).catch(function(){emptyState(searchResults,searchSvg(),"Search is unavailable right now.");});}' +
+      'searchInput.addEventListener("input",function(){var q=searchInput.value.trim();clearTimeout(searchTimer);' +
+      'searchTimer=setTimeout(function(){runSearch(q);},300);});' +
+      'runSearch("");' +
 
       'function fmtTime(){var d=new Date(),h=d.getHours(),m=d.getMinutes(),ap=h>=12?"PM":"AM";h=h%12||12;return h+":"+(m<10?"0":"")+m+" "+ap;}' +
       'function miniAv(){if(cfg.avatar_url){var i=document.createElement("img");i.className="lb-mini";i.src=cfg.avatar_url;i.alt="";return i;}' +
       'var s=document.createElement("span");s.className="lb-mini";s.textContent=initial;return s;}' +
 
       'function isMobile(){try{return window.parent.matchMedia("(max-width:768px)").matches;}catch(e){return window.matchMedia("(max-width:768px)").matches;}}' +
-      'function syncChrome(){var open=document.body.classList.contains("open");' +
-      'document.body.className=(open?"open":"closed")+(isMobile()?" mobile":"");}' +
+      'function syncChrome(){var open=document.body.classList.contains("open"),expanded=document.body.classList.contains("expanded");' +
+      'document.body.className=(open?"open":expanded?"expanded":"closed")+(isMobile()?" mobile":"");}' +
       'syncChrome();window.addEventListener("resize",syncChrome);' +
       'try{if(window.parent&&window.parent.visualViewport){window.parent.visualViewport.addEventListener("resize",syncChrome);}}catch(e){}' +
 
       'function fetchJson(url,opts){return fetch(url,Object.assign({mode:"cors",credentials:"omit"},opts||{})).then(function(r){' +
       'return r.json().then(function(data){if(!r.ok)throw new Error((data&&data.error)||("HTTP "+r.status));return data;});});}' +
 
-      'function setOpen(v){document.body.classList.toggle("open",!!v);document.body.classList.toggle("closed",!v);syncChrome();' +
+      'function setExpanded(){document.body.classList.remove("closed");document.body.classList.add("expanded");syncChrome();' +
+      'window.frameElement.dispatchEvent(new CustomEvent("lb-expand"));}' +
+      'function setOpen(v){document.body.classList.toggle("open",!!v);document.body.classList.toggle("closed",!v);document.body.classList.remove("expanded");syncChrome();' +
       'window.frameElement.dispatchEvent(new CustomEvent("lb-toggle",{detail:{open:!!v}}));' +
       'if(v){if(!isMobile())input.focus();if(humanMode)startPolling();}}' +
-      'launcher.addEventListener("click",function(){setOpen(true);});' +
+      'launcher.addEventListener("click",function(){setExpanded();});' +
+      'preview.addEventListener("click",function(){setOpen(true);});' +
+      'preview.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();setOpen(true);}});' +
       'closeBtn.addEventListener("click",function(){setOpen(false);});' +
       'if(moreBtn&&moreMenu){moreBtn.addEventListener("click",function(e){e.stopPropagation();moreMenu.classList.toggle("open");});' +
       'document.addEventListener("click",function(){moreMenu.classList.remove("open");});}' +

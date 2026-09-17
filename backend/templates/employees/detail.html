@@ -71,17 +71,17 @@
     <div class="pg-preview">
       <h3>Widget preview</h3>
       <p>How this employee appears on your site.</p>
-      <div class="pg-mini-widget">
-        <div class="pg-mini-head" style="background:{{ employee.brand_color|default:'#7C3AED' }}">
-          <div class="pg-mini-av">{{ employee.name|slice:":1"|upper }}</div>
-          <div>
-            <strong>{{ employee.name }}</strong>
-            <span>{{ employee.get_role_display }} · Online</span>
-          </div>
+      <div class="lb-expanded-preview" style="--preview-color:{{ employee.brand_color|default:'#7C3AED' }}">
+        <div class="lb-expanded-head">
+          <div class="lb-expanded-avatar">{{ employee.name|slice:":1"|upper }}</div>
+          <div><strong>{{ employee.name }}</strong><span><i></i>Online · {{ employee.get_role_display }}</span></div>
+          <b class="lb-expanded-dots">⋮</b>
         </div>
-        <div class="pg-mini-body">
-          <div class="pg-mini-bubble">{{ employee.greeting_message }}</div>
+        <div class="lb-expanded-messages">
+          <div class="lb-expanded-day">Today</div>
+          <div class="lb-expanded-row"><div class="lb-expanded-bubble">{{ employee.greeting_message }}</div></div>
         </div>
+        <div class="lb-expanded-form"><span>⌕</span><em>Ask {{ employee.name|truncatewords:1 }}...</em><b>↑</b></div>
       </div>
     </div>
   </aside>

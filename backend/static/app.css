@@ -1405,3 +1405,48 @@ body.lb-app {
   font-size: 14px;
   font-weight: 700;
 }
+
+.lb-expanded-preview {
+  --preview-color: #7C3AED;
+  display: flex;
+  flex-direction: column;
+  height: 360px;
+  overflow: hidden;
+  border: 1px solid #E5E7EB;
+  border-radius: 20px;
+  background: #F3F4F6;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, .16);
+}
+.lb-expanded-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  padding: 13px 14px;
+  background: var(--preview-color);
+  color: #fff;
+}
+.lb-expanded-avatar {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .2);
+  font-size: 15px;
+  font-weight: 800;
+}
+.lb-expanded-head strong { display: block; font-size: 14px; }
+.lb-expanded-head span { display: block; margin-top: 2px; font-size: 11px; opacity: .9; }
+.lb-expanded-head span i { display: inline-block; width: 6px; height: 6px; margin-right: 4px; border-radius: 50%; background: #4ADE80; }
+.lb-expanded-dots { margin-left: auto; align-self: flex-start; font-size: 20px; font-weight: 500; }
+.lb-expanded-messages { flex: 1; min-height: 0; padding: 12px; overflow: hidden; }
+.lb-expanded-day { width: max-content; margin: 0 auto 16px; padding: 4px 10px; border-radius: 999px; background: #E5E7EB; color: #6B7280; font-size: 10px; font-weight: 700; }
+.lb-expanded-row { display: flex; align-items: flex-end; gap: 7px; }
+.lb-expanded-bubble { max-width: 86%; padding: 10px 12px; border-radius: 15px 15px 15px 4px; background: #fff; color: #1F2937; font-size: 12.5px; line-height: 1.45; box-shadow: 0 1px 2px rgba(15, 23, 42, .06); }
+.lb-expanded-form { display: flex; align-items: center; gap: 8px; flex-shrink: 0; padding: 10px; border-top: 1px solid #E5E7EB; background: #fff; color: #9CA3AF; }
+.lb-expanded-form > span { font-size: 20px; line-height: 1; }
+.lb-expanded-form em { flex: 1; overflow: hidden; font-style: normal; font-size: 12.5px; white-space: nowrap; text-overflow: ellipsis; }
+.lb-expanded-form em i { font-style: normal; }
+.lb-expanded-form > b { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--preview-color); color: #fff; font-size: 18px; }

@@ -7,6 +7,7 @@ import requests
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -14,6 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
 from apps.employees.models import AIEmployee
+from apps.knowledge.models import KnowledgeSource
 from apps.workspaces.models import Workspace
 from apps.workspaces.views import user_workspace
 
@@ -137,6 +139,38 @@ def widget_config(request):
         })
 
     return JsonResponse(payload)
+
+
+def _article_payload(source: KnowledgeSource) -> dict:
+    return {'id': source.id, 'title': source.title, 'content': source.content}
+
+
+@require_GET
+def widget_articles(request):
+    """Help-center articles for the Articles tab, backed by ready knowledge sources."""
+    token = request.GET.get('token', '')
+    employee = _get_employee(token)
+    sources = (
+        employee.knowledge_sources
+        .filter(status=KnowledgeSource.Status.READY)
+        .order_by('title')
+    )
+    return JsonResponse({'articles': [_article_payload(s) for s in sources]})
+
+
+@require_GET
+def widget_search(request):
+    """Keyword search across this employee's ready knowledge, for the Search tab."""
+    token = request.GET.get('token', '')
+    query = (request.GET.get('q') or '').strip()
+    employee = _get_employee(token)
+    sources = employee.knowledge_sources.filter(
+        status=KnowledgeSource.Status.READY,
+    )
+    if query:
+        sources = sources.filter(Q(title__icontains=query) | Q(content__icontains=query))
+    sources = sources.order_by('title')[:20]
+    return JsonResponse({'query': query, 'results': [_article_payload(s) for s in sources]})
 
 
 @csrf_exempt

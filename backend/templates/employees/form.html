@@ -151,21 +151,17 @@
       <div class="emp-preview">
         <h3>Live preview</h3>
         <p>Updates as you type — this is how visitors will see them.</p>
-        <div class="emp-widget" id="emp-preview">
-          <div class="emp-widget-head" id="emp-preview-head">
-            <div class="emp-widget-av" id="emp-preview-av">A</div>
-            <div>
-              <strong id="emp-preview-name">AI Employee</strong>
-              <span id="emp-preview-role">Support Specialist · We're online</span>
-            </div>
+        <div class="lb-expanded-preview" id="emp-preview">
+          <div class="lb-expanded-head">
+            <div class="lb-expanded-avatar" id="emp-preview-av">A</div>
+            <div><strong id="emp-preview-name">AI Employee</strong><span><i></i>Online · <small id="emp-preview-role">Support Specialist</small></span></div>
+            <b class="lb-expanded-dots">⋮</b>
           </div>
-          <div class="emp-widget-body">
-            <div class="emp-bubble" id="emp-preview-greeting">Hi! How can I help you today?</div>
+          <div class="lb-expanded-messages">
+            <div class="lb-expanded-day">Today</div>
+            <div class="lb-expanded-row"><div class="lb-expanded-bubble" id="emp-preview-greeting">Hi! How can I help you today?</div></div>
           </div>
-          <div class="emp-widget-foot">
-            <span>Type a message…</span>
-            <button type="button" tabindex="-1" aria-hidden="true">➤</button>
-          </div>
+          <div class="lb-expanded-form"><span>⌕</span><em>Ask <i id="emp-preview-first">AI Employee</i>...</em><b>↑</b></div>
         </div>
       </div>
     </aside>
@@ -184,8 +180,9 @@
   var pName = document.getElementById('emp-preview-name');
   var pRole = document.getElementById('emp-preview-role');
   var pGreet = document.getElementById('emp-preview-greeting');
-  var pHead = document.getElementById('emp-preview-head');
+  var pPreview = document.getElementById('emp-preview');
   var pAv = document.getElementById('emp-preview-av');
+  var pFirst = document.getElementById('emp-preview-first');
 
   function roleLabel() {
     if (!role) return 'Support Specialist';
@@ -202,10 +199,11 @@
     var n = (name && name.value.trim()) || 'AI Employee';
     pName.textContent = n;
     pAv.textContent = n.charAt(0).toUpperCase();
-    pRole.textContent = roleLabel() + " · We're online";
+    pFirst.textContent = n.split(/\s+/)[0];
+    pRole.textContent = roleLabel();
     pGreet.textContent = (greeting && greeting.value.trim()) || 'Hi! How can I help you today?';
     var c = hex(color && color.value);
-    pHead.style.background = c;
+    pPreview.style.setProperty('--preview-color', c);
     if (picker && picker.value.toLowerCase() !== c.toLowerCase() && /^#[0-9A-Fa-f]{6}$/.test(c)) {
       picker.value = c;
     }

@@ -1,0 +1,1254 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}{{ employee.name }} — AI Agent Hub — LiftBot{% endblock %}
+{% block page_title %}AI Agent{% endblock %}
+{% block page_subtitle %}Evaluate, guide, train, and test {{ employee.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'employee_hub.css' %}" />
+{% endblock %}
+
+{% block top_actions %}
+  {% if all_employees|length > 1 %}
+  <div style="display:flex;align-items:center;gap:6px;">
+    <label for="hub-emp-switcher" style="font-size:12px;color:#6B7280;font-weight:600;">Agent:</label>
+    <select id="hub-emp-switcher" style="border:1px solid #E5E7EB;border-radius:8px;padding:5px 10px;font-size:12.5px;font-weight:600;background:#fff;color:#1F2937;cursor:pointer;" onchange="window.location.href=this.value;">
+      {% for emp in all_employees %}
+      <option value="{% url 'employee_hub' emp.pk %}" {% if emp.pk == employee.pk %}selected{% endif %}>{{ emp.name }} ({{ emp.get_role_display }})</option>
+      {% endfor %}
+    </select>
+  </div>
+  {% endif %}
+
+  <div id="hub-status-badge">
+    {% if employee.is_active %}
+    <span class="lb-badge lb-badge-green"><span class="lb-dot"></span> Live on Website</span>
+    {% else %}
+    <span class="lb-badge lb-badge-orange">Inactive</span>
+    {% endif %}
+  </div>
+
+  <button type="button" class="lb-btn lb-btn-ghost lb-btn-sm" data-switch-tab="widget">Embed Code</button>
+  <button type="button" class="lb-btn lb-btn-primary lb-btn-sm" id="crisp-top-new-chat">New Chat</button>
+{% endblock %}
+
+{% block content %}
+<div class="crisp-hub" style="--agent-brand: {{ employee.brand_color|default:'#0066FF' }}; --widget-brand: {{ employee.brand_color|default:'#0066FF' }};">
+
+  <!-- ======================================================= -->
+  <!-- LAYER 2: Middle Sub-Navigation (Crisp AI Agent Sidebar) -->
+  <!-- ======================================================= -->
+  <aside class="crisp-subnav" aria-label="AI Agent navigation">
+    <div class="crisp-subnav-head">
+      <h2 class="crisp-subnav-title">AI Agent</h2>
+      <div class="crisp-agent-select-wrap">
+        <a href="javascript:void(0)" class="crisp-agent-pill" data-switch-tab="settings" title="Edit {{ employee.name }}">
+          <div class="crisp-agent-pill-info">
+            <div class="crisp-agent-av" id="subnav-av">{{ employee.name|slice:":1"|upper }}</div>
+            <span class="crisp-agent-name" id="subnav-name">{{ employee.name }}</span>
+          </div>
+          <span class="crisp-agent-dot {% if not employee.is_active %}offline{% endif %}" id="subnav-dot" title="{% if employee.is_active %}Online{% else %}Offline{% endif %}"></span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Evaluate Group -->
+    <div class="crisp-nav-group">
+      <p class="crisp-group-title">Evaluate</p>
+      <button type="button" class="crisp-nav-item is-active" data-tab="playground">
+        <span class="crisp-nav-left">
+          <span class="crisp-nav-ico">💬</span>
+          <span class="crisp-nav-label">Playground</span>
+        </span>
+      </button>
+      <button type="button" class="crisp-nav-item" data-tab="analytics">
+        <span class="crisp-nav-left">
+          <span class="crisp-nav-ico">📊</span>
+          <span class="crisp-nav-label">Analytics</span>
+        </span>
+      </button>
+    </div>
+
+    <!-- Employee Group -->
+    <div class="crisp-nav-group">
+      <p class="crisp-group-title">Employee</p>
+      <button type="button" class="crisp-nav-item" data-tab="settings">
+        <span class="crisp-nav-left">
+          <span class="crisp-nav-ico">⚙️</span>
+          <span class="crisp-nav-label">Profile &amp; Settings</span>
+        </span>
+      </button>
+      <button type="button" class="crisp-nav-item" data-tab="capabilities">
+        <span class="crisp-nav-left">
+          <span class="crisp-nav-ico">🧩</span>
+          <span class="crisp-nav-label">Capabilities</span>
+        </span>
+      </button>
+      <button type="button" class="crisp-nav-item" data-tab="status">
+        <span class="crisp-nav-left">
+          <span class="crisp-nav-ico">⚡</span>
+          <span class="crisp-nav-label">Status</span>
+        </span>
+        {% if employee.is_active %}
+        <span class="crisp-badge crisp-badge-active">Active</span>
+        {% else %}
+        <span class="crisp-badge crisp-badge-req">Offline</span>
+        {% endif %}
+      </button>
+    </div>
+
+    <!-- Training Group -->
+    <div class="crisp-nav-group">
+      <p class="crisp-group-title">Training</p>
+      <button type="button" class="crisp-nav-item" data-tab="knowledge">
+        <span class="crisp-nav-left">
+          <span class="crisp-nav-ico">📚</span>
+          <span class="crisp-nav-label">Knowledge Base</span>
+        </span>
+        <span style="font-size:11px;color:#9CA3AF;font-weight:600;">{{ source_count }}</span>
+      </button>
+      <button type="button" class="crisp-nav-item" data-tab="add-material">
+        <span class="crisp-nav-left">
+          <span class="crisp-nav-ico">➕</span>
+          <span class="crisp-nav-label">Add Material</span>
+        </span>
+      </button>
+    </div>
+
+    <!-- Deploy Group -->
+    <div class="crisp-nav-group">
+      <p class="crisp-group-title">Deploy</p>
+      <button type="button" class="crisp-nav-item" data-tab="widget-code">
+        <span class="crisp-nav-left">
+          <span class="crisp-nav-ico">⧉</span>
+          <span class="crisp-nav-label">Widget Code</span>
+        </span>
+      </button>
+    </div>
+
+    <!-- Monitor Card at Bottom of Subnav -->
+    <div class="crisp-nav-bottom-card">
+      <div class="crisp-bottom-head">
+        <strong>Monitor your Agent</strong>
+        <a href="{% url 'conversations' %}">Go to Inbox &rarr;</a>
+      </div>
+      <p>In your Automated inbox, see which conversations your AI Agent handled and how it replied.</p>
+    </div>
+  </aside>
+
+  <!-- ======================================================= -->
+  <!-- LAYER 3: Main Working Area (Canvas + Simulator)         -->
+  <!-- ======================================================= -->
+  <main class="crisp-main-area">
+
+    <!-- Canvas Column (Left of Layer 3) -->
+    <div class="crisp-canvas" id="crispCanvas">
+
+      <!-- TAB 1: PLAYGROUND (Exact Crisp Screen) -->
+      <section class="crisp-tab-panel is-active" id="tab-playground">
+        <h1 class="crisp-canvas-title">Agent playground</h1>
+
+        <div class="crisp-alert-warning" id="crisp-safe-notice">
+          <span>⚠️</span>
+          <div>
+            <strong>{{ employee.name }} is {% if employee.is_active %}active{% else %}disabled{% endif %}</strong> &mdash; this is a safe playground to test without impacting real conversations.
+          </div>
+        </div>
+
+        <div class="crisp-banner-blue">
+          <p>
+            &times; <strong>Boost {{ employee.name }} with instructions</strong> &mdash; answer a few quick questions and {{ employee.name }} will assist your visitors with precision.
+          </p>
+          <button type="button" class="crisp-banner-btn" data-switch-tab="instructions">Get started &gt;</button>
+        </div>
+
+        <!-- Compatibility mode -->
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">👉 Compatibility mode</h3>
+          </div>
+
+          <div class="crisp-option-row">
+            <div class="crisp-option-left">
+              <div class="crisp-radio-circle"></div>
+              <div class="crisp-option-text">
+                <strong>Test with {{ employee.name }}</strong>
+                <span>Execute {{ employee.name }} AI Agent directly</span>
+              </div>
+            </div>
+            <span style="font-size:12px;color:#6B7280;">&#8964;</span>
+          </div>
+
+          <!-- Model select -->
+          <div class="crisp-field-group">
+            <label class="crisp-field-label">Model</label>
+            <div class="crisp-select-card">
+              <span>Choose automatically</span>
+              <span style="color:#6B7280;">&#8964;</span>
+            </div>
+            <p class="crisp-field-help">
+              <a href="javascript:void(0)" data-switch-tab="settings">How to select the best model?</a><br />
+              <span>&#9432; The auto-chosen model is GPT-4o-mini with FAISS/BM25 Hybrid Retrieval.</span>
+            </p>
+          </div>
+
+          <!-- Answer guidance -->
+          <div class="crisp-field-group" style="margin-top:16px;">
+            <label class="crisp-field-label">Answer guidance</label>
+            <div class="crisp-guidance-card">
+              <div class="crisp-guidance-left">
+                <span class="crisp-guidance-dot"></span>
+                <div class="crisp-guidance-text">
+                  <strong>Conservative</strong>
+                  <span>Only answers when response is certain to be found from sources</span>
+                </div>
+              </div>
+              <span style="color:#6B7280;">&#8964;</span>
+            </div>
+          </div>
+
+          <!-- Action buttons -->
+          <div class="crisp-actions-row">
+            <button type="button" class="crisp-link-btn" data-switch-tab="settings">Go to agent settings &gt;</button>
+            <button type="button" class="crisp-link-btn" data-switch-tab="instructions">Compare model options &gt;</button>
+          </div>
+        </div>
+
+        <!-- Connect messaging channels card -->
+        <div class="crisp-channels-card">
+          <div class="crisp-channel-icons">
+            <div class="crisp-channel-ico" title="Web Widget">💬</div>
+            <div class="crisp-channel-ico mail" title="Email / Handoff">✉</div>
+            <div class="crisp-channel-ico wa" title="WhatsApp">WA</div>
+            <div class="crisp-channel-ico ig" title="Instagram">IG</div>
+            <div class="crisp-channel-ico ms" title="Messenger">M</div>
+          </div>
+          <h4>Connect messaging channels</h4>
+          <p>Manage all your conversations in one inbox by connecting WhatsApp, email, and more to your AI agent.</p>
+          <button type="button" class="crisp-channel-btn" data-switch-tab="widget">Setup channels &gt;</button>
+        </div>
+      </section>
+
+      <!-- TAB 2: AI SUGGESTIONS -->
+      <section class="crisp-tab-panel" id="tab-suggestions">
+        <h1 class="crisp-canvas-title">AI Suggestions</h1>
+        <p style="color:#6B7280;font-size:13.5px;margin-top:-8px;margin-bottom:20px;">Automated recommendations to improve {{ employee.name }}'s knowledge, response accuracy, and visitor satisfaction.</p>
+
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">🪄 Recommended Training Questions</h3>
+            <span class="crisp-badge crisp-badge-new">NEW</span>
+          </div>
+          <p style="font-size:13px;color:#4B5563;">Based on visitor inquiries, adding these Q&amp;As will improve response confidence:</p>
+          <ul style="padding-left:18px;font-size:13px;color:#374151;line-height:1.8;">
+            <li><strong>"What are your business hours?"</strong> &mdash; Add typical response times and availability.</li>
+            <li><strong>"How much does your service cost?"</strong> &mdash; Clarify packages and pricing tiers.</li>
+            <li><strong>"Can I speak with a real person?"</strong> &mdash; Handoff goes to <code>{{ employee.handoff_email|default:'configured team email' }}</code>.</li>
+          </ul>
+          <div class="crisp-actions-row">
+            <button type="button" class="crisp-link-btn" data-switch-tab="qa">Add to Questions &amp; Answers &gt;</button>
+          </div>
+        </div>
+
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">⚡ Voice &amp; Tone Tuning</h3>
+          </div>
+          <p style="font-size:13px;color:#4B5563;">Currently {{ employee.name }} is set to <strong>{{ employee.get_personality_display|default:employee.personality|title }}</strong> tone. For a {{ employee.get_role_display|lower }}, visitors respond best to warm, concise greetings with explicit next steps.</p>
+          <button type="button" class="crisp-link-btn" data-switch-tab="settings">Adjust Tone in Settings &gt;</button>
+        </div>
+      </section>
+
+      <!-- TAB 3: ANALYTICS -->
+      <section class="crisp-tab-panel" id="tab-analytics">
+        <h1 class="crisp-canvas-title">Agent Analytics</h1>
+        <p style="color:#6B7280;font-size:13.5px;margin-top:-8px;margin-bottom:20px;">Performance metrics and conversation volume handled by {{ employee.name }}.</p>
+
+        <div class="crisp-stats-grid">
+          <div class="crisp-stat-box">
+            <span>Conversations</span>
+            <strong>{{ session_count }}</strong>
+          </div>
+          <div class="crisp-stat-box">
+            <span>Messages Exchanged</span>
+            <strong>{{ message_count }}</strong>
+          </div>
+          <div class="crisp-stat-box">
+            <span>Work Tasks Created</span>
+            <strong>{{ task_count }}</strong>
+          </div>
+          <div class="crisp-stat-box">
+            <span>Open Tasks</span>
+            <strong>{{ open_task_count }}</strong>
+          </div>
+        </div>
+
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">📊 Top Visitor Intents</h3>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px;font-size:13px;">
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                <span>Support &amp; General Questions</span>
+                <strong>62%</strong>
+              </div>
+              <div style="height:6px;background:#E5E7EB;border-radius:999px;overflow:hidden;">
+                <div style="width:62%;height:100%;background:#0066FF;"></div>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                <span>Pricing &amp; Service Qualification</span>
+                <strong>25%</strong>
+              </div>
+              <div style="height:6px;background:#E5E7EB;border-radius:999px;overflow:hidden;">
+                <div style="width:25%;height:100%;background:#10B981;"></div>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                <span>Human Team Handoff</span>
+                <strong>13%</strong>
+              </div>
+              <div style="height:6px;background:#E5E7EB;border-radius:999px;overflow:hidden;">
+                <div style="width:13%;height:100%;background:#F59E0B;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: OBSERVABILITY -->
+      <section class="crisp-tab-panel" id="tab-observability">
+        <h1 class="crisp-canvas-title">Observability &amp; Live Logs</h1>
+        <p style="color:#6B7280;font-size:13.5px;margin-top:-8px;margin-bottom:20px;">Inspect real-time conversation sessions and system dispatch events.</p>
+
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">👁️ Recent Sessions</h3>
+            <span style="font-size:12px;color:#6B7280;">{{ recent_sessions|length }} recorded</span>
+          </div>
+
+          {% if recent_sessions %}
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            {% for s in recent_sessions %}
+            <div style="padding:12px 14px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+              <div>
+                <strong style="font-size:13px;color:#111827;">Session #{{ s.id }}</strong>
+                <span style="font-size:12px;color:#6B7280;margin-left:8px;">Visitor {{ s.visitor_id|slice:":8" }} &bull; {{ s.last_message_at|timesince }} ago</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span class="lb-badge lb-badge-purple" style="font-size:11px;">{{ s.messages.count }} msgs</span>
+                {% if s.is_human_mode %}
+                <span class="lb-badge lb-badge-orange" style="font-size:11px;">Human takeover</span>
+                {% else %}
+                <span class="lb-badge lb-badge-green" style="font-size:11px;">AI Active</span>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p style="font-size:13px;color:#6B7280;text-align:center;padding:24px 0;">No sessions recorded yet. Start a test in the playground on the right!</p>
+          {% endif %}
+        </div>
+      </section>
+
+      <!-- TAB 5: ACTIVATION -->
+      <section class="crisp-tab-panel" id="tab-activation">
+        <h1 class="crisp-canvas-title">Activation Status</h1>
+        <p style="color:#6B7280;font-size:13.5px;margin-top:-8px;margin-bottom:20px;">Control whether {{ employee.name }} interacts with live visitors on your website.</p>
+
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">⚡ Website Widget Status</h3>
+            <span id="act-pill">
+              {% if employee.is_active %}
+              <span class="crisp-badge crisp-badge-active">Active</span>
+              {% else %}
+              <span class="crisp-badge crisp-badge-req">Inactive</span>
+              {% endif %}
+            </span>
+          </div>
+
+          <p style="font-size:13.5px;color:#4B5563;line-height:1.5;">
+            When active, {{ employee.name }} will greet website visitors and answer questions based on your trained knowledge sources. When inactive, the widget is hidden from public view.
+          </p>
+
+          <form method="post" action="{% url 'employee_hub' employee.pk %}" style="margin-top:16px;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="toggle_active" />
+            <button type="submit" class="lb-btn {% if employee.is_active %}lb-btn-ghost{% else %}lb-btn-primary{% endif %}" id="btn-toggle-active">
+              {% if employee.is_active %}Deactivate Employee{% else %}Activate on Website{% endif %}
+            </button>
+          </form>
+        </div>
+
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">🔑 Widget Security &amp; Token</h3>
+          </div>
+          <div class="crisp-form-field">
+            <label>Widget Token</label>
+            <input type="text" value="{{ employee.widget_token }}" readonly style="background:#F9FAFB;font-family:monospace;" />
+          </div>
+          <div class="crisp-form-field" style="margin-top:12px;">
+            <label>API Endpoint</label>
+            <input type="text" value="{{ public_widget_api }}/message/" readonly style="background:#F9FAFB;font-family:monospace;" />
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 6: PROFILE & SETTINGS -->
+      <section class="crisp-tab-panel" id="tab-settings">
+        <h1 class="crisp-canvas-title">Profile &amp; Settings</h1>
+        <p style="color:#6B7280;font-size:13.5px;margin-top:-8px;margin-bottom:20px;">Customize {{ employee.name }}'s identity, personality tone, greeting, and visual branding.</p>
+
+        <form method="post" enctype="multipart/form-data" action="{% url 'employee_hub' employee.pk %}" id="hub-settings-form">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="update_settings" />
+
+          <div class="crisp-card">
+            <div class="crisp-card-head">
+              <h3 class="crisp-card-title">👤 Identity</h3>
+            </div>
+            <div class="crisp-grid-2">
+              <div class="crisp-form-field">
+                <label for="id_name">Employee Name</label>
+                {{ form.name }}
+              </div>
+              <div class="crisp-form-field">
+                <label for="id_department">Department</label>
+                {{ form.department }}
+              </div>
+              <div class="crisp-form-field crisp-grid-full">
+                <label for="id_role">Role / Title</label>
+                {{ form.role }}
+              </div>
+            </div>
+          </div>
+
+          <div class="crisp-card">
+            <div class="crisp-card-head">
+              <h3 class="crisp-card-title">🎭 Personality &amp; Voice</h3>
+            </div>
+            <div class="crisp-grid-2">
+              <div class="crisp-form-field">
+                <label for="id_personality">Personality Tone</label>
+                {{ form.personality }}
+              </div>
+              <div class="crisp-form-field">
+                <label for="id_language">Language</label>
+                {{ form.language }}
+              </div>
+              <div class="crisp-form-field crisp-grid-full">
+                <label for="id_greeting_message">First Greeting Message</label>
+                {{ form.greeting_message }}
+                <p class="crisp-field-help">This greeting is shown as the first message when visitors open the chat widget.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="crisp-card">
+            <div class="crisp-card-head">
+              <h3 class="crisp-card-title">🎨 Look &amp; Brand</h3>
+            </div>
+            <div class="crisp-grid-2">
+              <div class="crisp-form-field">
+                <label for="id_brand_color">Brand Color</label>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <input type="color" id="hub-color-picker" value="{{ employee.brand_color|default:'#0066FF' }}" style="width:44px;height:38px;padding:2px;border:1px solid #D1D5DB;border-radius:6px;cursor:pointer;" />
+                  {{ form.brand_color }}
+                </div>
+              </div>
+              <div class="crisp-form-field">
+                <label for="id_avatar">Avatar</label>
+                {{ form.avatar }}
+              </div>
+            </div>
+          </div>
+
+          <div class="crisp-card">
+            <div class="crisp-card-head">
+              <h3 class="crisp-card-title">✉️ Handoff &amp; Status</h3>
+            </div>
+            <div class="crisp-grid-2">
+              <div class="crisp-form-field">
+                <label for="id_handoff_email">Team Handoff Email</label>
+                {{ form.handoff_email }}
+              </div>
+              <div class="crisp-form-field" style="justify-content:center;">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                  {{ form.is_active }}
+                  <span>Active on website</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="crisp-submit-row">
+              <button type="submit" class="lb-btn lb-btn-primary">Save Settings</button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- TAB 6A: CAPABILITIES -->
+      <section class="crisp-tab-panel" id="tab-capabilities">
+        <h1 class="crisp-canvas-title">Capabilities</h1>
+        <p style="color:#6B7280;font-size:13.5px;margin-top:-8px;margin-bottom:20px;">Choose the actions and responsibilities {{ employee.name }} can perform for your visitors.</p>
+
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">🧩 Allowed Workflows</h3>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:10px;font-size:13px;">
+            {{ form.capability_choices }}
+          </div>
+          <div class="crisp-submit-row">
+            <button type="submit" form="hub-settings-form" class="lb-btn lb-btn-primary">Save Capabilities</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 6B: STATUS -->
+      <section class="crisp-tab-panel" id="tab-status">
+        <h1 class="crisp-canvas-title">Status</h1>
+        <p style="color:#6B7280;font-size:13.5px;margin-top:-8px;margin-bottom:20px;">Control whether {{ employee.name }} is live and ready for real visitors.</p>
+
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">⚡ Website Visibility</h3>
+            <span id="act-pill">
+              {% if employee.is_active %}
+              <span class="crisp-badge crisp-badge-active">Active</span>
+              {% else %}
+              <span class="crisp-badge crisp-badge-req">Inactive</span>
+              {% endif %}
+            </span>
+          </div>
+
+          <p style="font-size:13.5px;color:#4B5563;line-height:1.5;">
+            When active, {{ employee.name }} will greet website visitors and answer questions based on your trained knowledge sources. When inactive, the widget is hidden from public view.
+          </p>
+
+          <form method="post" action="{% url 'employee_hub' employee.pk %}" style="margin-top:16px;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="toggle_active" />
+            <button type="submit" class="lb-btn {% if employee.is_active %}lb-btn-ghost{% else %}lb-btn-primary{% endif %}" id="btn-toggle-active">
+              {% if employee.is_active %}Deactivate Employee{% else %}Activate on Website{% endif %}
+            </button>
+          </form>
+        </div>
+
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">🧯 Danger Zone</h3>
+          </div>
+          <p style="font-size:13.5px;color:#4B5563;line-height:1.5;">This permanently removes the employee and their training materials.</p>
+          <a href="{% url 'employee_fire' employee.pk %}" class="lb-btn lb-btn-ghost" style="color:#DC2626;border-color:#FECACA;margin-top:8px;">Fire Employee</a>
+        </div>
+      </section>
+
+      <!-- TAB 6C: KNOWLEDGE BASE -->
+      <section class="crisp-tab-panel" id="tab-knowledge">
+        <h1 class="crisp-canvas-title">Knowledge Base</h1>
+        <p style="color:#6B7280;font-size:13.5px;margin-top:-8px;margin-bottom:20px;">Review all training material powering {{ employee.name }}.</p>
+
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">Saved Materials ({{ source_count }})</h3>
+          </div>
+          {% if sources %}
+          <div class="crisp-kb-list">
+            {% for s in sources %}
+            <div class="crisp-kb-row">
+              <div class="crisp-kb-info">
+                <div class="crisp-kb-icon">
+                  {% if s.source_type == 'pdf' %}📄{% elif s.source_type == 'url' %}🌐{% elif s.source_type == 'faq' %}❓{% else %}📝{% endif %}
+                </div>
+                <div class="crisp-kb-text">
+                  <h4>{{ s.title }}</h4>
+                  <p>{{ s.get_source_type_display }} &bull; {{ s.chunk_count }} chunks &bull; {{ s.get_status_display }}</p>
+                </div>
+              </div>
+              <form method="post" action="{% url 'employee_hub' employee.pk %}" onsubmit="return confirm('Remove this material?');">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete_knowledge" />
+                <input type="hidden" name="source_id" value="{{ s.pk }}" />
+                <input type="hidden" name="return_tab" value="knowledge" />
+                <button type="submit" class="lb-btn lb-btn-ghost lb-btn-sm" style="color:#DC2626;">Delete</button>
+              </form>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p style="font-size:13px;color:#6B7280;text-align:center;padding:16px 0;">No training material has been added yet.</p>
+          {% endif %}
+        </div>
+      </section>
+
+      <!-- TAB 6D: ADD MATERIAL -->
+      <section class="crisp-tab-panel" id="tab-add-material">
+        <h1 class="crisp-canvas-title">Add Material</h1>
+        <p style="color:#6B7280;font-size:13.5px;margin-top:-8px;margin-bottom:20px;">Train {{ employee.name }} with FAQs, URLs, PDFs, and text sources.</p>
+
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">➕ New Training Source</h3>
+          </div>
+
+          <form method="post" action="{% url 'employee_hub' employee.pk %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_knowledge" />
+            <input type="hidden" name="return_tab" value="knowledge" />
+
+            <div class="crisp-grid-2">
+              <div class="crisp-form-field">
+                <label>Material type</label>
+                <select name="source_type" required>
+                  <option value="faq">FAQ</option>
+                  <option value="url">Website URL</option>
+                  <option value="pdf">PDF</option>
+                  <option value="text">Plain Text</option>
+                </select>
+              </div>
+              <div class="crisp-form-field">
+                <label>Title</label>
+                <input type="text" name="title" placeholder="e.g. Pricing page" required />
+              </div>
+            </div>
+
+            <div class="crisp-form-field" style="margin-top:12px;">
+              <label>Content / Answer</label>
+              <textarea name="content" rows="4" placeholder="Paste the FAQ answer or text to train the employee..."></textarea>
+            </div>
+
+            <div class="crisp-form-field" style="margin-top:12px;">
+              <label>URL</label>
+              <input type="url" name="source_url" placeholder="https://yourcompany.com/faq" />
+            </div>
+
+            <div class="crisp-form-field" style="margin-top:12px;">
+              <label>PDF file</label>
+              <input type="file" name="file" accept=".pdf" />
+            </div>
+
+            <div class="crisp-submit-row">
+              <button type="submit" class="lb-btn lb-btn-primary">Add Material</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- TAB 6E: WIDGET CODE -->
+      <section class="crisp-tab-panel" id="tab-widget-code">
+        <h1 class="crisp-canvas-title">Widget Code</h1>
+        <p style="color:#6B7280;font-size:13.5px;margin-top:-8px;margin-bottom:20px;">Embed {{ employee.name }} on any website with a single snippet.</p>
+
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">Single Employee Snippet</h3>
+            <span class="lb-badge lb-badge-purple">Direct to {{ employee.name }}</span>
+          </div>
+          <div class="crisp-code-box" id="snippet-single">
+            <code>{{ embed_snippet }}</code>
+            <button type="button" class="crisp-copy-btn" data-copy="snippet-single">Copy</button>
+          </div>
+        </div>
+
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">Team Snippet</h3>
+            <span class="lb-badge lb-badge-green">Roster</span>
+          </div>
+          <div class="crisp-code-box" id="snippet-team">
+            <code>{{ team_embed_snippet }}</code>
+            <button type="button" class="crisp-copy-btn" data-copy="snippet-team">Copy</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 7: BILLING -->
+      <section class="crisp-tab-panel" id="tab-billing">
+        <h1 class="crisp-canvas-title">Agent Billing &amp; Plan</h1>
+        <p style="color:#6B7280;font-size:13.5px;margin-top:-8px;margin-bottom:20px;">Manage subscription plan and capacity for {{ workspace.name }}.</p>
+
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">💳 Current Plan</h3>
+            <span class="lb-badge lb-badge-purple">{{ workspace.plan.name|default:'Starter' }}</span>
+          </div>
+          <p style="font-size:13.5px;color:#374151;">
+            Your workspace has <strong>{{ all_employees|length }}</strong> of <strong>{{ workspace.plan.employee_limit|default:1 }}</strong> AI Employee(s) provisioned.
+          </p>
+          <div style="margin-top:16px;">
+            <a href="{% url 'billing' %}" class="lb-btn lb-btn-primary">Manage Subscription &rarr;</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 8: INSTRUCTIONS -->
+      <section class="crisp-tab-panel" id="tab-instructions">
+        <h1 class="crisp-canvas-title">System Instructions</h1>
+        <p style="color:#6B7280;font-size:13.5px;margin-top:-8px;margin-bottom:20px;">Review and configure the internal directives that guide {{ employee.name }}'s behavior.</p>
+
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">📋 Built-in Directives</h3>
+          </div>
+          <p style="font-size:13px;color:#4B5563;">LiftBot automatically constructs a comprehensive directive based on employee role, department, capabilities, and workspace profile:</p>
+          <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;padding:14px;font-size:12.5px;font-family:monospace;white-space:pre-wrap;color:#374151;max-height:280px;overflow-y:auto;line-height:1.5;">{{ employee.system_prompt|default:'System prompt will be generated automatically on save.' }}</div>
+        </div>
+
+        <div class="crisp-actions-row">
+          <button type="button" class="crisp-link-btn" data-switch-tab="settings">Edit Role &amp; Capabilities &gt;</button>
+        </div>
+      </section>
+
+      <!-- TAB 9: ROUTING -->
+      <section class="crisp-tab-panel" id="tab-routing">
+        <h1 class="crisp-canvas-title">Routing &amp; Lead Dispatch</h1>
+        <p style="color:#6B7280;font-size:13.5px;margin-top:-8px;margin-bottom:20px;">Control how {{ employee.name }} routes qualified visitors and dispatches handoff emails.</p>
+
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">🔀 Escalation Target</h3>
+          </div>
+          <p style="font-size:13px;color:#4B5563;">When a visitor requests human help or schedules a meeting:</p>
+          <div style="padding:12px 14px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;display:flex;align-items:center;justify-content:space-between;margin-top:10px;">
+            <div>
+              <strong style="font-size:13px;color:#111827;">Handoff Notification Email</strong><br />
+              <span style="font-size:12.5px;color:#6B7280;">{{ employee.handoff_email|default:'No email configured (handoff will create open tasks in dashboard)' }}</span>
+            </div>
+            <button type="button" class="lb-btn lb-btn-ghost lb-btn-sm" data-switch-tab="settings">Change Email</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 10: QUESTIONS & ANSWERS (TRAIN) -->
+      <section class="crisp-tab-panel" id="tab-qa">
+        <h1 class="crisp-canvas-title">Questions &amp; Answers</h1>
+        <p style="color:#6B7280;font-size:13.5px;margin-top:-8px;margin-bottom:20px;">Frequently asked questions and canned answers that {{ employee.name }} uses for precise retrieval.</p>
+
+        <!-- Inline Add FAQ Form -->
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">➕ Add New Question &amp; Answer</h3>
+          </div>
+          <form method="post" action="{% url 'employee_hub' employee.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_knowledge" />
+            <input type="hidden" name="source_type" value="faq" />
+            <input type="hidden" name="return_tab" value="qa" />
+
+            <div class="crisp-form-field">
+              <label>Question / Title</label>
+              <input type="text" name="title" placeholder="e.g. What is your refund policy?" required />
+            </div>
+            <div class="crisp-form-field" style="margin-top:12px;">
+              <label>Answer Content</label>
+              <textarea name="content" rows="3" placeholder="Provide the exact answer {{ employee.name }} should deliver..." required></textarea>
+            </div>
+            <div class="crisp-submit-row">
+              <button type="submit" class="lb-btn lb-btn-primary lb-btn-sm">Add Question</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- List of FAQs -->
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">Saved Questions ({{ qa_sources|length }})</h3>
+          </div>
+          {% if qa_sources %}
+          <div class="crisp-kb-list">
+            {% for s in qa_sources %}
+            <div class="crisp-kb-row">
+              <div class="crisp-kb-info">
+                <div class="crisp-kb-icon">❓</div>
+                <div class="crisp-kb-text">
+                  <h4>{{ s.title }}</h4>
+                  <p>{{ s.chunk_count }} chunks &bull; Status: {{ s.get_status_display }}</p>
+                </div>
+              </div>
+              <form method="post" action="{% url 'employee_hub' employee.pk %}" onsubmit="return confirm('Remove this question?');">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete_knowledge" />
+                <input type="hidden" name="source_id" value="{{ s.pk }}" />
+                <input type="hidden" name="return_tab" value="qa" />
+                <button type="submit" class="lb-btn lb-btn-ghost lb-btn-sm" style="color:#DC2626;">Delete</button>
+              </form>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p style="font-size:13px;color:#6B7280;text-align:center;padding:16px 0;">No FAQs added yet. Add one above!</p>
+          {% endif %}
+        </div>
+      </section>
+
+      <!-- TAB 11: WEB PAGES (TRAIN) -->
+      <section class="crisp-tab-panel" id="tab-webpages">
+        <h1 class="crisp-canvas-title">Web Pages</h1>
+        <p style="color:#6B7280;font-size:13.5px;margin-top:-8px;margin-bottom:20px;">Crawl website URLs and documentation so {{ employee.name }} stays updated.</p>
+
+        <!-- Inline Crawl URL Form -->
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">🌐 Crawl Website URL</h3>
+          </div>
+          <form method="post" action="{% url 'employee_hub' employee.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_knowledge" />
+            <input type="hidden" name="source_type" value="url" />
+            <input type="hidden" name="return_tab" value="webpages" />
+
+            <div class="crisp-form-field">
+              <label>Page Title</label>
+              <input type="text" name="title" placeholder="e.g. Pricing Page" required />
+            </div>
+            <div class="crisp-form-field" style="margin-top:12px;">
+              <label>Website URL</label>
+              <input type="url" name="source_url" placeholder="https://yourcompany.com/pricing" required />
+            </div>
+            <div class="crisp-submit-row">
+              <button type="submit" class="lb-btn lb-btn-primary lb-btn-sm">Crawl Page</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- List of Web Pages -->
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">Trained URLs ({{ web_sources|length }})</h3>
+          </div>
+          {% if web_sources %}
+          <div class="crisp-kb-list">
+            {% for s in web_sources %}
+            <div class="crisp-kb-row">
+              <div class="crisp-kb-info">
+                <div class="crisp-kb-icon">🌐</div>
+                <div class="crisp-kb-text">
+                  <h4>{{ s.title }}</h4>
+                  <p>{{ s.source_url }} &bull; {{ s.chunk_count }} chunks &bull; {{ s.get_status_display }}</p>
+                </div>
+              </div>
+              <form method="post" action="{% url 'employee_hub' employee.pk %}" onsubmit="return confirm('Remove this page?');">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete_knowledge" />
+                <input type="hidden" name="source_id" value="{{ s.pk }}" />
+                <input type="hidden" name="return_tab" value="webpages" />
+                <button type="submit" class="lb-btn lb-btn-ghost lb-btn-sm" style="color:#DC2626;">Delete</button>
+              </form>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p style="font-size:13px;color:#6B7280;text-align:center;padding:16px 0;">No web pages crawled yet. Enter a URL above!</p>
+          {% endif %}
+        </div>
+      </section>
+
+      <!-- TAB 12: FILES (TRAIN) -->
+      <section class="crisp-tab-panel" id="tab-files">
+        <h1 class="crisp-canvas-title">Files &amp; Documents</h1>
+        <p style="color:#6B7280;font-size:13.5px;margin-top:-8px;margin-bottom:20px;">Upload PDF brochures, product catalogs, and guidebooks for {{ employee.name }}.</p>
+
+        <!-- Inline Upload File Form -->
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">📁 Upload PDF Document</h3>
+          </div>
+          <form method="post" enctype="multipart/form-data" action="{% url 'employee_hub' employee.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_knowledge" />
+            <input type="hidden" name="source_type" value="pdf" />
+            <input type="hidden" name="return_tab" value="files" />
+
+            <div class="crisp-form-field">
+              <label>Document Title</label>
+              <input type="text" name="title" placeholder="e.g. Product Catalog 2026" required />
+            </div>
+            <div class="crisp-form-field" style="margin-top:12px;">
+              <label>PDF File</label>
+              <input type="file" name="file" accept=".pdf" required />
+            </div>
+            <div class="crisp-submit-row">
+              <button type="submit" class="lb-btn lb-btn-primary lb-btn-sm">Upload &amp; Train</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- List of Files -->
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">Uploaded Files ({{ file_sources|length }})</h3>
+          </div>
+          {% if file_sources %}
+          <div class="crisp-kb-list">
+            {% for s in file_sources %}
+            <div class="crisp-kb-row">
+              <div class="crisp-kb-info">
+                <div class="crisp-kb-icon">📄</div>
+                <div class="crisp-kb-text">
+                  <h4>{{ s.title }}</h4>
+                  <p>{{ s.chunk_count }} chunks &bull; Status: {{ s.get_status_display }}</p>
+                </div>
+              </div>
+              <form method="post" action="{% url 'employee_hub' employee.pk %}" onsubmit="return confirm('Remove this document?');">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete_knowledge" />
+                <input type="hidden" name="source_id" value="{{ s.pk }}" />
+                <input type="hidden" name="return_tab" value="files" />
+                <button type="submit" class="lb-btn lb-btn-ghost lb-btn-sm" style="color:#DC2626;">Delete</button>
+              </form>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p style="font-size:13px;color:#6B7280;text-align:center;padding:16px 0;">No PDF files uploaded yet. Upload one above!</p>
+          {% endif %}
+        </div>
+      </section>
+
+      <!-- TAB 13: WEBSITE WIDGET (DEPLOY) -->
+      <section class="crisp-tab-panel" id="tab-widget">
+        <h1 class="crisp-canvas-title">Website Widget Installation</h1>
+        <p style="color:#6B7280;font-size:13.5px;margin-top:-8px;margin-bottom:20px;">Embed {{ employee.name }} on any website with a single snippet tag.</p>
+
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">Single Employee Snippet</h3>
+            <span class="lb-badge lb-badge-purple">Direct to {{ employee.name }}</span>
+          </div>
+          <p style="font-size:13px;color:#4B5563;">Visitors talk directly to {{ employee.name }} immediately upon opening the widget.</p>
+          <div class="crisp-code-box" id="snippet-single">
+            <code>{{ embed_snippet }}</code>
+            <button type="button" class="crisp-copy-btn" data-copy="snippet-single">Copy</button>
+          </div>
+        </div>
+
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">Whole Team Snippet</h3>
+            <span class="lb-badge lb-badge-green">Team Roster</span>
+          </div>
+          <p style="font-size:13px;color:#4B5563;">Visitors pick which AI Employee to chat with (Sales, Support, and more).</p>
+          <div class="crisp-code-box" id="snippet-team">
+            <code>{{ team_embed_snippet }}</code>
+            <button type="button" class="crisp-copy-btn" data-copy="snippet-team">Copy</button>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /.crisp-canvas -->
+
+    <!-- ======================================================= -->
+    <!-- SIMULATOR COLUMN (Right of Layer 3: Live Crisp Widget)  -->
+    <!-- ======================================================= -->
+    <aside class="crisp-simulator-pane" id="crispSimPane">
+      <div class="crisp-sim-backdrop">
+        <p class="crisp-sim-header-label">Test your AI Agent here:</p>
+
+        <div class="crisp-widget-card" id="crispWidgetCard">
+          <!-- Widget Topbar -->
+          <div class="crisp-widget-topbar">
+            <button type="button" class="crisp-topbar-btn" id="sim-home-btn" title="Home">🏠</button>
+            <div class="crisp-widget-pill">
+              <span>💬 Messages</span>
+            </div>
+            <button type="button" class="crisp-topbar-btn" id="sim-reset-btn" title="New conversation">↻</button>
+          </div>
+
+          <!-- Widget Identity Sub-header -->
+          <div class="crisp-widget-identity">
+            <div class="crisp-widget-av-group">
+              <div class="crisp-widget-av" id="sim-avatar">{{ employee.name|slice:":1"|upper }}</div>
+            </div>
+            <h4 id="sim-name-header">Questions? Chat with us.</h4>
+            <div class="crisp-widget-status">
+              <span class="crisp-widget-status-dot"></span>
+              <span id="sim-role-header">Support is online.</span>
+            </div>
+          </div>
+
+          <!-- Messages Container -->
+          <div class="crisp-widget-messages" id="crisp-chat-messages" role="log" aria-live="polite">
+            <!-- Bubbles injected dynamically by JS -->
+          </div>
+
+          <!-- Input Form -->
+          <form class="crisp-widget-form" id="crisp-chat-form">
+            <input type="text" class="crisp-widget-input" id="crisp-chat-input" placeholder="Compose your message..." autocomplete="off" />
+            <div class="crisp-widget-controls">
+              <div class="crisp-input-icons">
+                <span title="Emoji">🙂</span>
+                <span title="Attachment">📎</span>
+                <span title="Audio">🎙️</span>
+              </div>
+              <button type="submit" class="crisp-send-btn" id="crisp-chat-send" aria-label="Send message">
+                <span style="font-size:12px;">▲</span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Widget Footer -->
+          <div class="crisp-widget-footer">
+            We run on <strong>LiftBot</strong>
+          </div>
+        </div><!-- /.crisp-widget-card -->
+      </div><!-- /.crisp-sim-backdrop -->
+    </aside>
+
+  </main><!-- /.crisp-main-area -->
+
+  <!-- Mobile Simulator Toggle Button -->
+  <button type="button" class="crisp-mobile-sim-toggle" id="crispMobileSimToggle">
+    <span>💬</span>
+    <span>Test Agent</span>
+  </button>
+</div><!-- /.crisp-hub -->
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(() => {
+  // Configuration
+  const token = "{{ employee.widget_token }}";
+  const apiBase = "{{ public_widget_api }}/";
+  const historyUrl = "{% url 'playground_history' employee.pk %}";
+  const defaultGreeting = "{{ employee.greeting_message|escapejs }}";
+  const storageKey = 'lb_crisp_session_' + token;
+
+  // Elements
+  const msgBox = document.getElementById('crisp-chat-messages');
+  const chatInput = document.getElementById('crisp-chat-input');
+  const chatForm = document.getElementById('crisp-chat-form');
+  const sendBtn = document.getElementById('crisp-chat-send');
+  const simResetBtn = document.getElementById('sim-reset-btn');
+  const topNewChatBtn = document.getElementById('crisp-top-new-chat');
+  const simPane = document.getElementById('crispSimPane');
+  const mobileToggle = document.getElementById('crispMobileSimToggle');
+
+  let sessionId = localStorage.getItem(storageKey) || null;
+  let busy = false;
+
+  // Add message bubble
+  function addMessage(who, text, isThinking = false) {
+    const el = document.createElement('div');
+    el.className = 'crisp-bubble ' + (who === 'you' ? 'crisp-bubble-visitor' : (isThinking ? 'crisp-bubble-thinking' : 'crisp-bubble-agent'));
+    el.textContent = text;
+    msgBox.appendChild(el);
+    msgBox.scrollTop = msgBox.scrollHeight;
+    return el;
+  }
+
+  // Reset conversation
+  function resetChat() {
+    localStorage.removeItem(storageKey);
+    sessionId = null;
+    msgBox.innerHTML = '';
+    addMessage('agent', defaultGreeting || 'Hi! How can I help you today?');
+    if (chatInput) chatInput.focus();
+  }
+
+  // Load conversation history
+  async function loadHistory() {
+    if (!sessionId) {
+      addMessage('agent', defaultGreeting || 'Hi! How can I help you today?');
+      return;
+    }
+    try {
+      const res = await fetch(historyUrl + '?session_id=' + encodeURIComponent(sessionId));
+      const data = await res.json().catch(() => ({}));
+      if (data.messages && data.messages.length) {
+        msgBox.innerHTML = '';
+        data.messages.forEach(m => {
+          addMessage(m.role === 'visitor' ? 'you' : 'agent', m.content);
+        });
+      } else {
+        resetChat();
+      }
+    } catch (_) {
+      resetChat();
+    }
+  }
+
+  if (simResetBtn) simResetBtn.addEventListener('click', resetChat);
+  if (topNewChatBtn) topNewChatBtn.addEventListener('click', resetChat);
+
+  // Send message
+  if (chatForm) {
+    chatForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (busy) return;
+      const msg = chatInput.value.trim();
+      if (!msg) return;
+
+      busy = true;
+      sendBtn.disabled = true;
+      addMessage('you', msg);
+      chatInput.value = '';
+
+      const thinking = addMessage('agent', 'Thinking…', true);
+
+      try {
+        const res = await fetch(apiBase + 'message/', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            token: token,
+            message: msg,
+            session_id: sessionId,
+            stream: false
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        thinking.className = 'crisp-bubble crisp-bubble-agent';
+        thinking.textContent = res.ok ? (data.reply || 'No reply.') : (data.error || 'Could not connect.');
+
+        if (data.session_id) {
+          sessionId = data.session_id;
+          localStorage.setItem(storageKey, sessionId);
+        }
+      } catch (err) {
+        thinking.className = 'crisp-bubble crisp-bubble-agent';
+        thinking.textContent = 'Network error. Please try again.';
+      } finally {
+        busy = false;
+        sendBtn.disabled = false;
+        chatInput.focus();
+      }
+    });
+  }
+
+  loadHistory();
+
+  // Tab switching logic
+  const navItems = document.querySelectorAll('.crisp-nav-item');
+  const panels = document.querySelectorAll('.crisp-tab-panel');
+  const tabAliases = {
+    qa: 'knowledge',
+    webpages: 'knowledge',
+    files: 'knowledge',
+    widget: 'widget-code',
+    'profile-settings': 'settings',
+    'add-material': 'add-material',
+    'widget-code': 'widget-code'
+  };
+
+  function activateTab(tabId, pushState = true) {
+    const resolvedTab = tabAliases[tabId] || tabId;
+
+    navItems.forEach(item => {
+      if (item.dataset.tab === resolvedTab) {
+        item.classList.add('is-active');
+      } else {
+        item.classList.remove('is-active');
+      }
+    });
+
+    panels.forEach(panel => {
+      if (panel.id === 'tab-' + resolvedTab) {
+        panel.classList.add('is-active');
+      } else {
+        panel.classList.remove('is-active');
+      }
+    });
+
+    const canvas = document.getElementById('crispCanvas');
+    if (canvas) canvas.scrollTop = 0;
+
+    if (pushState) {
+      const url = new URL(window.location);
+      url.searchParams.set('tab', resolvedTab);
+      window.history.replaceState({}, '', url);
+    }
+  }
+
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      activateTab(item.dataset.tab);
+    });
+  });
+
+  // Support links that have data-switch-tab
+  document.querySelectorAll('[data-switch-tab]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      activateTab(btn.dataset.switchTab);
+    });
+  });
+
+  // Initialize active tab from URL or context
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialTab = urlParams.get('tab') || '{{ active_tab|default:"playground" }}';
+  if (initialTab) {
+    activateTab(initialTab, false);
+  }
+
+  // Mobile Simulator Toggle
+  if (mobileToggle && simPane) {
+    mobileToggle.addEventListener('click', () => {
+      simPane.classList.toggle('is-open');
+      mobileToggle.textContent = simPane.classList.contains('is-open') ? '✕ Close Preview' : '💬 Test Agent';
+    });
+  }
+
+  // Live Sync between Settings Form and Widget Preview
+  const nameInput = document.getElementById('id_name');
+  const colorInput = document.getElementById('id_brand_color');
+  const colorPicker = document.getElementById('hub-color-picker');
+  const greetingInput = document.getElementById('id_greeting_message');
+
+  const simAvatar = document.getElementById('sim-avatar');
+  const subnavAv = document.getElementById('subnav-av');
+  const subnavName = document.getElementById('subnav-name');
+
+  function syncLive() {
+    const n = (nameInput && nameInput.value.trim()) || 'AI Employee';
+    if (subnavName) subnavName.textContent = n;
+    if (subnavAv) subnavAv.textContent = n.charAt(0).toUpperCase();
+    if (simAvatar) simAvatar.textContent = n.charAt(0).toUpperCase();
+
+    const c = (colorInput && colorInput.value.trim()) || '#0066FF';
+    document.querySelector('.crisp-hub')?.style.setProperty('--widget-brand', c);
+    document.querySelector('.crisp-hub')?.style.setProperty('--agent-brand', c);
+    if (colorPicker && colorPicker.value.toLowerCase() !== c.toLowerCase() && /^#[0-9A-Fa-f]{6}$/.test(c)) {
+      colorPicker.value = c;
+    }
+  }
+
+  [nameInput, colorInput, greetingInput].forEach(el => {
+    if (el) {
+      el.addEventListener('input', syncLive);
+      el.addEventListener('change', syncLive);
+    }
+  });
+
+  if (colorPicker && colorInput) {
+    colorPicker.addEventListener('input', () => {
+      colorInput.value = colorPicker.value;
+      syncLive();
+    });
+  }
+
+  // Clipboard copy
+  document.querySelectorAll('[data-copy]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const box = document.getElementById(btn.getAttribute('data-copy'));
+      if (!box) return;
+      const text = box.querySelector('code') ? box.querySelector('code').textContent.trim() : box.textContent.trim();
+      try {
+        await navigator.clipboard.writeText(text);
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy'; }, 1800);
+      } catch (_) {}
+    });
+  });
+})();
+</script>
+{% endblock %}

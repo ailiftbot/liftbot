@@ -1,0 +1,1239 @@
+/* Crisp-Style 3-Layer AI Agent Hub */
+
+/* Viewport locking for seamless 3-panel layout */
+html:has(.crisp-hub),
+body.lb-app:has(.crisp-hub) {
+  height: 100%;
+  overflow: hidden;
+}
+
+.lb-shell:has(.crisp-hub) {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.lb-main:has(.crisp-hub) {
+  height: 100%;
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+.lb-content:has(.crisp-hub) {
+  padding: 0 !important;
+  margin: 0 !important;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Master Hub Container */
+.crisp-hub {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  background: #F8F9FC;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ===================================================
+   LAYER 2: Middle Sub-Navigation (Crisp AI Agent Nav)
+   =================================================== */
+.crisp-subnav {
+  width: 240px;
+  min-width: 240px;
+  max-width: 240px;
+  background: #FFFFFF;
+  border-right: 1px solid #E5E7EB;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  flex-shrink: 0;
+  z-index: 10;
+  scrollbar-width: thin;
+  scrollbar-color: #E5E7EB transparent;
+}
+
+.crisp-subnav::-webkit-scrollbar {
+  width: 5px;
+}
+.crisp-subnav::-webkit-scrollbar-thumb {
+  background: #E5E7EB;
+  border-radius: 999px;
+}
+
+/* Subnav Header */
+.crisp-subnav-head {
+  padding: 20px 18px 14px;
+  border-bottom: 1px solid #F3F4F6;
+}
+
+.crisp-subnav-title {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 750;
+  color: #111827;
+  letter-spacing: -0.025em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.crisp-agent-select-wrap {
+  margin-top: 10px;
+}
+
+.crisp-agent-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+  padding: 7px 10px;
+  font-size: 13px;
+  color: #1F2937;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+.crisp-agent-pill:hover {
+  background: #F3F4F6;
+}
+.crisp-agent-pill-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.crisp-agent-av {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--agent-brand, #6D3DF5);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 10.5px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.crisp-agent-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.crisp-agent-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #10B981;
+  flex-shrink: 0;
+}
+.crisp-agent-dot.offline {
+  background: #9CA3AF;
+}
+
+/* Nav Groups */
+.crisp-nav-group {
+  padding: 8px 0;
+}
+
+.crisp-group-title {
+  padding: 10px 18px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9CA3AF;
+  margin: 0;
+}
+
+.crisp-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  margin: 2px 8px;
+  border-radius: 8px;
+  color: #4B5563;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  background: transparent;
+  width: calc(100% - 16px);
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.crisp-nav-item:hover {
+  background: #F3F4F6;
+  color: #111827;
+}
+
+.crisp-nav-item.is-active {
+  background: #FFFFFF;
+  color: #111827;
+  font-weight: 600;
+  border-color: #E5E7EB;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.crisp-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.crisp-nav-ico {
+  font-size: 14px;
+  width: 18px;
+  text-align: center;
+  color: #6B7280;
+  flex-shrink: 0;
+}
+
+.crisp-nav-item.is-active .crisp-nav-ico {
+  color: #111827;
+}
+
+.crisp-nav-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Crisp Badges */
+.crisp-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  flex-shrink: 0;
+}
+
+.crisp-badge-new {
+  background: #ECFDF5;
+  color: #059669;
+  border: 1px solid #A7F3D0;
+}
+
+.crisp-badge-req {
+  background: #FFFBEB;
+  color: #D97706;
+  border: 1px solid #FDE68A;
+  text-transform: none;
+  font-weight: 600;
+}
+
+.crisp-badge-sug {
+  background: #F5F3FF;
+  color: #7C3AED;
+  border: 1px solid #DDD6FE;
+  text-transform: none;
+  font-weight: 600;
+}
+
+.crisp-badge-active {
+  background: #DCFCE7;
+  color: #15803D;
+  border: 1px solid #BBF7D0;
+  text-transform: none;
+  font-weight: 600;
+}
+
+/* Subnav Bottom Monitor Card */
+.crisp-nav-bottom-card {
+  margin: auto 10px 16px;
+  padding: 12px;
+  background: #F0F6FF;
+  border: 1px solid #DBEAFE;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.crisp-bottom-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.crisp-bottom-head strong {
+  color: #1E40AF;
+  font-size: 12px;
+}
+
+.crisp-bottom-head a {
+  color: #2563EB;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 11.5px;
+}
+
+.crisp-nav-bottom-card p {
+  margin: 0;
+  color: #4B5563;
+  line-height: 1.35;
+  font-size: 11.5px;
+}
+
+/* ===================================================
+   LAYER 3: Main Area (Canvas + Chat Simulator)
+   =================================================== */
+.crisp-main-area {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Canvas Area */
+.crisp-canvas {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  padding: 24px 32px 48px;
+  scrollbar-width: thin;
+  scrollbar-color: #D1D5DB transparent;
+}
+
+.crisp-canvas::-webkit-scrollbar {
+  width: 6px;
+}
+.crisp-canvas::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 999px;
+}
+
+/* Tab Panels */
+.crisp-tab-panel {
+  display: none;
+}
+.crisp-tab-panel.is-active {
+  display: block;
+  animation: crispFadeIn 0.2s ease-out;
+}
+
+@keyframes crispFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Canvas Headings */
+.crisp-canvas-title {
+  margin: 0 0 16px;
+  font-size: 24px;
+  font-weight: 750;
+  color: #111827;
+  letter-spacing: -0.025em;
+}
+
+/* Notices & Callouts */
+.crisp-alert-warning {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  color: #92400E;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.crisp-alert-warning strong {
+  font-weight: 600;
+}
+
+.crisp-banner-blue {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #0066FF;
+  color: #FFFFFF;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(0, 102, 255, 0.22);
+}
+
+.crisp-banner-blue p {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.crisp-banner-blue p strong {
+  font-weight: 700;
+}
+
+.crisp-banner-btn {
+  background: #FFFFFF;
+  color: #0066FF;
+  border: 0;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s ease;
+  text-decoration: none;
+}
+.crisp-banner-btn:hover {
+  opacity: 0.95;
+}
+
+/* Section Cards in Canvas */
+.crisp-card {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.crisp-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.crisp-card-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1F2937;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Radio / Compatibility Row */
+.crisp-option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.crisp-option-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.crisp-radio-circle {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 5px solid #0066FF;
+  background: #FFFFFF;
+}
+
+.crisp-option-text strong {
+  display: block;
+  font-size: 13.5px;
+  color: #111827;
+}
+
+.crisp-option-text span {
+  font-size: 12px;
+  color: #6B7280;
+}
+
+/* Field Groups */
+.crisp-field-group {
+  margin-bottom: 16px;
+}
+
+.crisp-field-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.crisp-select-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #FFFFFF;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: #111827;
+  cursor: pointer;
+  width: 100%;
+}
+
+.crisp-field-help {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #6B7280;
+  line-height: 1.4;
+}
+
+.crisp-field-help a {
+  color: #0066FF;
+  text-decoration: none;
+}
+
+/* Guidance Card */
+.crisp-guidance-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: #FFFFFF;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  margin-top: 6px;
+}
+
+.crisp-guidance-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.crisp-guidance-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #10B981;
+}
+
+.crisp-guidance-text strong {
+  color: #111827;
+  margin-right: 6px;
+}
+
+.crisp-guidance-text span {
+  color: #6B7280;
+  font-size: 12.5px;
+}
+
+/* Quick Actions Link Row */
+.crisp-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.crisp-link-btn {
+  background: none;
+  border: 0;
+  color: #4B5563;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.crisp-link-btn:hover {
+  color: #0066FF;
+}
+
+/* Connect Channels Card */
+.crisp-channels-card {
+  background: #F0F7FF;
+  border: 1px solid #DBEAFE;
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-top: 24px;
+}
+
+.crisp-channel-icons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.crisp-channel-ico {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: #2563EB;
+}
+.crisp-channel-ico.mail { background: #EA4335; }
+.crisp-channel-ico.wa { background: #25D366; }
+.crisp-channel-ico.ig { background: #E1306C; }
+.crisp-channel-ico.ms { background: #0084FF; }
+
+.crisp-channels-card h4 {
+  margin: 0 0 4px;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #1E3A8A;
+}
+
+.crisp-channels-card p {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  color: #4B5563;
+  line-height: 1.4;
+}
+
+.crisp-channel-btn {
+  display: inline-block;
+  background: #0066FF;
+  color: #FFFFFF;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  border: 0;
+  cursor: pointer;
+}
+
+/* ===================================================
+   LAYER 3 (Right): Live Chat Simulator Pane
+   =================================================== */
+.crisp-simulator-pane {
+  width: 390px;
+  min-width: 380px;
+  max-width: 420px;
+  height: 100%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #F4F6F9;
+  border-left: 1px solid #E5E7EB;
+  flex-shrink: 0;
+}
+
+.crisp-sim-backdrop {
+  background: linear-gradient(180deg, #3B82F6 0%, #60A5FA 40%, #93C5FD 80%, #DBEAFE 100%);
+  border-radius: 22px;
+  padding: 16px 14px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.22);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.crisp-sim-header-label {
+  text-align: center;
+  color: #FFFFFF;
+  font-size: 14.5px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  letter-spacing: -0.01em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+/* Widget Card Inside Simulator */
+.crisp-widget-card {
+  background: #FFFFFF;
+  border-radius: 18px;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(15, 45, 90, 0.18);
+  min-height: 0;
+}
+
+/* Widget Top Tabs */
+.crisp-widget-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid #F3F4F6;
+  background: #FFFFFF;
+  flex-shrink: 0;
+}
+
+.crisp-topbar-btn {
+  background: none;
+  border: 0;
+  color: #6B7280;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 4px;
+  display: grid;
+  place-items: center;
+}
+
+.crisp-widget-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--widget-brand, #0066FF);
+  color: #FFFFFF;
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+/* Widget Identity Section */
+.crisp-widget-identity {
+  padding: 12px 14px 10px;
+  text-align: center;
+  border-bottom: 1px solid #F3F4F6;
+  background: #FFFFFF;
+  flex-shrink: 0;
+}
+
+.crisp-widget-av-group {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+
+.crisp-widget-av {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--widget-brand, #0066FF);
+  color: #FFFFFF;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 750;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.crisp-widget-identity h4 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.crisp-widget-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #10B981;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.crisp-widget-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #10B981;
+}
+
+/* Widget Messages Scroll Area */
+.crisp-widget-messages {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #FAFAFC;
+  scrollbar-width: thin;
+}
+
+.crisp-widget-messages::-webkit-scrollbar {
+  width: 4px;
+}
+.crisp-widget-messages::-webkit-scrollbar-thumb {
+  background: #E5E7EB;
+  border-radius: 999px;
+}
+
+/* Message Bubbles */
+.crisp-bubble {
+  max-width: 84%;
+  padding: 9px 13px;
+  font-size: 13px;
+  line-height: 1.42;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.crisp-bubble-agent {
+  align-self: flex-start;
+  background: #FFFFFF;
+  color: #1F2937;
+  border-radius: 14px 14px 14px 4px;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.crisp-bubble-visitor {
+  align-self: flex-end;
+  background: var(--widget-brand, #0066FF);
+  color: #FFFFFF;
+  border-radius: 14px 14px 4px 14px;
+}
+
+.crisp-bubble-thinking {
+  align-self: flex-start;
+  background: #FFFFFF;
+  color: #6B7280;
+  border-radius: 14px 14px 14px 4px;
+  border: 1px solid #E5E7EB;
+  font-style: italic;
+  font-size: 12px;
+}
+
+/* Widget Input Form */
+.crisp-widget-form {
+  border-top: 1px solid #E5E7EB;
+  background: #FFFFFF;
+  padding: 8px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.crisp-widget-input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  font-size: 13px;
+  font-family: inherit;
+  color: #111827;
+  padding: 4px 0;
+  background: transparent;
+}
+.crisp-widget-input::placeholder {
+  color: #9CA3AF;
+}
+
+.crisp-widget-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.crisp-input-icons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #9CA3AF;
+  font-size: 14px;
+}
+.crisp-input-icons span {
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+.crisp-input-icons span:hover {
+  background: #F3F4F6;
+  color: #4B5563;
+}
+
+.crisp-send-btn {
+  background: var(--widget-brand, #0066FF);
+  color: #FFFFFF;
+  border: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+.crisp-send-btn:hover {
+  transform: scale(1.05);
+}
+.crisp-send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Widget Footer */
+.crisp-widget-footer {
+  text-align: center;
+  font-size: 10.5px;
+  color: #9CA3AF;
+  padding: 6px 0 8px;
+  border-top: 1px solid #F9FAFB;
+  background: #FFFFFF;
+  flex-shrink: 0;
+}
+.crisp-widget-footer strong {
+  color: #6B7280;
+  font-weight: 700;
+}
+
+/* ===================================================
+   Tab Specific Forms & Tables
+   =================================================== */
+.crisp-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.crisp-grid-full {
+  grid-column: span 2;
+}
+
+.crisp-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.crisp-form-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.crisp-form-field input[type="text"],
+.crisp-form-field input[type="email"],
+.crisp-form-field input[type="color"],
+.crisp-form-field select,
+.crisp-form-field textarea {
+  width: 100%;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13.5px;
+  font-family: inherit;
+  color: #111827;
+  background: #FFFFFF;
+  outline: 0;
+  transition: border-color 0.15s ease;
+}
+
+.crisp-form-field input:focus,
+.crisp-form-field select:focus,
+.crisp-form-field textarea:focus {
+  border-color: #0066FF;
+  box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.12);
+}
+
+.crisp-submit-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #F3F4F6;
+}
+
+/* Stats Cards Grid */
+.crisp-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.crisp-stat-box {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 16px;
+}
+.crisp-stat-box span {
+  display: block;
+  font-size: 12px;
+  color: #6B7280;
+  font-weight: 600;
+}
+.crisp-stat-box strong {
+  display: block;
+  font-size: 24px;
+  font-weight: 750;
+  color: #111827;
+  margin-top: 4px;
+}
+
+/* Knowledge Source Rows */
+.crisp-kb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.crisp-kb-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 16px;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+}
+
+.crisp-kb-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.crisp-kb-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #F3F4F6;
+  color: #4B5563;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.crisp-kb-text h4 {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.crisp-kb-text p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #6B7280;
+}
+
+/* Embed Snippets Code Box */
+.crisp-code-box {
+  background: #1E293B;
+  color: #F8FAFC;
+  border-radius: 10px;
+  padding: 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  position: relative;
+  overflow-x: auto;
+  line-height: 1.5;
+  margin-top: 8px;
+}
+
+.crisp-copy-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 0;
+  color: #FFFFFF;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.crisp-copy-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+/* Mobile Simulator Toggle Button */
+.crisp-mobile-sim-toggle {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #0066FF;
+  color: #FFFFFF;
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 10px 25px rgba(0, 102, 255, 0.4);
+  z-index: 100;
+  cursor: pointer;
+}
+
+/* ===================================================
+   RESPONSIVENESS
+   =================================================== */
+
+/* Laptop / Medium screens (1024px to 1250px) */
+@media (max-width: 1250px) {
+  .crisp-subnav {
+    width: 210px;
+    min-width: 210px;
+  }
+  .crisp-simulator-pane {
+    width: 340px;
+    min-width: 330px;
+    padding: 14px;
+  }
+  .crisp-canvas {
+    padding: 20px 24px;
+  }
+}
+
+/* Tablet & Smaller Screens (< 1024px) */
+@media (max-width: 1023px) {
+  .crisp-hub {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  
+  .crisp-subnav {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    height: auto;
+    border-right: 0;
+    border-bottom: 1px solid #E5E7EB;
+    flex-direction: row;
+    align-items: center;
+    overflow-x: auto;
+    padding: 6px 12px;
+    scrollbar-width: none;
+  }
+  .crisp-subnav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .crisp-subnav-head {
+    border-bottom: 0;
+    padding: 6px 12px 6px 0;
+    border-right: 1px solid #E5E7EB;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .crisp-subnav-title {
+    font-size: 16px;
+  }
+  .crisp-agent-select-wrap {
+    display: none;
+  }
+
+  .crisp-nav-group {
+    display: flex;
+    align-items: center;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  .crisp-group-title {
+    display: none;
+  }
+  .crisp-nav-item {
+    width: auto;
+    white-space: nowrap;
+    margin: 0 4px;
+    padding: 7px 12px;
+  }
+  .crisp-nav-bottom-card {
+    display: none;
+  }
+
+  .crisp-main-area {
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+  }
+
+  .crisp-canvas {
+    height: auto;
+    overflow: visible;
+    padding: 20px 16px 80px;
+  }
+
+  /* Simulator pane slides up or is toggleable on mobile */
+  .crisp-simulator-pane {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: min(420px, 92vw);
+    min-width: 0;
+    height: 100%;
+    z-index: 200;
+    transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: -10px 0 30px rgba(0,0,0,0.15);
+  }
+
+  .crisp-simulator-pane.is-open {
+    right: 0;
+  }
+
+  .crisp-sim-backdrop {
+    border-radius: 0;
+    padding: 16px 12px;
+  }
+
+  .crisp-mobile-sim-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+/* Mobile (< 768px) */
+@media (max-width: 767px) {
+  .crisp-grid-2 {
+    grid-template-columns: 1fr;
+  }
+  .crisp-grid-full {
+    grid-column: span 1;
+  }
+  .crisp-banner-blue {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .crisp-banner-btn {
+    width: 100%;
+    text-align: center;
+  }
+  .crisp-actions-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

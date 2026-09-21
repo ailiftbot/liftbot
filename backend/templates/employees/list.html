@@ -37,7 +37,7 @@
 <div class="pg-grid" id="emp-grid">
   {% for e in employees %}
   <article class="pg-emp-card" data-search="{{ e.name }} {{ e.get_role_display }} {{ e.get_personality_display }} {{ e.department }}">
-    <a class="pg-emp-main" href="{% url 'employee_detail' e.pk %}">
+    <a class="pg-emp-main" href="{% url 'employee_hub' e.pk %}">
       <div class="pg-av" style="background:{{ e.brand_color|default:'#7C3AED' }}">{{ e.name|slice:":1"|upper }}</div>
       <div class="pg-emp-meta">
         <h3>{{ e.name }}</h3>
@@ -53,9 +53,9 @@
       <span class="pg-quiet">{{ e.knowledge_count }} knowledge {{ e.knowledge_count|pluralize:"item,items" }}</span>
     </div>
     <div class="pg-emp-actions">
-      <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'employee_edit' e.pk %}">Personality</a>
-      <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'knowledge_list' e.pk %}">Train</a>
-      <a class="lb-btn lb-btn-primary lb-btn-sm" href="{% url 'employee_playground' e.pk %}">Playground</a>
+      <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'employee_hub' e.pk %}?tab=settings">Settings</a>
+      <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'employee_hub' e.pk %}?tab=qa">Train</a>
+      <a class="lb-btn lb-btn-primary lb-btn-sm" href="{% url 'employee_hub' e.pk %}?tab=playground">Playground</a>
     </div>
   </article>
   {% empty %}

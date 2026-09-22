@@ -16,6 +16,13 @@ DEBUG = env('DJANGO_DEBUG')
 ALLOWED_HOSTS = env.list('DJANGO_ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 CSRF_TRUSTED_ORIGINS = env.list('DJANGO_CSRF_TRUSTED_ORIGINS', default=[])
 
+# Cookies are scoped by host, not by port, so every Django app served from
+# localhost shares one `sessionid` / `csrftoken` pair and they overwrite each
+# other — which shows up as "CSRF token from POST incorrect". Namespacing the
+# cookie names keeps LiftBot isolated from anything else on the same host.
+SESSION_COOKIE_NAME = env('DJANGO_SESSION_COOKIE_NAME', default='liftbot_sessionid')
+CSRF_COOKIE_NAME = env('DJANGO_CSRF_COOKIE_NAME', default='liftbot_csrftoken')
+
 # Trust reverse proxy (Apache/nginx on :80 → gunicorn :8001)
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

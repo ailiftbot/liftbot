@@ -40,6 +40,9 @@ class ChatRequest(BaseModel):
     history: List[ChatMessage] = Field(default_factory=list)
     top_k: int = 4
     capabilities: List[str] = Field(default_factory=list)
+    # Personality-driven. The caller owns voice; this service only grounds it.
+    temperature: Optional[float] = None
+    fallback_line: str = ''
 
 
 # SMART CHUNKING (Sentences are respected now)
@@ -86,21 +89,28 @@ def chat(body: ChatRequest):
     else:
         context = '\n\n'.join(text for text, _, _ in top_hits)
 
-    # Structured Prompt (Clean without Source Index)
+    # The ROLE block carries the employee's identity AND their voice. The rules
+    # below are about factual grounding only — they deliberately say nothing
+    # about tone or formatting, because a fixed "answer in bullet points" rule
+    # here used to flatten every personality into the same robotic output.
+    fallback = body.fallback_line or (
+        "I don't have that specific information yet — I'll note it down and follow up."
+    )
     system = (
         f"### ROLE ###\n"
-        f"You are {body.system_prompt}\n\n"
-        
+        f"{body.system_prompt}\n\n"
+
         f"### KNOWLEDGE BASE CONTEXT ###\n"
         f"{context}\n\n"
-        
-        f"### STRICT INSTRUCTIONS ###\n"
-        f"1. Answer ONLY using the context provided above.\n"
-        f"2. If the context does not contain the answer, say: 'I am sorry, I don't have that specific information yet. I will note it down and follow up.'\n"
-        f"3. Do NOT invent facts or make up information.\n"
-        f"4. **CRITICAL: NEVER repeat the same response or text twice.** If you have already said it, do not say it again. Always provide a unique, concise answer.\n"
-        f"5. If the user asks about pricing or scheduling, proactively suggest the 'Schedule' or 'Contact' action.\n"
-        f"6. Format your answer in short, easy-to-read bullet points."
+
+        f"### GROUNDING RULES ###\n"
+        f"1. Answer using the context above. Do not invent facts or make up information.\n"
+        f"2. If the context does not contain the answer, tell them so in your own voice — "
+        f"something along the lines of: \"{fallback}\"\n"
+        f"3. Never repeat the same sentence twice, and never send two versions of one answer.\n"
+        f"4. Send exactly one reply.\n"
+        f"5. Your ROLE section defines your tone, length and formatting. Follow it exactly — "
+        f"it overrides any habit you have of defaulting to bullet points or a formal register."
     )
 
     history = [m.model_dump() for m in body.history]
@@ -108,7 +118,7 @@ def chat(body: ChatRequest):
         history.append({'role': 'visitor', 'content': body.message})
 
     def event_stream():
-        for token in llm.stream(system, history):
+        for token in llm.stream(system, history, temperature=body.temperature):
             yield f'data: {token}\n\n'
         yield 'data: [DONE]\n\n'
 

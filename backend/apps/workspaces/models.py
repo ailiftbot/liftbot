@@ -1,5 +1,6 @@
 import secrets
-from datetime import timedelta
+from datetime import datetime, time, timedelta
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from django.conf import settings
 from django.db import models
@@ -23,6 +24,24 @@ class Workspace(models.Model):
     brand_color = models.CharField(max_length=7, default='#0F766E')
     widget_token = models.CharField(max_length=64, unique=True, editable=False)
     webhook_url = models.URLField(blank=True, help_text='POST JSON when leads/tasks are created')
+    timezone = models.CharField(
+        max_length=64,
+        default='UTC',
+        help_text='IANA timezone the office hours below are expressed in, e.g. Asia/Kolkata',
+    )
+    office_hours = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text='{"mon": [["09:00", "18:00"]], ...}. Empty means the team is always reachable.',
+    )
+    away_message = models.TextField(
+        blank=True,
+        help_text='Shown in the widget outside office hours',
+    )
+    offline_form_enabled = models.BooleanField(
+        default=True,
+        help_text='Ask offline visitors to leave their details',
+    )
     stripe_customer_id = models.CharField(max_length=100, blank=True)
     stripe_subscription_id = models.CharField(max_length=100, blank=True)
     conversations_used = models.PositiveIntegerField(default=0)
@@ -66,6 +85,58 @@ class Workspace(models.Model):
 
     def is_near_quota(self):
         return self.usage_percent >= 80
+
+    WEEKDAY_KEYS = ('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun')
+
+    DEFAULT_AWAY_MESSAGE = (
+        'The team is offline right now. Leave your details and we will get back to you.'
+    )
+
+    def tz(self):
+        try:
+            return ZoneInfo(self.timezone or 'UTC')
+        except (ZoneInfoNotFoundError, ValueError):
+            return ZoneInfo('UTC')
+
+    @staticmethod
+    def _parse_hhmm(value: str):
+        try:
+            hh, mm = str(value).split(':')
+            return time(int(hh), int(mm))
+        except (ValueError, AttributeError):
+            return None
+
+    def is_within_office_hours(self, when: datetime | None = None) -> bool:
+        """True when the team is reachable. No configured hours == always on."""
+        hours = self.office_hours or {}
+        if not any(hours.get(k) for k in self.WEEKDAY_KEYS):
+            return True
+        local = (when or timezone.now()).astimezone(self.tz())
+        ranges = hours.get(self.WEEKDAY_KEYS[local.weekday()]) or []
+        now_t = local.time()
+        for window in ranges:
+            if not isinstance(window, (list, tuple)) or len(window) != 2:
+                continue
+            start = self._parse_hhmm(window[0])
+            end = self._parse_hhmm(window[1])
+            if start is None or end is None:
+                continue
+            if start <= end:
+                if start <= now_t <= end:
+                    return True
+            elif now_t >= start or now_t <= end:  # window crosses midnight
+                return True
+        return False
+
+    def availability(self) -> dict:
+        online = self.is_within_office_hours()
+        return {
+            'online': online,
+            'away_message': '' if online else (self.away_message or self.DEFAULT_AWAY_MESSAGE),
+            'offline_form': bool(not online and self.offline_form_enabled),
+            'office_hours': self.office_hours or {},
+            'timezone': self.timezone or 'UTC',
+        }
 
     def team_embed_snippet(self, widget_url: str | None = None, api_base: str | None = None) -> str:
         src = widget_url or settings.PUBLIC_WIDGET_URL

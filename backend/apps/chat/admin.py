@@ -1,6 +1,14 @@
 from django.contrib import admin
 
-from .models import VisitorProfile, ChatSession, Message, EmployeeTask
+from .models import (
+    CannedResponse,
+    ChatSession,
+    ConversationRating,
+    ConversationTag,
+    EmployeeTask,
+    Message,
+    VisitorProfile,
+)
 
 
 class MessageInline(admin.TabularInline):
@@ -11,8 +19,12 @@ class MessageInline(admin.TabularInline):
 
 @admin.register(ChatSession)
 class ChatSessionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'employee', 'visitor_id', 'status', 'started_at', 'last_message_at')
-    list_filter = ('status',)
+    list_display = (
+        'id', 'employee', 'visitor_id', 'status', 'assigned_to',
+        'first_response_seconds', 'started_at', 'last_message_at',
+    )
+    list_filter = ('status', 'assigned_to')
+    filter_horizontal = ('tags',)
     inlines = [MessageInline]
 
 
@@ -27,3 +39,21 @@ class EmployeeTaskAdmin(admin.ModelAdmin):
     list_display = ('title', 'task_type', 'status', 'employee', 'workspace', 'created_at')
     list_filter = ('task_type', 'status')
     search_fields = ('title', 'workspace__name', 'employee__name')
+
+
+@admin.register(ConversationTag)
+class ConversationTagAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug', 'workspace', 'color')
+    search_fields = ('name', 'workspace__name')
+
+
+@admin.register(CannedResponse)
+class CannedResponseAdmin(admin.ModelAdmin):
+    list_display = ('shortcut', 'title', 'workspace', 'uses', 'updated_at')
+    search_fields = ('shortcut', 'title', 'body')
+
+
+@admin.register(ConversationRating)
+class ConversationRatingAdmin(admin.ModelAdmin):
+    list_display = ('score', 'employee', 'workspace', 'rated_human', 'created_at')
+    list_filter = ('score', 'rated_human')

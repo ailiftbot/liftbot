@@ -1,19 +1,26 @@
 from datetime import timedelta
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count, Sum
+from django.db.models import Avg, Count, Sum
 from django.db.models.functions import TruncDate
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.timesince import timesince
 
-from apps.chat.models import ChatSession, Message, EmployeeTask, VisitorProfile
+from apps.chat.models import (
+    ChatSession,
+    ConversationRating,
+    EmployeeTask,
+    Message,
+    VisitorProfile,
+)
 from apps.employees.models import AIEmployee
 from apps.knowledge.models import KnowledgeSource
 from apps.leads.models import Lead
 
-from .models import WorkspaceMembership
+from .models import Workspace, WorkspaceMembership
 from .public_urls import widget_urls
 
 
@@ -346,6 +353,63 @@ def analytics(request):
             'open_tasks': task_counts.get(emp.id, 0),
         })
 
+    # --- Service-level metrics (Crisp-style) ------------------------------
+    timings = sessions.aggregate(
+        first_reply=Avg('first_response_seconds'),
+        human_reply=Avg('first_human_response_seconds'),
+        resolution=Avg('resolution_seconds'),
+    )
+    resolved_count = sessions.filter(
+        status__in=[ChatSession.Status.RESOLVED, ChatSession.Status.CLOSED]
+    ).count()
+    touched_by_human = sessions.filter(first_human_response_seconds__isnull=False).count()
+    answered = sessions.filter(first_response_at__isnull=False).count()
+    deflection_pct = round(((answered - touched_by_human) / answered) * 100) if answered else 0
+
+    ratings = ConversationRating.objects.filter(workspace=workspace)
+    rating_count = ratings.count()
+    rating_avg = ratings.aggregate(a=Avg('score'))['a'] or 0
+    happy_pct = round((ratings.filter(score__gte=4).count() / rating_count) * 100) if rating_count else 0
+
+    service = {
+        'first_reply_seconds': round(timings['first_reply'] or 0),
+        'human_reply_seconds': round(timings['human_reply'] or 0),
+        'resolution_seconds': round(timings['resolution'] or 0),
+        'resolved': resolved_count,
+        'deflection_pct': deflection_pct,
+        'rating_avg': round(rating_avg, 1),
+        'rating_count': rating_count,
+        'happy_pct': happy_pct,
+    }
+
+    # --- Per-teammate performance ----------------------------------------
+    operator_rows = []
+    handled = (
+        sessions.filter(assigned_to__isnull=False)
+        .values('assigned_to_id', 'assigned_to__first_name', 'assigned_to__last_name', 'assigned_to__email')
+        .annotate(
+            conversations=Count('id'),
+            avg_reply=Avg('first_human_response_seconds'),
+            avg_resolution=Avg('resolution_seconds'),
+        )
+        .order_by('-conversations')
+    )
+    replies_by_user = dict(
+        messages_qs.filter(role=Message.Role.HUMAN, author__isnull=False)
+        .values('author_id')
+        .annotate(c=Count('id'))
+        .values_list('author_id', 'c')
+    )
+    for row in handled:
+        name = f"{row['assigned_to__first_name'] or ''} {row['assigned_to__last_name'] or ''}".strip()
+        operator_rows.append({
+            'name': name or row['assigned_to__email'],
+            'conversations': row['conversations'],
+            'replies': replies_by_user.get(row['assigned_to_id'], 0),
+            'avg_reply': round(row['avg_reply'] or 0),
+            'avg_resolution': round(row['avg_resolution'] or 0),
+        })
+
     recent_leads = list(leads.select_related('employee').order_by('-created_at')[:6])
     recent_tasks = list(
         tasks.select_related('employee').order_by('-created_at')[:6]
@@ -379,6 +443,9 @@ def analytics(request):
         },
         'chart_days': chart_days,
         'employee_rows': employee_rows,
+        'service': service,
+        'operator_rows': operator_rows,
+        'recent_ratings': list(ratings.select_related('employee')[:6]),
         'recent_leads': recent_leads,
         'recent_tasks': recent_tasks,
         'usage': {
@@ -420,6 +487,32 @@ def workspace_settings(request):
             workspace.save(update_fields=['webhook_url', 'updated_at'])
             messages.success(request, 'Webhook URL saved.')
 
+        elif section == 'office_hours':
+            tz_name = (request.POST.get('timezone') or 'UTC').strip() or 'UTC'
+            try:
+                ZoneInfo(tz_name)
+            except (ZoneInfoNotFoundError, ValueError):
+                messages.error(request, f'"{tz_name}" is not a valid timezone. Keeping {workspace.timezone}.')
+                tz_name = workspace.timezone
+
+            hours = {}
+            for key in Workspace.WEEKDAY_KEYS:
+                if not request.POST.get(f'day_{key}'):
+                    continue
+                start = (request.POST.get(f'start_{key}') or '').strip()
+                end = (request.POST.get(f'end_{key}') or '').strip()
+                if Workspace._parse_hhmm(start) and Workspace._parse_hhmm(end):
+                    hours[key] = [[start, end]]
+
+            workspace.timezone = tz_name
+            workspace.office_hours = hours
+            workspace.away_message = (request.POST.get('away_message') or '').strip()
+            workspace.offline_form_enabled = bool(request.POST.get('offline_form_enabled'))
+            workspace.save(update_fields=[
+                'timezone', 'office_hours', 'away_message', 'offline_form_enabled', 'updated_at',
+            ])
+            messages.success(request, 'Office hours saved.')
+
         elif section == 'account':
             full_name = (request.POST.get('full_name') or '').strip()
             first = (request.POST.get('first_name') or '').strip()
@@ -447,11 +540,26 @@ def workspace_settings(request):
         .order_by('created_at')
     )
 
+    day_labels = ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')
+    saved_hours = workspace.office_hours or {}
+    office_hours_rows = []
+    for key, label in zip(Workspace.WEEKDAY_KEYS, day_labels):
+        windows = saved_hours.get(key) or []
+        window = windows[0] if windows and len(windows[0]) == 2 else None
+        office_hours_rows.append({
+            'key': key,
+            'label': label,
+            'enabled': bool(window),
+            'start': window[0] if window else '09:00',
+            'end': window[1] if window else '18:00',
+        })
+
     urls = widget_urls(request)
     return render(request, 'workspaces/settings.html', {
         'workspace': workspace,
         'profile': profile,
         'memberships': memberships,
+        'office_hours_rows': office_hours_rows,
         'team_embed_snippet': workspace.team_embed_snippet(
             widget_url=urls['widget'], api_base=urls['api']
         ),

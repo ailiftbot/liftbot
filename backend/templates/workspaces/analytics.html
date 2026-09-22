@@ -75,6 +75,77 @@
   </section>
 </div>
 
+<div class="lb-stat-grid">
+  <div class="lb-card lb-stat">
+    <span class="lb-stat-label">First reply time</span>
+    <strong class="lb-stat-value">{{ service.first_reply_seconds }}s</strong>
+    <span class="lb-stat-meta">{{ service.human_reply_seconds }}s when a teammate answers</span>
+  </div>
+  <div class="lb-card lb-stat">
+    <span class="lb-stat-label">Resolution time</span>
+    <strong class="lb-stat-value">{{ service.resolution_seconds }}s</strong>
+    <span class="lb-stat-meta">{{ service.resolved }} conversations resolved</span>
+  </div>
+  <div class="lb-card lb-stat">
+    <span class="lb-stat-label">Handled without a teammate</span>
+    <strong class="lb-stat-value">{{ service.deflection_pct }}%</strong>
+    <span class="lb-stat-meta">AI Employees answered end to end</span>
+  </div>
+  <div class="lb-card lb-stat">
+    <span class="lb-stat-label">Satisfaction</span>
+    <strong class="lb-stat-value">{% if service.rating_count %}{{ service.rating_avg }}/5{% else %}—{% endif %}</strong>
+    <span class="lb-stat-meta">{{ service.rating_count }} ratings · {{ service.happy_pct }}% happy</span>
+  </div>
+</div>
+
+<section class="lb-card" style="padding:0;overflow:hidden;margin-bottom:16px;">
+  <div class="lb-panel-head" style="padding:16px 18px 0;">
+    <h2>By teammate</h2>
+  </div>
+  <div class="lb-table">
+    <div class="lb-table-head">
+      <span>Teammate</span>
+      <span>Conversations</span>
+      <span>Replies</span>
+      <span>Avg first reply</span>
+      <span>Avg resolution</span>
+    </div>
+    {% for row in operator_rows %}
+    <div class="lb-table-row">
+      <span><strong>{{ row.name }}</strong></span>
+      <span>{{ row.conversations }}</span>
+      <span>{{ row.replies }}</span>
+      <span>{{ row.avg_reply }}s</span>
+      <span>{{ row.avg_resolution }}s</span>
+    </div>
+    {% empty %}
+    <div class="lb-empty">No conversations assigned to a teammate yet.</div>
+    {% endfor %}
+  </div>
+</section>
+
+{% if recent_ratings %}
+<section class="lb-card" style="padding:0;overflow:hidden;margin-bottom:16px;">
+  <div class="lb-panel-head" style="padding:16px 18px 0;">
+    <h2>Recent ratings</h2>
+  </div>
+  <div class="lb-table">
+    <div class="lb-table-head">
+      <span>Score</span>
+      <span>AI Employee</span>
+      <span>Comment</span>
+    </div>
+    {% for r in recent_ratings %}
+    <div class="lb-table-row">
+      <span><strong>{{ r.score }}/5</strong></span>
+      <span>{{ r.employee.name }}</span>
+      <span>{{ r.comment|default:"—"|truncatechars:90 }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
 <section class="lb-card" style="padding:0;overflow:hidden;margin-bottom:16px;">
   <div class="lb-panel-head" style="padding:16px 18px 0;">
     <h2>By AI Employee</h2>

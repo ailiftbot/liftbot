@@ -48,6 +48,7 @@
         <a href="{% url 'leads' %}" class="{% if u == 'leads' %}active{% endif %}"><span class="ico">◎</span> Leads</a>
         <a href="{% url 'employee_tasks' %}" class="{% if u == 'employee_tasks' %}active{% endif %}"><span class="ico">✓</span> Employee Tasks</a>
         <a href="{% url 'conversations' %}" class="{% if u == 'conversations' %}active{% endif %}"><span class="ico">▤</span> Conversations</a>
+        <a href="{% url 'canned_responses' %}" class="{% if u == 'canned_responses' %}active{% endif %}"><span class="ico">⌁</span> Saved Replies</a>
         <a href="{% url 'analytics' %}" class="{% if u == 'analytics' %}active{% endif %}"><span class="ico">◈</span> Analytics</a>
         <a href="{% url 'billing' %}" class="{% if u == 'billing' %}active{% endif %}"><span class="ico">$</span> Billing</a>
         <a href="{% url 'settings' %}" class="{% if u == 'settings' %}active{% endif %}"><span class="ico">⚙</span> Settings</a>

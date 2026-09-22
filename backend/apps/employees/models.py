@@ -5,6 +5,8 @@ from django.db import models
 
 from apps.chat.constants import DEFAULT_CAPABILITIES_BY_ROLE
 
+from .personalities import style_for
+
 
 class AIEmployee(models.Model):
     """Named AI Employee deployed on a client's website — a teammate, not a Q&A bot."""
@@ -27,7 +29,10 @@ class AIEmployee(models.Model):
     role = models.CharField(max_length=40, choices=Role.choices, default=Role.SUPPORT)
     personality = models.CharField(max_length=40, choices=Personality.choices, default=Personality.FRIENDLY)
     language = models.CharField(max_length=20, default='en')
-    greeting_message = models.TextField(default='Hi! How can I help you today?')
+    greeting_message = models.TextField(
+        blank=True,
+        help_text='Leave blank to use the default greeting for the chosen personality.',
+    )
     system_prompt = models.TextField(blank=True)
     capabilities = models.JSONField(default=list, blank=True)
     handoff_email = models.EmailField(blank=True, help_text='Team inbox for handoffs and scheduled requests')
@@ -50,20 +55,48 @@ class AIEmployee(models.Model):
     def default_capabilities(self):
         return list(DEFAULT_CAPABILITIES_BY_ROLE.get(self.role, DEFAULT_CAPABILITIES_BY_ROLE['support_specialist']))
 
+    @property
+    def style(self) -> dict:
+        """The voice spec for this employee's configured personality."""
+        return style_for(self.personality)
+
+    @property
+    def reply_temperature(self) -> float:
+        return self.style['temperature']
+
+    @property
+    def fallback_line(self) -> str:
+        """How this teammate says they don't know something, in their own voice."""
+        return self.style['fallback']
+
     def build_system_prompt(self) -> str:
         company = self.workspace.name if self.workspace_id else 'the company'
         dept = self.department or self.get_role_display()
         caps = self.capabilities if self.capabilities is not None else self.default_capabilities()
+        style = self.style
 
         lines = [
             f'You are {self.name}, an AI Employee working as {dept} at {company}.',
-            f'Your personality is {self.get_personality_display().lower()}.',
             'You are a real teammate — not a generic assistant or chatbot.',
             'Never say you are an AI, a bot, or a chatbot.',
             'Use the provided business context to answer accurately.',
             '',
-            'Your job is to DO work for the business, not only answer questions:',
+            f'## Your voice — {self.get_personality_display().lower()} ##',
+            f'You come across as {style["summary"]}. This governs how every reply sounds:',
         ]
+        lines.extend(f'- {rule}' for rule in style['voice'])
+        lines.append(f'- Avoid: {style["avoid"]}.')
+        lines.extend([
+            '',
+            'Formatting follows your voice, not a template:',
+            '- Answer in prose by default. Two to four sentences is the norm.',
+            '- Use bullet points only when you are genuinely listing three or more things.',
+            '- Never format a one- or two-line answer as a bulleted list.',
+            '',
+            f'When you do not know something, say it your way — along the lines of: "{style["fallback"]}"',
+            '',
+            'Your job is to DO work for the business, not only answer questions:',
+        ])
 
         if 'qualify_visitors' in caps:
             lines.append(
@@ -103,8 +136,11 @@ class AIEmployee(models.Model):
             self.widget_token = secrets.token_urlsafe(24)
         if self.capabilities is None:
             self.capabilities = self.default_capabilities()
-        if not self.system_prompt:
-            self.system_prompt = self.build_system_prompt()
+        if not self.greeting_message:
+            self.greeting_message = self.style['greeting']
+        # Rebuild every save: personality, role or department may have changed,
+        # and a stale stored prompt is what made tone edits look like no-ops.
+        self.system_prompt = self.build_system_prompt()
         super().save(*args, **kwargs)
 
     @property

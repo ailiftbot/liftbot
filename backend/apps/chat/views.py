@@ -6,11 +6,13 @@ import redis
 import requests
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.text import slugify
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
@@ -20,13 +22,31 @@ from apps.workspaces.models import Workspace
 from apps.workspaces.views import user_workspace
 
 from .actions import handle_widget_action, process_visitor_turn
+from .inbox import (
+    expand_shortcuts,
+    mark_response,
+    mark_visitor_message,
+    reopen_session,
+    resolve_mentions,
+    resolve_session,
+    suggest_reply,
+    visible_messages,
+)
 from .memory import (
     build_visitor_context_for_prompt,
     get_or_create_profile,
     get_resume_context,
     update_after_exchange,
 )
-from .models import ChatSession, EmployeeTask, Message
+from .models import (
+    CannedResponse,
+    ChatSession,
+    ConversationRating,
+    ConversationTag,
+    EmployeeTask,
+    Message,
+    VisitorProfile,
+)
 from .notify import notify_team_event
 
 logger = logging.getLogger(__name__)
@@ -112,6 +132,7 @@ def widget_roster(request):
     return JsonResponse({
         'workspace': workspace.name,
         'brand_color': workspace.brand_color,
+        'availability': workspace.availability(),
         'employees': [_employee_payload(e) for e in employees],
     })
 
@@ -138,6 +159,7 @@ def widget_config(request):
             'last_session_id': None,
         })
 
+    payload['availability'] = workspace.availability()
     return JsonResponse(payload)
 
 
@@ -252,6 +274,11 @@ def widget_chat(request):
     Message.objects.create(session=session, role=Message.Role.VISITOR, content=message)
     session.last_message_at = timezone.now()
     session.save(update_fields=['last_message_at'])
+    mark_visitor_message(session)
+
+    # A visitor writing back reopens a conversation the team had resolved.
+    if session.is_resolved:
+        reopen_session(session)
 
     # Human takeover: store visitor message only — team replies from dashboard
     if session.is_human_mode:
@@ -284,6 +311,8 @@ def widget_chat(request):
         'history': history,
         'top_k': 4,
         'capabilities': employee.capabilities or [],
+        'temperature': employee.reply_temperature,
+        'fallback_line': employee.fallback_line,
     }
 
     try:
@@ -317,6 +346,7 @@ def widget_chat(request):
             _push_memory(session.id, 'employee', reply)
         except Exception:  # noqa: BLE001
             logger.exception('Redis memory write failed')
+        mark_response(session, by_human=False)
         update_after_exchange(session, message, reply, profile)
         workspace.conversations_used += 1
         workspace.tokens_used += max(len(message.split()) + len(reply.split()), 1)
@@ -370,11 +400,18 @@ def widget_poll(request):
     after_id = int(request.GET.get('after_id') or 0)
     employee = _get_employee(token)
     session = get_object_or_404(ChatSession, pk=session_id, employee=employee)
-    msgs = Message.objects.filter(session=session, id__gt=after_id).exclude(role=Message.Role.VISITOR)
+    msgs = (
+        visible_messages(session)
+        .filter(id__gt=after_id)
+        .exclude(role=Message.Role.VISITOR)
+        .select_related('author')
+    )
     return JsonResponse({
         'session_id': session.id,
         'human_mode': session.is_human_mode,
         'status': session.status,
+        'resolved': session.is_resolved,
+        'ask_rating': session.is_resolved and not hasattr(session, 'rating'),
         'messages': [_serialize_message(m) for m in msgs],
     })
 
@@ -421,31 +458,146 @@ def widget_lead(request):
     return JsonResponse({'ok': True, 'lead_id': lead.id})
 
 
+@csrf_exempt
+@require_POST
+def widget_rate(request):
+    """Visitor satisfaction rating (CSAT) submitted at the end of a conversation."""
+    try:
+        body = json.loads(request.body.decode('utf-8'))
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    employee = _get_employee(body.get('token') or '')
+    session = get_object_or_404(ChatSession, pk=body.get('session_id'), employee=employee)
+
+    try:
+        score = int(body.get('score'))
+    except (TypeError, ValueError):
+        return JsonResponse({'error': 'score must be 1-5'}, status=400)
+    if not 1 <= score <= 5:
+        return JsonResponse({'error': 'score must be 1-5'}, status=400)
+
+    rating, _ = ConversationRating.objects.update_or_create(
+        session=session,
+        defaults={
+            'workspace': employee.workspace,
+            'employee': employee,
+            'score': score,
+            'comment': (body.get('comment') or '')[:2000],
+            'rated_human': session.first_human_response_seconds is not None,
+        },
+    )
+    notify_team_event(employee.workspace, employee, 'conversation_rated', {
+        'session_id': session.id,
+        'score': score,
+        'comment': rating.comment,
+    })
+    return JsonResponse({'ok': True, 'score': rating.score})
+
+
+def _members(workspace):
+    from apps.workspaces.models import WorkspaceMembership
+
+    User = get_user_model()
+    return User.objects.filter(
+        Q(memberships__workspace=workspace) | Q(owned_workspaces=workspace)
+    ).distinct().order_by('first_name', 'email')
+
+
+def _user_label(user) -> str:
+    if not user:
+        return ''
+    return user.get_full_name() or user.get_username() or user.email
+
+
 @login_required
 def conversations_list(request):
+    """Team inbox: filter by state, assignee, tag, employee, or free text."""
     workspace = user_workspace(request.user)
     sessions = (
         ChatSession.objects
         .filter(employee__workspace=workspace)
-        .select_related('employee', 'taken_over_by')
-        .prefetch_related('messages')[:50]
+        .select_related('employee', 'taken_over_by', 'assigned_to')
+        .prefetch_related('tags', 'messages')
     )
-    return render(request, 'chat/conversations.html', {'sessions': sessions, 'workspace': workspace})
+
+    state = request.GET.get('state') or 'open'
+    assignee = request.GET.get('assignee') or ''
+    tag_slug = request.GET.get('tag') or ''
+    query = (request.GET.get('q') or '').strip()
+
+    if state == 'open':
+        sessions = sessions.filter(status__in=ChatSession.OPEN_STATUSES)
+    elif state == 'resolved':
+        sessions = sessions.filter(status__in=[ChatSession.Status.RESOLVED, ChatSession.Status.CLOSED])
+    elif state == 'human':
+        sessions = sessions.filter(status=ChatSession.Status.HUMAN)
+    elif state == 'unassigned':
+        sessions = sessions.filter(assigned_to__isnull=True, status__in=ChatSession.OPEN_STATUSES)
+
+    if assignee == 'me':
+        sessions = sessions.filter(assigned_to=request.user)
+    elif assignee.isdigit():
+        sessions = sessions.filter(assigned_to_id=int(assignee))
+
+    if tag_slug:
+        sessions = sessions.filter(tags__slug=tag_slug)
+
+    if query:
+        sessions = sessions.filter(
+            Q(messages__content__icontains=query)
+            | Q(visitor_id__icontains=query)
+            | Q(employee__name__icontains=query)
+        ).distinct()
+
+    all_sessions = ChatSession.objects.filter(employee__workspace=workspace)
+    resolved_states = [ChatSession.Status.RESOLVED, ChatSession.Status.CLOSED]
+    inbox_tabs = [
+        ('open', 'Open', all_sessions.filter(status__in=ChatSession.OPEN_STATUSES).count()),
+        ('unassigned', 'Unassigned', all_sessions.filter(
+            assigned_to__isnull=True, status__in=ChatSession.OPEN_STATUSES,
+        ).count()),
+        ('human', 'With a teammate', all_sessions.filter(status=ChatSession.Status.HUMAN).count()),
+        ('resolved', 'Resolved', all_sessions.filter(status__in=resolved_states).count()),
+        ('all', 'All', all_sessions.count()),
+    ]
+
+    return render(request, 'chat/conversations.html', {
+        'sessions': sessions[:50],
+        'workspace': workspace,
+        'tags': ConversationTag.objects.filter(workspace=workspace),
+        'members': _members(workspace),
+        'inbox_tabs': inbox_tabs,
+        'filters': {'state': state, 'assignee': assignee, 'tag': tag_slug, 'q': query},
+    })
 
 
 @login_required
 def conversation_detail(request, pk):
     workspace = user_workspace(request.user)
     session = get_object_or_404(
-        ChatSession.objects.select_related('employee', 'taken_over_by'),
+        ChatSession.objects
+        .select_related('employee', 'taken_over_by', 'assigned_to', 'resolved_by')
+        .prefetch_related('tags'),
         pk=pk,
         employee__workspace=workspace,
     )
     msgs = session.messages.select_related('author').all()
+    visitor = (
+        VisitorProfile.objects
+        .filter(workspace=workspace, visitor_id=session.visitor_id)
+        .first()
+    )
     return render(request, 'chat/conversation_detail.html', {
         'session': session,
         'messages': msgs,
         'workspace': workspace,
+        'visitor': visitor,
+        'members': _members(workspace),
+        'all_tags': ConversationTag.objects.filter(workspace=workspace),
+        'session_tag_ids': list(session.tags.values_list('id', flat=True)),
+        'canned': CannedResponse.objects.filter(workspace=workspace),
+        'rating': getattr(session, 'rating', None),
     })
 
 
@@ -457,11 +609,16 @@ def conversation_takeover(request, pk):
     session.status = ChatSession.Status.HUMAN
     session.taken_over_by = request.user
     session.taken_over_at = timezone.now()
-    session.save(update_fields=['status', 'taken_over_by', 'taken_over_at', 'last_message_at'])
+    if not session.assigned_to_id:
+        session.assigned_to = request.user
+        session.assigned_at = timezone.now()
+    session.save(update_fields=[
+        'status', 'taken_over_by', 'taken_over_at', 'assigned_to', 'assigned_at', 'last_message_at',
+    ])
     Message.objects.create(
         session=session,
         role=Message.Role.SYSTEM,
-        content=f'{(request.user.get_full_name() or request.user.email)} joined the conversation.',
+        content=f'{_user_label(request.user)} joined the conversation.',
         author=request.user,
     )
     notify_team_event(workspace, session.employee, 'human_takeover', {
@@ -484,7 +641,7 @@ def conversation_release(request, pk):
     Message.objects.create(
         session=session,
         role=Message.Role.SYSTEM,
-        content=f'{(request.user.get_full_name() or request.user.email)} returned control to {session.employee.name}.',
+        content=f'{_user_label(request.user)} returned control to {session.employee.name}.',
         author=request.user,
     )
     messages.success(request, f'{session.employee.name} is handling replies again.')
@@ -494,24 +651,51 @@ def conversation_release(request, pk):
 @login_required
 @require_POST
 def conversation_reply(request, pk):
+    """Send a reply to the visitor, or save a private note for the team."""
     workspace = user_workspace(request.user)
     session = get_object_or_404(ChatSession, pk=pk, employee__workspace=workspace)
     content = (request.POST.get('content') or '').strip()
+    is_note = request.POST.get('kind') == 'note'
+
     if not content:
         return JsonResponse({'error': 'Empty message'}, status=400)
+
+    content = expand_shortcuts(workspace, content)
+
+    if is_note:
+        note = Message.objects.create(
+            session=session,
+            role=Message.Role.NOTE,
+            content=content,
+            author=request.user,
+        )
+        mentioned = resolve_mentions(workspace, content)
+        if mentioned:
+            note.mentions.set(mentioned)
+            notify_team_event(workspace, session.employee, 'note_mention', {
+                'session_id': session.id,
+                'note': content[:500],
+                'by': request.user.email,
+                'mentioned': [u.email for u in mentioned],
+            })
+        return JsonResponse({'ok': True, 'message': _serialize_message(note)})
+
     if not session.is_human_mode:
         session.status = ChatSession.Status.HUMAN
         session.taken_over_by = request.user
         session.taken_over_at = timezone.now()
         session.save(update_fields=['status', 'taken_over_by', 'taken_over_at'])
+
     msg = Message.objects.create(
         session=session,
         role=Message.Role.HUMAN,
         content=content,
         author=request.user,
     )
+    mark_response(session, by_human=True)
     session.last_message_at = timezone.now()
     session.save(update_fields=['last_message_at'])
+
     if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
         return JsonResponse({'ok': True, 'message': _serialize_message(msg)})
     return redirect('conversation_detail', pk=session.pk)
@@ -528,7 +712,150 @@ def conversation_poll(request, pk):
         'session_id': session.id,
         'status': session.status,
         'human_mode': session.is_human_mode,
+        'resolved': session.is_resolved,
         'messages': [_serialize_message(m) for m in msgs],
+    })
+
+
+@login_required
+@require_POST
+def conversation_assign(request, pk):
+    workspace = user_workspace(request.user)
+    session = get_object_or_404(ChatSession, pk=pk, employee__workspace=workspace)
+    user_id = request.POST.get('user_id') or ''
+
+    if user_id:
+        target = _members(workspace).filter(pk=user_id).first()
+        if not target:
+            return JsonResponse({'error': 'Not a member of this workspace'}, status=400)
+        session.assigned_to = target
+        session.assigned_at = timezone.now()
+        note = f'{_user_label(request.user)} assigned this conversation to {_user_label(target)}.'
+    else:
+        session.assigned_to = None
+        session.assigned_at = None
+        note = f'{_user_label(request.user)} unassigned this conversation.'
+
+    session.save(update_fields=['assigned_to', 'assigned_at'])
+    Message.objects.create(
+        session=session, role=Message.Role.SYSTEM, content=note, author=request.user,
+    )
+    if session.assigned_to_id and session.assigned_to_id != request.user.id:
+        notify_team_event(workspace, session.employee, 'conversation_assigned', {
+            'session_id': session.id,
+            'assigned_to': session.assigned_to.email,
+            'by': request.user.email,
+        })
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({'ok': True, 'assigned_to': _user_label(session.assigned_to)})
+    return redirect('conversation_detail', pk=session.pk)
+
+
+@login_required
+@require_POST
+def conversation_resolve(request, pk):
+    workspace = user_workspace(request.user)
+    session = get_object_or_404(ChatSession, pk=pk, employee__workspace=workspace)
+
+    if session.is_resolved:
+        reopen_session(session)
+        note = f'{_user_label(request.user)} reopened this conversation.'
+        messages.success(request, 'Conversation reopened.')
+    else:
+        resolve_session(session, request.user)
+        note = f'{_user_label(request.user)} marked this conversation resolved.'
+        messages.success(request, 'Conversation resolved. The visitor can rate it now.')
+
+    Message.objects.create(
+        session=session, role=Message.Role.SYSTEM, content=note, author=request.user,
+    )
+    return redirect('conversation_detail', pk=session.pk)
+
+
+@login_required
+@require_POST
+def conversation_tags(request, pk):
+    """Attach or detach a tag. Creates the tag on first use."""
+    workspace = user_workspace(request.user)
+    session = get_object_or_404(ChatSession, pk=pk, employee__workspace=workspace)
+    name = (request.POST.get('name') or '').strip()
+    remove_id = request.POST.get('remove')
+
+    if remove_id:
+        session.tags.remove(*ConversationTag.objects.filter(pk=remove_id, workspace=workspace))
+    elif name:
+        slug = slugify(name)[:50]
+        if slug:
+            tag, _ = ConversationTag.objects.get_or_create(
+                workspace=workspace, slug=slug, defaults={'name': name[:40]},
+            )
+            session.tags.add(tag)
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            'ok': True,
+            'tags': [{'id': t.id, 'name': t.name, 'color': t.color} for t in session.tags.all()],
+        })
+    return redirect('conversation_detail', pk=session.pk)
+
+
+@login_required
+@require_POST
+def conversation_suggest(request, pk):
+    """MagicReply: draft a reply for the teammate from the employee's knowledge."""
+    workspace = user_workspace(request.user)
+    session = get_object_or_404(
+        ChatSession.objects.select_related('employee'), pk=pk, employee__workspace=workspace,
+    )
+    try:
+        draft = suggest_reply(session)
+    except requests.RequestException as exc:
+        logger.exception('Reply suggestion failed')
+        return JsonResponse({'error': 'Could not draft a reply right now.', 'detail': str(exc)}, status=502)
+
+    if not draft:
+        return JsonResponse({'error': 'Nothing to reply to yet.'}, status=400)
+    return JsonResponse({'ok': True, 'draft': draft})
+
+
+@login_required
+def canned_responses(request):
+    """Manage saved replies teammates insert with !shortcut."""
+    workspace = user_workspace(request.user)
+
+    if request.method == 'POST':
+        action = request.POST.get('action') or 'save'
+        if action == 'delete':
+            CannedResponse.objects.filter(pk=request.POST.get('id'), workspace=workspace).delete()
+            messages.success(request, 'Saved reply deleted.')
+        else:
+            shortcut = (request.POST.get('shortcut') or '').strip()
+            title = (request.POST.get('title') or '').strip()
+            body = (request.POST.get('body') or '').strip()
+            if not (shortcut and body):
+                messages.error(request, 'Shortcut and message are both required.')
+            else:
+                existing = CannedResponse.objects.filter(
+                    pk=request.POST.get('id') or 0, workspace=workspace,
+                ).first()
+                if existing:
+                    existing.shortcut = shortcut
+                    existing.title = title or shortcut
+                    existing.body = body
+                    existing.save(update_fields=['shortcut', 'title', 'body', 'updated_at'])
+                    messages.success(request, 'Saved reply updated.')
+                else:
+                    CannedResponse.objects.update_or_create(
+                        workspace=workspace,
+                        shortcut=slugify(shortcut).replace('-', '_')[:40],
+                        defaults={'title': title or shortcut, 'body': body, 'created_by': request.user},
+                    )
+                    messages.success(request, 'Saved reply added.')
+        return redirect('canned_responses')
+
+    return render(request, 'chat/canned_responses.html', {
+        'workspace': workspace,
+        'responses': CannedResponse.objects.filter(workspace=workspace),
     })
 
 

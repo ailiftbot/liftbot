@@ -53,7 +53,11 @@ class AIEmployeeForm(forms.ModelForm):
         if self.instance.pk:
             self.fields['capability_choices'].initial = self.instance.capabilities if self.instance.capabilities is not None else self.instance.default_capabilities()
         self.fields['capability_choices'].help_text = 'Choose the work this teammate can take on for visitors.'
-        self.fields['greeting_message'].help_text = 'First message visitors see when the widget opens.'
+        self.fields['greeting_message'].required = False
+        self.fields['greeting_message'].help_text = (
+            'First message visitors see when the widget opens. '
+            'Leave blank to use the default greeting for the chosen personality.'
+        )
         self.fields['handoff_email'].help_text = 'Used when a visitor asks to speak with your team.'
         self.fields['brand_color'].help_text = 'Widget header color. Use a hex value like #7C3AED.'
 

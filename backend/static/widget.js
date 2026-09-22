@@ -422,10 +422,28 @@
       '.lb-card{margin:0 0 10px;padding:12px;background:#fff;border:1px solid #E5E7EB;border-radius:14px;width:100%}' +
       '.lb-slot{display:block;width:100%;text-align:left;margin-bottom:6px;border:1px solid #DDD6FE;border-radius:10px;' +
       'padding:10px 12px;background:#F5F3FF;cursor:pointer;font-size:13px;font-family:inherit}' +
+      /* unread badge on the launcher */
+      '.lb-unread{position:absolute;top:-2px;right:-2px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;' +
+      'background:#EF4444;color:#fff;font-size:11px;font-weight:800;display:none;align-items:center;justify-content:center;' +
+      'box-shadow:0 0 0 2px #fff;z-index:2}' +
+      'body.has-unread .lb-unread{display:flex}' +
+      /* away / offline banner */
+      '.lb-away{padding:10px 14px;background:#FEF3C7;border-bottom:1px solid #FDE68A;color:#92400E;' +
+      'font-size:12.5px;line-height:1.45;flex-shrink:0}' +
+      '.lb-offline-dot{background:#9CA3AF!important}' +
+      /* satisfaction rating card */
+      '.lb-rate{margin:0 0 10px;padding:14px;background:#fff;border:1px solid #E5E7EB;border-radius:14px;width:100%}' +
+      '.lb-rate__title{font-size:13px;font-weight:700;color:#111827;margin-bottom:10px}' +
+      '.lb-rate__stars{display:flex;gap:6px;margin-bottom:10px}' +
+      '.lb-rate__star{border:0;background:transparent;cursor:pointer;font-size:24px;line-height:1;padding:0;' +
+      'color:#D1D5DB;transition:color .12s ease;font-family:inherit}' +
+      '.lb-rate__star.on{color:#F59E0B}' +
+      '.lb-rate__thanks{font-size:12.5px;color:#059669;font-weight:650}' +
       '</style></head><body class="closed">' +
       '<button type="button" class="lb-launcher" id="lbLauncher" aria-label="Open conversation">' +
       '<span class="lb-launcher__pulse" aria-hidden="true"></span>' +
       '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.5 19.5V6.75A2.75 2.75 0 0 1 7.25 4h9.5A2.75 2.75 0 0 1 19.5 6.75v7A2.75 2.75 0 0 1 16.75 16.5H8.12L4.5 19.5Z"/></svg>' +
+      '<span class="lb-unread" id="lbUnread" aria-live="polite"></span>' +
       '</button>' +
       '<div class="lb-preview" id="lbPreview" role="button" tabindex="0" aria-label="Open chat with ' + escapeAttr(cfg.name || '') + '">' +
       '<div class="lb-preview-card"><div class="lb-preview-top">' +
@@ -445,7 +463,8 @@
       '<button type="button" class="lb-iconbtn" id="lbMore" aria-label="More">&#8942;</button>' +
       '<button type="button" class="lb-iconbtn" id="lbClose" aria-label="Close">&times;</button>' +
       '</div>' +
-      '<div class="lb-more-menu" id="lbMoreMenu"><button type="button" id="lbFresh">Start fresh</button></div>' +
+      '<div class="lb-more-menu" id="lbMoreMenu"><button type="button" id="lbFresh">Start fresh</button>' +
+      '<button type="button" id="lbRateBtn">Rate this chat</button></div>' +
       '</div>' +
       '<div class="lb-tabbar">' +
       '<button type="button" class="lb-tabbar__home" id="lbHome" aria-label="Home">' +
@@ -461,6 +480,7 @@
       '</div>' +
       '</div>' +
       '<div class="lb-view active" id="lbViewMessages">' +
+      '<div class="lb-away" id="lbAway" style="display:none"></div>' +
       (cfg.returning_visitor && cfg.resume_message ? '<div class="lb-resume" id="lbResume"></div>' : '') +
       '<div class="lb-messages" id="lbMessages"></div>' +
       '<div class="lb-actions" id="lbActions"></div>' +
@@ -527,6 +547,8 @@
       'var searchDetail=document.getElementById("lbSearchDetail"),searchBack=document.getElementById("lbSearchBack");' +
       'var searchDetailTitle=document.getElementById("lbSearchDetailTitle"),searchDetailContent=document.getElementById("lbSearchDetailContent");' +
       'var articlesCache=null,searchTimer=null;' +
+      'var awayEl=document.getElementById("lbAway"),unreadEl=document.getElementById("lbUnread");' +
+      'var availability=cfg.availability||{online:true},unread=0,booted=false,rated=false,audioCtx=null;' +
 
       '/* ---- Tabs: Messages / Articles / Search (Crisp-style) ---- */' +
       'function activateTab(name){' +
@@ -587,6 +609,18 @@
       'searchTimer=setTimeout(function(){runSearch(q);},300);});' +
       'runSearch("");' +
 
+      '/* ---- Unread badge + notification sound ---- */' +
+      'function clearUnread(){unread=0;document.body.classList.remove("has-unread");unreadEl.textContent="";}' +
+      'function bumpUnread(){if(document.body.classList.contains("open"))return;' +
+      'unread++;unreadEl.textContent=unread>9?"9+":String(unread);document.body.classList.add("has-unread");ding();}' +
+      'function ding(){try{if(!audioCtx){var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;audioCtx=new AC();}' +
+      'if(audioCtx.state==="suspended")return;' +
+      'var o=audioCtx.createOscillator(),g=audioCtx.createGain(),t=audioCtx.currentTime;' +
+      'o.type="sine";o.frequency.setValueAtTime(880,t);o.frequency.setValueAtTime(1180,t+0.09);' +
+      'g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.09,t+0.02);' +
+      'g.gain.exponentialRampToValueAtTime(0.0001,t+0.28);' +
+      'o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+0.3);}catch(e){}}' +
+
       'function fmtTime(){var d=new Date(),h=d.getHours(),m=d.getMinutes(),ap=h>=12?"PM":"AM";h=h%12||12;return h+":"+(m<10?"0":"")+m+" "+ap;}' +
       'function miniAv(){if(cfg.avatar_url){var i=document.createElement("img");i.className="lb-mini";i.src=cfg.avatar_url;i.alt="";return i;}' +
       'var s=document.createElement("span");s.className="lb-mini";s.textContent=initial;return s;}' +
@@ -604,7 +638,7 @@
       'window.frameElement.dispatchEvent(new CustomEvent("lb-expand"));}' +
       'function setOpen(v){document.body.classList.toggle("open",!!v);document.body.classList.toggle("closed",!v);document.body.classList.remove("expanded");syncChrome();' +
       'window.frameElement.dispatchEvent(new CustomEvent("lb-toggle",{detail:{open:!!v}}));' +
-      'if(v){if(!isMobile())input.focus();if(humanMode)startPolling();}}' +
+      'if(v){clearUnread();if(!isMobile())input.focus();if(humanMode)startPolling();}}' +
       'launcher.addEventListener("click",function(){setExpanded();});' +
       'preview.addEventListener("click",function(){setOpen(true);});' +
       'preview.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();setOpen(true);}});' +
@@ -631,9 +665,12 @@
       'if(mine){meta.textContent=fmtTime()+" ";var ticks=document.createElement("span");ticks.className="lb-ticks";ticks.textContent="✓✓";meta.appendChild(ticks);}' +
       'else{meta.textContent=fmtTime();}' +
       'wrap.appendChild(meta);}' +
-      'row.appendChild(wrap);messages.appendChild(row);messages.scrollTop=messages.scrollHeight;return b;}' +
+      'row.appendChild(wrap);messages.appendChild(row);messages.scrollTop=messages.scrollHeight;' +
+      'if(booted&&!mine&&!typing&&!sys)bumpUnread();' +
+      'return b;}' +
 
       'function revealReply(node,text){if(!node)return;node.classList.remove("lb-bubble--typing");node.textContent=text||"";' +
+      'if(booted)bumpUnread();' +
       'var wrap=node.parentNode;if(wrap&&!wrap.querySelector(".lb-meta")){var meta=document.createElement("div");meta.className="lb-meta";meta.textContent=fmtTime();wrap.appendChild(meta);}}' +
 
       'function pill(solid){return "lb-pill "+(solid?"lb-pill-solid":"lb-pill-outline");}' +
@@ -674,9 +711,16 @@
       'if(!(cfg.slots||[]).length){var e=document.createElement("div");e.style.cssText="font-size:12px;color:#6B7280";e.textContent="No slots available right now.";wrap.appendChild(e);}' +
       'messages.appendChild(wrap);messages.scrollTop=messages.scrollHeight;}' +
 
+      'function primePolling(){if(!sessionId){startPolling();return;}' +
+      'fetchJson(apiBase+"/poll/?token="+encodeURIComponent(token)+"&session_id="+sessionId+"&after_id=0")' +
+      '.then(function(data){(data.messages||[]).forEach(function(m){lastMsgId=Math.max(lastMsgId,m.id);seenIds[m.id]=1;});' +
+      'if(data.human_mode){humanMode=true;statusEl.textContent="Talking with a teammate";}})' +
+      '.catch(function(){}).then(function(){startPolling();});}' +
+
       'function startPolling(){if(pollTimer)return;pollTimer=setInterval(function(){if(!sessionId)return;' +
       'fetchJson(apiBase+"/poll/?token="+encodeURIComponent(token)+"&session_id="+sessionId+"&after_id="+lastMsgId)' +
       '.then(function(data){humanMode=!!data.human_mode;if(humanMode)statusEl.textContent="Talking with a teammate";' +
+      'if(data.ask_rating)showRating();' +
       '(data.messages||[]).forEach(function(m){lastMsgId=Math.max(lastMsgId,m.id);if(seenIds[m.id])return;seenIds[m.id]=1;' +
       'var kind=m.role==="human"?"human":(m.role==="system"?"system":"them");addMsg(kind,m.content);});})' +
       '.catch(function(){});},2500);}' +
@@ -685,7 +729,7 @@
       'addMsg("you",text);var node=addMsg("them","…");' +
       'fetchJson(apiBase+"/message/",{method:"POST",headers:{"Content-Type":"application/json"},' +
       'body:JSON.stringify({token:token,message:text,visitor_id:visitorId,session_id:sessionId,stream:false,continue_last:!!continueLast})})' +
-      '.then(function(data){if(data.session_id){sessionId=data.session_id;localStorage.setItem(sessionKey,sessionId);}' +
+      '.then(function(data){if(data.session_id){sessionId=data.session_id;localStorage.setItem(sessionKey,sessionId);startPolling();}' +
       'if(data.message_id){lastMsgId=Math.max(lastMsgId,data.message_id);seenIds[data.message_id]=1;}' +
       'if(data.human_mode){humanMode=true;revealReply(node,data.message||"A teammate will reply shortly.");' +
       'statusEl.textContent="Talking with a teammate";startPolling();return;}' +
@@ -703,10 +747,67 @@
       'fresh.addEventListener("click",function(){sessionId=null;localStorage.removeItem(sessionKey);resumeEl.remove();addMsg("system","Starting a fresh conversation.");});' +
       'acts.appendChild(cont);acts.appendChild(fresh);resumeEl.appendChild(acts);}' +
 
+      '/* ---- Office hours: away banner + offline form ---- */' +
+      'function applyAvailability(){if(availability.online!==false)return;' +
+      'if(awayEl){awayEl.style.display="block";awayEl.textContent=availability.away_message||"The team is offline right now.";}' +
+      'var dot=document.querySelector(".lb-online");if(dot)dot.classList.add("lb-offline-dot");' +
+      'statusEl.textContent="Team offline \u00b7 "+(cfg.name||"your AI Employee")+" is still here";' +
+      'if(availability.offline_form)showOfflineForm();}' +
+
+      'function showOfflineForm(){var wrap=document.createElement("div");wrap.className="lb-card";' +
+      'var title=document.createElement("div");title.style.cssText="font-size:12px;font-weight:650;margin-bottom:8px";' +
+      'title.textContent="Leave your details";wrap.appendChild(title);' +
+      'var nameI=document.createElement("input");nameI.className="lb-field";nameI.placeholder="Name";' +
+      'var emailI=document.createElement("input");emailI.className="lb-field";emailI.placeholder="Email";' +
+      'var noteI=document.createElement("input");noteI.className="lb-field";noteI.placeholder="How can we help?";' +
+      'var go=document.createElement("button");go.type="button";go.className=pill(true);go.style.marginTop="6px";' +
+      'go.textContent="Send to team";' +
+      'go.addEventListener("click",function(){if(!emailI.value.trim()){emailI.focus();return;}' +
+      'go.disabled=true;' +
+      'fetchJson(apiBase+"/lead/",{method:"POST",headers:{"Content-Type":"application/json"},' +
+      'body:JSON.stringify({token:token,visitor_id:visitorId,session_id:sessionId,' +
+      'name:nameI.value,email:emailI.value,intent:noteI.value})})' +
+      '.then(function(){wrap.remove();addMsg("system","Thanks! The team will email you back.");})' +
+      '.catch(function(){go.disabled=false;addMsg("system","Could not send that. Please try again.");});});' +
+      'wrap.appendChild(nameI);wrap.appendChild(emailI);wrap.appendChild(noteI);wrap.appendChild(go);' +
+      'messages.appendChild(wrap);messages.scrollTop=messages.scrollHeight;}' +
+
+      '/* ---- Satisfaction rating (CSAT) ---- */' +
+      'function showRating(){if(rated||!sessionId)return;if(document.getElementById("lbRateCard"))return;' +
+      'var wrap=document.createElement("div");wrap.className="lb-rate";wrap.id="lbRateCard";' +
+      'var title=document.createElement("div");title.className="lb-rate__title";' +
+      'title.textContent="How did we do?";wrap.appendChild(title);' +
+      'var stars=document.createElement("div");stars.className="lb-rate__stars";' +
+      'var comment=document.createElement("input");comment.className="lb-field";' +
+      'comment.placeholder="Anything to add? (optional)";comment.style.display="none";' +
+      'var picked=0,buttons=[];' +
+      'function paint(n){buttons.forEach(function(b,i){b.classList.toggle("on",i<n);});}' +
+      'for(var i=1;i<=5;i++){(function(score){var b=document.createElement("button");b.type="button";' +
+      'b.className="lb-rate__star";b.textContent="\u2605";b.setAttribute("aria-label",score+" out of 5");' +
+      'b.addEventListener("mouseover",function(){paint(score);});' +
+      'b.addEventListener("mouseout",function(){paint(picked);});' +
+      'b.addEventListener("click",function(){picked=score;paint(score);comment.style.display="block";send.style.display="inline-block";});' +
+      'buttons.push(b);stars.appendChild(b);})(i);}' +
+      'var send=document.createElement("button");send.type="button";send.className=pill(true);' +
+      'send.style.cssText="margin-top:4px;display:none";send.textContent="Send rating";' +
+      'send.addEventListener("click",function(){if(!picked)return;send.disabled=true;' +
+      'fetchJson(apiBase+"/rate/",{method:"POST",headers:{"Content-Type":"application/json"},' +
+      'body:JSON.stringify({token:token,session_id:sessionId,score:picked,comment:comment.value})})' +
+      '.then(function(){rated=true;wrap.innerHTML="";var ok=document.createElement("div");' +
+      'ok.className="lb-rate__thanks";ok.textContent="Thanks for the feedback!";wrap.appendChild(ok);})' +
+      '.catch(function(){send.disabled=false;});});' +
+      'wrap.appendChild(stars);wrap.appendChild(comment);wrap.appendChild(send);' +
+      'messages.appendChild(wrap);messages.scrollTop=messages.scrollHeight;}' +
+      'var rateBtn=document.getElementById("lbRateBtn");' +
+      'if(rateBtn)rateBtn.addEventListener("click",function(){moreMenu.classList.remove("open");' +
+      'if(!sessionId){addMsg("system","Start a conversation first, then you can rate it.");return;}showRating();});' +
+
       'form.addEventListener("submit",function(e){e.preventDefault();var text=(input.value||"").trim();input.value="";sendMessage(text,false);});' +
 
       'var day=document.createElement("div");day.className="lb-day";day.innerHTML="<span>Today</span>";messages.appendChild(day);' +
-      'addMsg("them",cfg.greeting||("Hi, I am "+cfg.name+"."));renderActions();' +
+      'addMsg("them",cfg.greeting||("Hi, I am "+cfg.name+"."));renderActions();applyAvailability();' +
+      'primePolling();' +
+      'booted=true;' +
       '})();';
   }
 

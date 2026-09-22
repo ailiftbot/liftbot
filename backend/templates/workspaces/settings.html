@@ -79,6 +79,56 @@
   </section>
 
   <section class="lb-card lb-settings-panel">
+    <h2>Office hours</h2>
+    <p class="desc">When your team is reachable. Outside these hours the widget shows an away
+      message and, optionally, an offline form — your AI Employee keeps answering either way.</p>
+    <form method="post" class="lb-form">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="office_hours" />
+
+      <div class="field">
+        <label for="tz">Timezone</label>
+        <input id="tz" name="timezone" value="{{ workspace.timezone }}" placeholder="Asia/Kolkata" />
+      </div>
+
+      <div class="field">
+        <label>Weekly schedule</label>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          {% for row in office_hours_rows %}
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <label style="width:100px;font-size:13px;font-weight:600;margin:0;">
+              <input type="checkbox" name="day_{{ row.key }}" {% if row.enabled %}checked{% endif %} />
+              {{ row.label }}
+            </label>
+            <input type="time" name="start_{{ row.key }}" value="{{ row.start }}"
+                   style="border:1px solid #E5E7EB;border-radius:8px;padding:7px 10px;font-size:13px;" />
+            <span style="color:var(--lb-muted);font-size:13px;">to</span>
+            <input type="time" name="end_{{ row.key }}" value="{{ row.end }}"
+                   style="border:1px solid #E5E7EB;border-radius:8px;padding:7px 10px;font-size:13px;" />
+          </div>
+          {% endfor %}
+        </div>
+        <p class="desc" style="margin-top:8px;">Leave every day unchecked to stay reachable around the clock.</p>
+      </div>
+
+      <div class="field">
+        <label for="away">Away message</label>
+        <input id="away" name="away_message" value="{{ workspace.away_message }}"
+               placeholder="{{ workspace.DEFAULT_AWAY_MESSAGE }}" />
+      </div>
+
+      <div class="field">
+        <label style="font-weight:500;">
+          <input type="checkbox" name="offline_form_enabled" {% if workspace.offline_form_enabled %}checked{% endif %} />
+          Show an offline form so visitors can leave their details
+        </label>
+      </div>
+
+      <button class="lb-btn lb-btn-primary" type="submit">Save office hours</button>
+    </form>
+  </section>
+
+  <section class="lb-card lb-settings-panel">
     <h2>Team embed</h2>
     <p class="desc">One snippet for all AI Employees — visitors pick who to talk to.</p>
     <div class="field">

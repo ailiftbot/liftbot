@@ -3,42 +3,138 @@
 {% block page_title %}{{ session.employee.name }}{% endblock %}
 {% block page_subtitle %}Visitor {{ session.visitor_id|slice:":8" }} · {% if session.is_human_mode %}You are in control{% else %}AI Employee active{% endif %}{% endblock %}
 {% block top_actions %}
+  <form method="post" action="{% url 'conversation_resolve' session.pk %}" style="display:inline;">{% csrf_token %}
+    <button class="lb-btn lb-btn-ghost" type="submit">{% if session.is_resolved %}Reopen{% else %}Resolve{% endif %}</button>
+  </form>
   {% if session.is_human_mode %}
-  <form method="post" action="{% url 'conversation_release' session.pk %}">{% csrf_token %}
+  <form method="post" action="{% url 'conversation_release' session.pk %}" style="display:inline;">{% csrf_token %}
     <button class="lb-btn lb-btn-ghost" type="submit">Return to AI Employee</button>
   </form>
   {% else %}
-  <form method="post" action="{% url 'conversation_takeover' session.pk %}">{% csrf_token %}
+  <form method="post" action="{% url 'conversation_takeover' session.pk %}" style="display:inline;">{% csrf_token %}
     <button class="lb-btn lb-btn-primary" type="submit">Take over</button>
   </form>
   {% endif %}
 {% endblock %}
 {% block content %}
-<div class="lb-card" style="max-width:720px;overflow:hidden;padding:0;">
-  <div id="live-msgs" style="height:420px;overflow:auto;padding:16px;background:#F9FAFB;display:flex;flex-direction:column;gap:8px;"
-       data-poll="{% url 'conversation_poll' session.pk %}"
-       data-after="{{ messages.last.id|default:0 }}">
-    {% for m in messages %}
-    <div class="msg" data-id="{{ m.id }}" style="align-self:{% if m.role == 'visitor' %}flex-end{% else %}flex-start{% endif %};max-width:85%;">
-      <div style="font-size:11px;color:var(--lb-muted);margin-bottom:2px;">{{ m.get_role_display }}{% if m.author %} · {{ m.author.first_name|default:m.author.email }}{% endif %}</div>
-      <div style="padding:8px 12px;border-radius:14px;font-size:13px;line-height:1.4;
-        background:{% if m.role == 'visitor' %}#7C3AED{% elif m.role == 'human' %}#DBEAFE{% elif m.role == 'system' %}#FEF3C7{% else %}#fff{% endif %};
-        color:{% if m.role == 'visitor' %}#fff{% else %}#111827{% endif %};
-        border:{% if m.role == 'visitor' %}0{% else %}1px solid #E5E7EB{% endif %};">{{ m.content }}</div>
+<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;">
+
+  <div class="lb-card" style="flex:1;min-width:320px;max-width:720px;overflow:hidden;padding:0;">
+    <div id="live-msgs" style="height:420px;overflow:auto;padding:16px;background:#F9FAFB;display:flex;flex-direction:column;gap:8px;"
+         data-poll="{% url 'conversation_poll' session.pk %}"
+         data-after="{{ messages.last.id|default:0 }}">
+      {% for m in messages %}
+      <div class="msg" data-id="{{ m.id }}" style="align-self:{% if m.role == 'visitor' %}flex-end{% else %}flex-start{% endif %};max-width:85%;">
+        <div style="font-size:11px;color:var(--lb-muted);margin-bottom:2px;">{{ m.get_role_display }}{% if m.author %} · {{ m.author.first_name|default:m.author.email }}{% endif %}</div>
+        <div style="padding:8px 12px;border-radius:14px;font-size:13px;line-height:1.4;
+          background:{% if m.role == 'visitor' %}#7C3AED{% elif m.role == 'human' %}#DBEAFE{% elif m.role == 'system' %}#FEF3C7{% elif m.role == 'note' %}#FEF9C3{% else %}#fff{% endif %};
+          color:{% if m.role == 'visitor' %}#fff{% else %}#111827{% endif %};
+          border:{% if m.role == 'visitor' %}0{% elif m.role == 'note' %}1px dashed #CA8A04{% else %}1px solid #E5E7EB{% endif %};">{% if m.role == 'note' %}<span style="font-size:10.5px;font-weight:800;color:#A16207;display:block;margin-bottom:3px;">PRIVATE NOTE — not visible to the visitor</span>{% endif %}{{ m.content }}</div>
+      </div>
+      {% endfor %}
     </div>
-    {% endfor %}
+
+    <div style="display:flex;gap:6px;padding:10px 12px 0;background:#fff;align-items:center;flex-wrap:wrap;">
+      <button type="button" class="lb-btn lb-btn-sm lb-btn-primary" id="mode-reply">Reply</button>
+      <button type="button" class="lb-btn lb-btn-sm lb-btn-ghost" id="mode-note">Private note</button>
+      <button type="button" class="lb-btn lb-btn-sm lb-btn-ghost" id="suggest-btn"
+              data-url="{% url 'conversation_suggest' session.pk %}">✨ Suggest reply</button>
+      {% if canned %}
+      <select id="canned-picker" style="border:1px solid #E5E7EB;border-radius:8px;padding:6px 10px;font-size:12.5px;">
+        <option value="">Saved replies…</option>
+        {% for c in canned %}
+        <option value="{{ c.body|escape }}">!{{ c.shortcut }} — {{ c.title }}</option>
+        {% endfor %}
+      </select>
+      {% endif %}
+    </div>
+
+    <form id="reply-form" method="post" action="{% url 'conversation_reply' session.pk %}" style="display:flex;gap:8px;padding:12px;background:#fff;">
+      {% csrf_token %}
+      <input type="hidden" name="kind" id="reply-kind" value="reply" />
+      <input name="content" id="reply-input" style="flex:1;border:1px solid #E5E7EB;border-radius:999px;padding:10px 14px;" placeholder="Reply as teammate… (type !shortcut to insert a saved reply)" autocomplete="off" />
+      <button class="lb-btn lb-btn-primary" type="submit" id="reply-send">Send</button>
+    </form>
   </div>
-  <form id="reply-form" method="post" action="{% url 'conversation_reply' session.pk %}" style="display:flex;gap:8px;padding:12px;border-top:1px solid #E5E7EB;background:#fff;">
-    {% csrf_token %}
-    <input name="content" id="reply-input" style="flex:1;border:1px solid #E5E7EB;border-radius:999px;padding:10px 14px;" placeholder="Reply as teammate…" autocomplete="off" />
-    <button class="lb-btn lb-btn-primary" type="submit">Send</button>
-  </form>
+
+  <div style="flex:0 0 280px;display:flex;flex-direction:column;gap:12px;">
+
+    <div class="lb-card" style="padding:16px;">
+      <div style="font-size:12px;font-weight:800;color:var(--lb-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">Assignment</div>
+      <form method="post" action="{% url 'conversation_assign' session.pk %}">{% csrf_token %}
+        <select name="user_id" onchange="this.form.submit()" style="width:100%;border:1px solid #E5E7EB;border-radius:8px;padding:8px 10px;font-size:13px;">
+          <option value="">Unassigned</option>
+          {% for m in members %}
+          <option value="{{ m.id }}" {% if session.assigned_to_id == m.id %}selected{% endif %}>{{ m.get_full_name|default:m.email }}</option>
+          {% endfor %}
+        </select>
+      </form>
+    </div>
+
+    <div class="lb-card" style="padding:16px;">
+      <div style="font-size:12px;font-weight:800;color:var(--lb-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">Tags</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+        {% for t in session.tags.all %}
+        <form method="post" action="{% url 'conversation_tags' session.pk %}" style="display:inline;">{% csrf_token %}
+          <input type="hidden" name="remove" value="{{ t.id }}" />
+          <button type="submit" class="lb-badge" style="border:0;cursor:pointer;background:{{ t.color }}1A;color:{{ t.color }};">{{ t.name }} ×</button>
+        </form>
+        {% empty %}
+        <span style="font-size:12.5px;color:var(--lb-muted);">No tags yet.</span>
+        {% endfor %}
+      </div>
+      <form method="post" action="{% url 'conversation_tags' session.pk %}" style="display:flex;gap:6px;">{% csrf_token %}
+        <input name="name" list="tag-options" placeholder="Add tag" style="flex:1;min-width:0;border:1px solid #E5E7EB;border-radius:8px;padding:7px 10px;font-size:12.5px;" />
+        <datalist id="tag-options">
+          {% for t in all_tags %}<option value="{{ t.name }}"></option>{% endfor %}
+        </datalist>
+        <button class="lb-btn lb-btn-ghost lb-btn-sm" type="submit">Add</button>
+      </form>
+    </div>
+
+    <div class="lb-card" style="padding:16px;">
+      <div style="font-size:12px;font-weight:800;color:var(--lb-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">Visitor</div>
+      <div style="font-size:13px;line-height:1.7;color:#374151;">
+        {% if visitor %}
+          <div><strong>{{ visitor.name|default:"Unnamed visitor" }}</strong></div>
+          {% if visitor.email %}<div>{{ visitor.email }}</div>{% endif %}
+          {% if visitor.phone %}<div>{{ visitor.phone }}</div>{% endif %}
+          {% if visitor.conversation_summary %}
+          <div style="margin-top:8px;color:var(--lb-muted);font-size:12.5px;">{{ visitor.conversation_summary|truncatechars:220 }}</div>
+          {% endif %}
+        {% else %}
+          <span style="color:var(--lb-muted);">Anonymous visitor.</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="lb-card" style="padding:16px;">
+      <div style="font-size:12px;font-weight:800;color:var(--lb-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">Performance</div>
+      <div style="font-size:13px;line-height:1.8;color:#374151;">
+        <div>First reply: <strong>{% if session.first_response_seconds is not None %}{{ session.first_response_seconds }}s{% else %}—{% endif %}</strong></div>
+        <div>First teammate reply: <strong>{% if session.first_human_response_seconds is not None %}{{ session.first_human_response_seconds }}s{% else %}—{% endif %}</strong></div>
+        <div>Resolution: <strong>{% if session.resolution_seconds is not None %}{{ session.resolution_seconds }}s{% else %}—{% endif %}</strong></div>
+        <div>Rating:
+          <strong>{% if rating %}{{ rating.score }}/5{% else %}Not rated{% endif %}</strong>
+        </div>
+        {% if rating.comment %}<div style="color:var(--lb-muted);font-size:12.5px;">“{{ rating.comment }}”</div>{% endif %}
+      </div>
+    </div>
+
+  </div>
 </div>
+
 <script>
 (() => {
   const box = document.getElementById('live-msgs');
   let afterId = parseInt(box.dataset.after || '0', 10);
   const pollUrl = box.dataset.poll;
+  const kindInput = document.getElementById('reply-kind');
+  const input = document.getElementById('reply-input');
+  const modeReply = document.getElementById('mode-reply');
+  const modeNote = document.getElementById('mode-note');
+
+  const BG = {visitor: '#7C3AED', human: '#DBEAFE', system: '#FEF3C7', note: '#FEF9C3'};
 
   function appendMsg(m) {
     if (document.querySelector('.msg[data-id="'+m.id+'"]')) return;
@@ -51,14 +147,74 @@
     role.style.cssText = 'font-size:11px;color:#6B7280;margin-bottom:2px;';
     role.textContent = m.role + (m.author ? ' · ' + m.author : '');
     const bubble = document.createElement('div');
-    const bg = m.role === 'visitor' ? '#7C3AED' : (m.role === 'human' ? '#DBEAFE' : (m.role === 'system' ? '#FEF3C7' : '#fff'));
+    const bg = BG[m.role] || '#fff';
     const color = m.role === 'visitor' ? '#fff' : '#111827';
-    bubble.style.cssText = 'padding:8px 12px;border-radius:14px;font-size:13px;line-height:1.4;background:'+bg+';color:'+color+';border:'+(m.role==='visitor'?'0':'1px solid #E5E7EB')+';';
-    bubble.textContent = m.content;
+    const border = m.role === 'visitor' ? '0' : (m.role === 'note' ? '1px dashed #CA8A04' : '1px solid #E5E7EB');
+    bubble.style.cssText = 'padding:8px 12px;border-radius:14px;font-size:13px;line-height:1.4;background:'+bg+';color:'+color+';border:'+border+';';
+    if (m.role === 'note') {
+      const tag = document.createElement('span');
+      tag.style.cssText = 'font-size:10.5px;font-weight:800;color:#A16207;display:block;margin-bottom:3px;';
+      tag.textContent = 'PRIVATE NOTE — not visible to the visitor';
+      bubble.appendChild(tag);
+      bubble.appendChild(document.createTextNode(m.content));
+    } else {
+      bubble.textContent = m.content;
+    }
     wrap.appendChild(role); wrap.appendChild(bubble);
     box.appendChild(wrap);
     box.scrollTop = box.scrollHeight;
   }
+
+  function setMode(kind) {
+    kindInput.value = kind;
+    const note = kind === 'note';
+    modeNote.className = 'lb-btn lb-btn-sm ' + (note ? 'lb-btn-primary' : 'lb-btn-ghost');
+    modeReply.className = 'lb-btn lb-btn-sm ' + (note ? 'lb-btn-ghost' : 'lb-btn-primary');
+    input.placeholder = note
+      ? 'Private note for your team — @mention a teammate…'
+      : 'Reply as teammate… (type !shortcut to insert a saved reply)';
+    input.style.background = note ? '#FEFCE8' : '#fff';
+    input.focus();
+  }
+  modeReply.addEventListener('click', () => setMode('reply'));
+  modeNote.addEventListener('click', () => setMode('note'));
+
+  const picker = document.getElementById('canned-picker');
+  if (picker) {
+    picker.addEventListener('change', () => {
+      if (!picker.value) return;
+      input.value = input.value ? input.value + ' ' + picker.value : picker.value;
+      picker.value = '';
+      input.focus();
+    });
+  }
+
+  const suggestBtn = document.getElementById('suggest-btn');
+  suggestBtn.addEventListener('click', async () => {
+    const original = suggestBtn.textContent;
+    suggestBtn.disabled = true;
+    suggestBtn.textContent = 'Drafting…';
+    try {
+      const res = await fetch(suggestBtn.dataset.url, {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+      });
+      const data = await res.json();
+      if (data.draft) {
+        setMode('reply');
+        input.value = data.draft;
+      } else {
+        alert(data.error || 'Could not draft a reply.');
+      }
+    } catch (_) {
+      alert('Could not draft a reply.');
+    }
+    suggestBtn.disabled = false;
+    suggestBtn.textContent = original;
+  });
 
   setInterval(async () => {
     try {
@@ -70,7 +226,6 @@
 
   document.getElementById('reply-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const input = document.getElementById('reply-input');
     const content = input.value.trim();
     if (!content) return;
     const fd = new FormData(e.target);

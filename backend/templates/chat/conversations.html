@@ -1,8 +1,55 @@
 {% extends 'base_app.html' %}
 {% block title %}Conversations — LiftBot{% endblock %}
 {% block page_title %}Conversations{% endblock %}
-{% block page_subtitle %}Live chats with visitors. Take over anytime to reply as a teammate.{% endblock %}
+{% block page_subtitle %}Your team inbox. Filter, assign, and take over anytime.{% endblock %}
+{% block top_actions %}
+  <a class="lb-btn lb-btn-ghost" href="{% url 'canned_responses' %}">Saved replies</a>
+{% endblock %}
 {% block content %}
+
+<form method="get" class="lb-card" style="padding:14px 16px;margin-bottom:14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+    {% for key, label, count in inbox_tabs %}
+    <a href="?state={{ key }}"
+       style="text-decoration:none;font-size:12.5px;font-weight:700;padding:7px 12px;border-radius:999px;
+              background:{% if filters.state == key %}var(--lb-purple){% else %}#F3F4F6{% endif %};
+              color:{% if filters.state == key %}#fff{% else %}#374151{% endif %};">
+      {{ label }} <span style="opacity:.75;">{{ count }}</span>
+    </a>
+    {% endfor %}
+  </div>
+
+  <input type="hidden" name="state" value="{{ filters.state }}" />
+
+  <select name="assignee" onchange="this.form.submit()"
+          style="border:1px solid #E5E7EB;border-radius:8px;padding:7px 10px;font-size:12.5px;">
+    <option value="">Anyone</option>
+    <option value="me" {% if filters.assignee == 'me' %}selected{% endif %}>Assigned to me</option>
+    {% for m in members %}
+    <option value="{{ m.id }}" {% if filters.assignee == m.id|stringformat:'s' %}selected{% endif %}>
+      {{ m.get_full_name|default:m.email }}
+    </option>
+    {% endfor %}
+  </select>
+
+  <select name="tag" onchange="this.form.submit()"
+          style="border:1px solid #E5E7EB;border-radius:8px;padding:7px 10px;font-size:12.5px;">
+    <option value="">All tags</option>
+    {% for t in tags %}
+    <option value="{{ t.slug }}" {% if filters.tag == t.slug %}selected{% endif %}>{{ t.name }}</option>
+    {% endfor %}
+  </select>
+
+  <div style="display:flex;gap:6px;flex:1;min-width:200px;">
+    <input name="q" value="{{ filters.q }}" placeholder="Search messages, visitor, employee…"
+           style="flex:1;border:1px solid #E5E7EB;border-radius:8px;padding:7px 12px;font-size:12.5px;" />
+    <button class="lb-btn lb-btn-ghost lb-btn-sm" type="submit">Search</button>
+    {% if filters.q or filters.tag or filters.assignee %}
+    <a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'conversations' %}">Clear</a>
+    {% endif %}
+  </div>
+</form>
+
 <div style="display:flex;flex-direction:column;gap:12px;">
   {% for s in sessions %}
   <a href="{% url 'conversation_detail' s.pk %}" class="lb-card" style="padding:16px 18px;text-decoration:none;color:inherit;display:block;">
@@ -11,23 +58,41 @@
       <span>
         {% if s.status == 'human' %}
           <span class="lb-badge lb-badge-orange">Human takeover</span>
+        {% elif s.status == 'resolved' or s.status == 'closed' %}
+          <span class="lb-badge lb-badge-purple">Resolved</span>
         {% else %}
           <span class="lb-badge lb-badge-green">AI Employee</span>
+        {% endif %}
+        {% if s.assigned_to %}
+          <span class="lb-badge" style="background:#EEF2FF;color:#3730A3;">{{ s.assigned_to.get_full_name|default:s.assigned_to.email }}</span>
+        {% else %}
+          <span class="lb-badge" style="background:#F3F4F6;color:#6B7280;">Unassigned</span>
         {% endif %}
         <span style="color:var(--lb-muted);margin-left:8px;">{{ s.last_message_at }}</span>
       </span>
     </div>
+
+    {% if s.tags.all %}
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+      {% for t in s.tags.all %}
+      <span class="lb-badge" style="background:{{ t.color }}1A;color:{{ t.color }};">{{ t.name }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+
     <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;">
       {% for m in s.messages.all|slice:':4' %}
+      {% if m.role != 'note' %}
       <li style="font-size:13px;color:#374151;">
         <span style="color:var(--lb-muted);">{{ m.get_role_display }}:</span>
         {{ m.content|truncatechars:120 }}
       </li>
+      {% endif %}
       {% endfor %}
     </ul>
   </a>
   {% empty %}
-  <div class="lb-card" style="padding:28px;color:var(--lb-muted);">No conversations yet.</div>
+  <div class="lb-card" style="padding:28px;color:var(--lb-muted);">No conversations match these filters.</div>
   {% endfor %}
 </div>
 {% endblock %}

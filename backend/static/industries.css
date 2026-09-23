@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    LiftBot — industries.css
    Rebuilt on the same visual system as features.css
    Prefix: ind-
@@ -53,7 +53,7 @@ main:has(.lb) {
   overflow: hidden;
   background: #f3f2ee;
   text-align: center;
-  padding: 120px 24px 100px;
+  padding: 72px 24px 56px;
 }
 
 .ind-hero__noise {
@@ -149,7 +149,7 @@ main:has(.lb) {
    ============================================================ */
 .ind-grid-section {
   background: var(--paper-dim);
-  padding: 100px 24px;
+  padding: 64px 24px;
   border-top: 1px solid var(--paper-line);
   border-bottom: 1px solid var(--paper-line);
 }
@@ -162,7 +162,7 @@ main:has(.lb) {
 .ind-grid-section__header {
   text-align: center;
   max-width: 600px;
-  margin: 0 auto 56px;
+  margin: 0 auto 36px;
 }
 
 .ind-grid-section__header .lb__eyebrow {
@@ -305,7 +305,7 @@ main:has(.lb) {
 .ind-custom {
   background: #f3f2ee;
   border-bottom: 1px solid var(--paper-line);
-  padding: 100px 24px;
+  padding: 64px 24px;
   text-align: center;
 }
 
@@ -344,7 +344,7 @@ main:has(.lb) {
    ============================================================ */
 .ind-cta {
   background: #f3f2ee;
-  padding: 120px 24px;
+  padding: 72px 24px;
   text-align: center;
 }
 
@@ -395,10 +395,10 @@ main:has(.lb) {
    RESPONSIVE
    ============================================================ */
 @media (max-width: 560px) {
-  .ind-hero { padding: 96px 20px 72px; }
-  .ind-grid-section { padding: 72px 20px; }
-  .ind-custom { padding: 72px 20px; }
-  .ind-cta { padding: 72px 20px; }
+  .ind-hero { padding: 56px 20px 40px; }
+  .ind-grid-section { padding: 48px 20px; }
+  .ind-custom { padding: 48px 20px; }
+  .ind-cta { padding: 48px 20px; }
 
   .ind-hero__cta,
   .ind-cta__actions {

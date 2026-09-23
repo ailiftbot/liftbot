@@ -68,9 +68,9 @@ main:has(.lb) {
 
   /* Layout */
   --container: 1180px;
-  --section-py: 128px;
-  --section-py-tablet: 92px;
-  --section-py-mobile: 64px;
+  --section-py: 72px;
+  --section-py-tablet: 56px;
+  --section-py-mobile: 40px;
 }
 
 /* ---------- Reset ---------- */
@@ -219,7 +219,7 @@ color: white; background: black;
 .lb__hero {
   position: relative;
   overflow: hidden;
-  padding-top: 84px;
+  padding-top: 48px;
 }
 .lb__hero-glow {
   position: absolute;
@@ -262,7 +262,7 @@ color: white; background: black;
 }
 
 /* Hero visual: layered employee/roster cards, the page's signature element */
-.lb__hero-visual { position: relative; min-height: 420px; }
+.lb__hero-visual { position: relative; }
 .lb__demo-card {
   position: relative;
   z-index: 4;
@@ -385,7 +385,7 @@ color: white; background: black;
 /* ---------- Statement section ---------- */
 .lb__statement { max-width: 760px; margin-inline: auto; text-align: center; }
 .lb__statement .lb__h2 { margin-bottom: 8px; }
-.lb__statement-sub { color: var(--ink-soft); margin-bottom: 26px; }
+.lb__statement-sub { color: var(--ink-soft); margin-bottom: 18px; }
 .lb__pill-row {
   display: flex;
   flex-wrap: wrap;
@@ -407,7 +407,7 @@ color: white; background: black;
   align-items: flex-end;
   justify-content: space-between;
   gap: 24px;
-  margin-bottom: 48px;
+  margin-bottom: 32px;
 }
 .lb__section-head .lb__lede { margin-top: 14px; }
 @media (max-width: 720px) {
@@ -434,7 +434,7 @@ color: white; background: black;
 .lb__role-card .lb__avatar { margin-bottom: 14px; }
 .lb__role-desc { color: var(--ink-soft); font-size: 0.92rem; }
 
-.lb__explore { margin-top: 32px; }
+.lb__explore { margin-top: 20px; }
 
 /* ---------- Built around your business ---------- */
 .lb__knowledge {
@@ -479,7 +479,7 @@ color: white; background: black;
   position: relative;
   display: flex;
   gap: 20px;
-  padding-bottom: 34px;
+  padding-bottom: 22px;
 }
 .lb__step:last-child { padding-bottom: 0; }
 .lb__step-num {
@@ -571,7 +571,7 @@ color: white; background: black;
   justify-content: center;
   gap: 14px;
   flex-wrap: wrap;
-  margin-top: 30px;
+  margin-top: 20px;
 }
 
 /* ---------- Footer ---------- */
@@ -615,13 +615,13 @@ color: white; background: black;
 
 @media (max-width: 960px) {
   .lb__container { padding-inline: 20px; }
-  .lb__hero { padding-top: 56px; padding-bottom: 48px; }
+  .lb__hero { padding-top: 36px; padding-bottom: 28px; }
   .lb__hero-visual { min-height: 0; }
 }
 
 @media (max-width: 640px) {
   .lb__container { padding-inline: 16px; }
-  .lb__hero { padding-top: 36px; padding-bottom: 28px; }
+  .lb__hero { padding-top: 28px; padding-bottom: 20px; }
   .lb__hero-grid { gap: 36px; }
   .lb__hero-cta {
     flex-direction: column;

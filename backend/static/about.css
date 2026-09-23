@@ -46,7 +46,7 @@ main:has(.lb) {
   overflow: hidden;
   background: #f3f2ee;
   text-align: center;
-  padding: 120px 24px 100px;
+  padding: 72px 24px 56px;
 }
 .abt-hero__noise {
   position: absolute;
@@ -127,7 +127,7 @@ main:has(.lb) {
    ============================================================ */
 .abt-origin {
   background: #f3f2ee;
-  padding: 100px 24px;
+  padding: 64px 24px;
   border-top: 1px solid var(--paper-line);
 }
 .abt-origin__inner {
@@ -136,8 +136,8 @@ main:has(.lb) {
 }
 .abt-origin__quote {
   text-align: center;
-  margin-bottom: 56px;
-  padding-bottom: 48px;
+  margin-bottom: 36px;
+  padding-bottom: 28px;
   border-bottom: 1px solid var(--paper-line);
 }
 .abt-origin__q {
@@ -157,7 +157,7 @@ main:has(.lb) {
   margin: 0;
 }
 .abt-origin__body {
-  margin-bottom: 56px;
+  margin-bottom: 32px;
 }
 .abt-origin__body p {
   font-family: 'Inter', sans-serif;
@@ -216,7 +216,7 @@ main:has(.lb) {
    ============================================================ */
 .abt-why {
   background: #f3f2ee;
-  padding: 100px 24px;
+  padding: 64px 24px;
   text-align: center;
   border-top: 1px solid var(--paper-line);
   border-bottom: 1px solid var(--paper-line);
@@ -254,7 +254,7 @@ main:has(.lb) {
    ============================================================ */
 .abt-real {
   background: var(--paper-dim);
-  padding: 100px 24px;
+  padding: 64px 24px;
   text-align: center;
 }
 .abt-real__inner {
@@ -274,7 +274,7 @@ main:has(.lb) {
    ============================================================ */
 .abt-mission {
   background: #f3f2ee;
-  padding: 120px 24px;
+  padding: 72px 24px;
   text-align: center;
 }
 .abt-mission__inner {
@@ -323,7 +323,7 @@ main:has(.lb) {
    ============================================================ */
 .abt-cta {
   background: #f3f2ee;
-  padding: 100px 24px;
+  padding: 64px 24px;
   text-align: center;
 }
 .abt-cta__inner {
@@ -356,11 +356,11 @@ main:has(.lb) {
    RESPONSIVE
    ============================================================ */
 @media (max-width: 640px) {
-  .abt-hero { padding: 96px 20px 72px; }
+  .abt-hero { padding: 56px 20px 40px; }
   .abt-origin,
   .abt-why,
   .abt-real,
   .abt-mission,
-  .abt-cta { padding: 72px 20px; }
+  .abt-cta { padding: 48px 20px; }
   .abt-origin__what { padding: 28px 22px; }
 }

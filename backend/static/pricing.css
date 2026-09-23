@@ -46,14 +46,13 @@ main:has(.lb) {
    ============================================================ */
 .pr-hero {
   position: relative;
-  min-height: 70vh;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   background: var(--paper-dim);
   text-align: center;
-  padding: 120px 24px 100px;
+  padding: 72px 24px 56px;
 }
 
 .pr-hero__noise {
@@ -162,7 +161,7 @@ main:has(.lb) {
    ============================================================ */
 .pr-expect {
   background: var(--paper-dim);
-  padding: 100px 24px;
+  padding: 64px 24px;
 }
 
 .pr-expect__inner {
@@ -172,7 +171,7 @@ main:has(.lb) {
 
 .pr-expect__header {
   text-align: center;
-  margin-bottom: 56px;
+  margin-bottom: 36px;
 }
 
 .pr-expect__grid {
@@ -239,7 +238,7 @@ main:has(.lb) {
    ============================================================ */
 .pr-cta {
   background: var(--paper-dim);
-  padding: 100px 24px;
+  padding: 64px 24px;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -295,10 +294,10 @@ main:has(.lb) {
    ============================================================ */
 @media (max-width: 640px) {
   .pr-hero {
-    padding: 100px 20px 80px;
+    padding: 56px 20px 40px;
   }
   .pr-expect,
   .pr-cta {
-    padding: 72px 20px;
+    padding: 48px 20px;
   }
 }

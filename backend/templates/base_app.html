@@ -32,15 +32,14 @@
       <nav class="lb-nav">
         {% with u=request.resolver_match.url_name %}
         <a href="{% url 'dashboard' %}" class="{% if u == 'dashboard' %}active{% endif %}"><span class="ico">■</span> Dashboard</a>
-        <a href="{% url 'employee_list' %}" class="{% if u == 'employee_list' or u == 'employee_hire' %}active{% endif %}"><span class="ico">◉</span> AI Employees</a>
         {% if primary_employee %}
-        <a href="{% url 'employee_hub' primary_employee.pk %}" class="{% if u == 'employee_hub' and not request.GET.tab %}active{% endif %}"><span class="ico">⚡</span> AI Agent</a>
+        <a href="{% url 'employee_hub' primary_employee.pk %}" class="{% if u == 'employee_list' or u == 'employee_hire' or u == 'employee_hub' %}active{% endif %}"><span class="ico">◉</span> AI Employee</a>
         <a href="{% url 'employee_hub' primary_employee.pk %}?tab=knowledge" class="{% if u == 'employee_hub' and request.GET.tab in 'knowledge,add-material,qa,webpages,files' %}active{% endif %}"><span class="ico">☰</span> Knowledge Base</a>
         <a href="{% url 'employee_hub' primary_employee.pk %}?tab=settings" class="{% if u == 'employee_hub' and request.GET.tab in 'settings,capabilities,status' %}active{% endif %}"><span class="ico">✦</span> Personality</a>
         <a href="{% url 'employee_hub' primary_employee.pk %}?tab=widget-code" class="{% if u == 'employee_hub' and request.GET.tab in 'widget,widget-code' %}active{% endif %}"><span class="ico">⧉</span> Website Widget</a>
         <a href="{% url 'employee_hub' primary_employee.pk %}?tab=playground" class="{% if u == 'employee_hub' and request.GET.tab == 'playground' %}active{% endif %}"><span class="ico">▶</span> Playground</a>
         {% else %}
-        <a href="{% url 'employee_hire' %}"><span class="ico">⚡</span> AI Agent</a>
+        <a href="{% url 'employee_hire' %}" class="{% if u == 'employee_list' or u == 'employee_hire' or u == 'employee_hub' %}active{% endif %}"><span class="ico">◉</span> AI Employee</a>
         <a href="{% url 'employee_hire' %}"><span class="ico">☰</span> Knowledge Base</a>
         <a href="{% url 'employee_hire' %}"><span class="ico">✦</span> Personality</a>
         <a href="{% url 'employee_hire' %}"><span class="ico">⧉</span> Website Widget</a>

@@ -8,6 +8,7 @@ from django.contrib.auth.views import (
     PasswordResetConfirmView, PasswordResetCompleteView,
 )
 from django.core.mail import send_mail
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views import View
@@ -88,6 +89,18 @@ class SignUpView(View):
             except Exception:
                 return JsonResponse({'status': 'error', 'message': 'Invalid JSON format'}, status=400)
 
+        # Normalize single 'password' field from API payloads to password1/password2 for UserCreationForm
+        if isinstance(data, dict):
+            if 'password' in data and 'password1' not in data:
+                data = data.copy()
+                data['password1'] = data['password']
+                data['password2'] = data.get('password2', data['password'])
+        elif hasattr(data, 'copy'):
+            if 'password' in data and 'password1' not in data:
+                data = data.copy()
+                data['password1'] = data['password']
+                data['password2'] = data.get('password2', data['password'])
+
         form = SignUpForm(data)
         if form.is_valid():
             try:
@@ -99,9 +112,9 @@ class SignUpView(View):
                             name='Starter',
                             slug='starter',
                             price_monthly=29.00,
-                            conversations_limit=1000,
-                            employees_limit=1,
-                            knowledge_docs_limit=20,
+                            conversation_limit=1000,
+                            token_limit=500000,
+                            employee_limit=1,
                             is_active=True,
                         )
                     except Exception:
@@ -276,9 +289,9 @@ class SignupVerifyOtpView(View):
                         name='Starter',
                         slug='starter',
                         price_monthly=29.00,
-                        conversations_limit=1000,
-                        employees_limit=1,
-                        knowledge_docs_limit=20,
+                        conversation_limit=1000,
+                        token_limit=500000,
+                        employee_limit=1,
                         is_active=True,
                     )
                 except Exception:

@@ -36,9 +36,18 @@ INSTALLED_APPS = [
     'apps.leads',
 ]
 
+try:
+    import whitenoise  # noqa: F401
+    HAS_WHITENOISE = True
+except ImportError:
+    HAS_WHITENOISE = False
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+]
+if HAS_WHITENOISE:
+    MIDDLEWARE.append('whitenoise.middleware.WhiteNoiseMiddleware')
+MIDDLEWARE += [
     'apps.chat.cors.WidgetCorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -113,7 +122,11 @@ STORAGES = {
         'BACKEND': 'django.core.files.storage.FileSystemStorage',
     },
     'staticfiles': {
-        'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage',
+        'BACKEND': (
+            'whitenoise.storage.CompressedStaticFilesStorage'
+            if HAS_WHITENOISE
+            else 'django.contrib.staticfiles.storage.StaticFilesStorage'
+        ),
     },
 }
 

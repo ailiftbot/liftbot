@@ -1,8 +1,8 @@
 {% extends 'base_app.html' %}
 {% load static %}
 
-{% block title %}{{ employee.name }} — AI Agent Hub — LiftBot{% endblock %}
-{% block page_title %}AI Agent{% endblock %}
+{% block title %}{{ employee.name }} — AI Employee Hub — LiftBot{% endblock %}
+{% block page_title %}AI Employee{% endblock %}
 {% block page_subtitle %}Evaluate, guide, train, and test {{ employee.name }}{% endblock %}
 
 {% block extra_css %}
@@ -11,12 +11,17 @@
 
 {% block top_actions %}
   {% if all_employees|length > 1 %}
-  <div style="display:flex;align-items:center;gap:6px;">
-    <label for="hub-emp-switcher" style="font-size:12px;color:#6B7280;font-weight:600;">Agent:</label>
-    <select id="hub-emp-switcher" style="border:1px solid #E5E7EB;border-radius:8px;padding:5px 10px;font-size:12.5px;font-weight:600;background:#fff;color:#1F2937;cursor:pointer;" onchange="window.location.href=this.value;">
-      {% for emp in all_employees %}
-      <option value="{% url 'employee_hub' emp.pk %}" {% if emp.pk == employee.pk %}selected{% endif %}>{{ emp.name }} ({{ emp.get_role_display }})</option>
-      {% endfor %}
+  <div class="crisp-top-switcher-wrap" style="display:flex;align-items:center;gap:8px;">
+    <span style="font-size:12px;color:#64748B;font-weight:600;">Employee:</span>
+    <select id="hub-emp-switcher" style="border:1px solid #E2E8F0;border-radius:10px;padding:6px 12px;font-size:12.5px;font-weight:600;background:#FFFFFF;color:#0F172A;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,0.03);outline:none;" onchange="if(this.value==='__team__'){document.querySelector('[data-tab=\'team\']')?.click();}else{window.location.href=this.value;}">
+      <optgroup label="Switch Specialist">
+        {% for emp in all_employees %}
+        <option value="{% url 'employee_hub' emp.pk %}" {% if emp.pk == employee.pk %}selected{% endif %}>{{ emp.name }} ({{ emp.get_role_display }})</option>
+        {% endfor %}
+      </optgroup>
+      <optgroup label="Team Roster">
+        <option value="__team__">👥 View All Teammates ({{ all_employees|length }})...</option>
+      </optgroup>
     </select>
   </div>
   {% endif %}
@@ -29,24 +34,31 @@
     {% endif %}
   </div>
 
+  <button type="button" class="lb-btn lb-btn-ghost lb-btn-sm" data-switch-tab="team">Team ({{ all_employees|length }})</button>
   <button type="button" class="lb-btn lb-btn-ghost lb-btn-sm" data-switch-tab="widget">Embed Code</button>
   <button type="button" class="lb-btn lb-btn-primary lb-btn-sm" id="crisp-top-new-chat">New Chat</button>
 {% endblock %}
 
 {% block content %}
-<div class="crisp-hub" style="--agent-brand: {{ employee.brand_color|default:'#0066FF' }}; --widget-brand: {{ employee.brand_color|default:'#0066FF' }};">
+<div class="crisp-hub" style="--agent-brand: {{ employee.brand_color|default:'#6366F1' }}; --widget-brand: {{ employee.brand_color|default:'#6366F1' }};">
 
   <!-- ======================================================= -->
-  <!-- LAYER 2: Middle Sub-Navigation (Crisp AI Agent Sidebar) -->
+  <!-- LAYER 2: Middle Sub-Navigation (Crisp AI Employee Sidebar) -->
   <!-- ======================================================= -->
-  <aside class="crisp-subnav" aria-label="AI Agent navigation">
+  <aside class="crisp-subnav" aria-label="AI Employee navigation">
     <div class="crisp-subnav-head">
-      <h2 class="crisp-subnav-title">AI Agent</h2>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <h2 class="crisp-subnav-title">AI Employee</h2>
+        <span class="crisp-badge crisp-badge-sug" style="font-size:10px;">Studio</span>
+      </div>
       <div class="crisp-agent-select-wrap">
         <a href="javascript:void(0)" class="crisp-agent-pill" data-switch-tab="settings" title="Edit {{ employee.name }}">
           <div class="crisp-agent-pill-info">
             <div class="crisp-agent-av" id="subnav-av">{{ employee.name|slice:":1"|upper }}</div>
-            <span class="crisp-agent-name" id="subnav-name">{{ employee.name }}</span>
+            <div style="display:flex;flex-direction:column;min-width:0;">
+              <span class="crisp-agent-name" id="subnav-name">{{ employee.name }}</span>
+              <span style="font-size:11px;color:#64748B;line-height:1.2;">{{ employee.get_role_display }}</span>
+            </div>
           </div>
           <span class="crisp-agent-dot {% if not employee.is_active %}offline{% endif %}" id="subnav-dot" title="{% if employee.is_active %}Online{% else %}Offline{% endif %}"></span>
         </a>
@@ -127,13 +139,31 @@
       </button>
     </div>
 
+    <!-- Team Group (Consolidated Roster) -->
+    <div class="crisp-nav-group">
+      <p class="crisp-group-title">Team Roster</p>
+      <button type="button" class="crisp-nav-item" data-tab="team">
+        <span class="crisp-nav-left">
+          <span class="crisp-nav-ico">👥</span>
+          <span class="crisp-nav-label">All Teammates</span>
+        </span>
+        <span class="crisp-badge crisp-badge-sug">{{ all_employees|length }}</span>
+      </button>
+      <a href="{% url 'employee_hire' %}" class="crisp-nav-item" style="text-decoration:none;">
+        <span class="crisp-nav-left">
+          <span class="crisp-nav-ico">➕</span>
+          <span class="crisp-nav-label">Hire Specialist</span>
+        </span>
+      </a>
+    </div>
+
     <!-- Monitor Card at Bottom of Subnav -->
     <div class="crisp-nav-bottom-card">
       <div class="crisp-bottom-head">
-        <strong>Monitor your Agent</strong>
+        <strong>Monitor your Employee</strong>
         <a href="{% url 'conversations' %}">Go to Inbox &rarr;</a>
       </div>
-      <p>In your Automated inbox, see which conversations your AI Agent handled and how it replied.</p>
+      <p>In your Automated inbox, see which conversations your AI Employee handled and how it replied.</p>
     </div>
   </aside>
 
@@ -145,88 +175,172 @@
     <!-- Canvas Column (Left of Layer 3) -->
     <div class="crisp-canvas" id="crispCanvas">
 
-      <!-- TAB 1: PLAYGROUND (Exact Crisp Screen) -->
+      <!-- TAB 1: PLAYGROUND (Live Testing & Test Questions) -->
       <section class="crisp-tab-panel is-active" id="tab-playground">
-        <h1 class="crisp-canvas-title">Agent playground</h1>
-
-        <div class="crisp-alert-warning" id="crisp-safe-notice">
-          <span>⚠️</span>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
           <div>
-            <strong>{{ employee.name }} is {% if employee.is_active %}active{% else %}disabled{% endif %}</strong> &mdash; this is a safe playground to test without impacting real conversations.
-          </div>
-        </div>
-
-        <div class="crisp-banner-blue">
-          <p>
-            &times; <strong>Boost {{ employee.name }} with instructions</strong> &mdash; answer a few quick questions and {{ employee.name }} will assist your visitors with precision.
-          </p>
-          <button type="button" class="crisp-banner-btn" data-switch-tab="instructions">Get started &gt;</button>
-        </div>
-
-        <!-- Compatibility mode -->
-        <div class="crisp-card">
-          <div class="crisp-card-head">
-            <h3 class="crisp-card-title">👉 Compatibility mode</h3>
-          </div>
-
-          <div class="crisp-option-row">
-            <div class="crisp-option-left">
-              <div class="crisp-radio-circle"></div>
-              <div class="crisp-option-text">
-                <strong>Test with {{ employee.name }}</strong>
-                <span>Execute {{ employee.name }} AI Agent directly</span>
-              </div>
-            </div>
-            <span style="font-size:12px;color:#6B7280;">&#8964;</span>
-          </div>
-
-          <!-- Model select -->
-          <div class="crisp-field-group">
-            <label class="crisp-field-label">Model</label>
-            <div class="crisp-select-card">
-              <span>Choose automatically</span>
-              <span style="color:#6B7280;">&#8964;</span>
-            </div>
-            <p class="crisp-field-help">
-              <a href="javascript:void(0)" data-switch-tab="settings">How to select the best model?</a><br />
-              <span>&#9432; The auto-chosen model is GPT-4o-mini with FAISS/BM25 Hybrid Retrieval.</span>
+            <h1 class="crisp-canvas-title">Employee Playground</h1>
+            <p style="color:#64748B;font-size:13.5px;margin-top:-8px;margin-bottom:0;">
+              Test <strong>{{ employee.name }}</strong> with live knowledge, personality, and capabilities. Responses update in real time.
             </p>
           </div>
+          <button type="button" class="lb-btn lb-btn-ghost lb-btn-sm" id="pg-canvas-reset" onclick="document.getElementById('crisp-top-new-chat')?.click();">
+            ↻ Reset Conversation
+          </button>
+        </div>
 
-          <!-- Answer guidance -->
-          <div class="crisp-field-group" style="margin-top:16px;">
-            <label class="crisp-field-label">Answer guidance</label>
-            <div class="crisp-guidance-card">
-              <div class="crisp-guidance-left">
-                <span class="crisp-guidance-dot"></span>
-                <div class="crisp-guidance-text">
-                  <strong>Conservative</strong>
-                  <span>Only answers when response is certain to be found from sources</span>
-                </div>
-              </div>
-              <span style="color:#6B7280;">&#8964;</span>
-            </div>
-          </div>
-
-          <!-- Action buttons -->
-          <div class="crisp-actions-row">
-            <button type="button" class="crisp-link-btn" data-switch-tab="settings">Go to agent settings &gt;</button>
-            <button type="button" class="crisp-link-btn" data-switch-tab="instructions">Compare model options &gt;</button>
+        <div class="crisp-alert-warning" id="crisp-safe-notice">
+          <span style="font-size:16px;">🛡️</span>
+          <div>
+            <strong>Safe Test Sandbox</strong> &mdash; Chats in this playground do not impact live website visitors or count toward conversation quotas.
           </div>
         </div>
 
-        <!-- Connect messaging channels card -->
-        <div class="crisp-channels-card">
-          <div class="crisp-channel-icons">
-            <div class="crisp-channel-ico" title="Web Widget">💬</div>
-            <div class="crisp-channel-ico mail" title="Email / Handoff">✉</div>
-            <div class="crisp-channel-ico wa" title="WhatsApp">WA</div>
-            <div class="crisp-channel-ico ig" title="Instagram">IG</div>
-            <div class="crisp-channel-ico ms" title="Messenger">M</div>
+        <!-- How to Test & Interactive Prompts (from original playground) -->
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">🧪 Try Real Visitor Questions</h3>
+            <span style="font-size:12px;color:#64748B;">Click any question to send directly &rarr;</span>
           </div>
-          <h4>Connect messaging channels</h4>
-          <p>Manage all your conversations in one inbox by connecting WhatsApp, email, and more to your AI agent.</p>
-          <button type="button" class="crisp-channel-btn" data-switch-tab="widget">Setup channels &gt;</button>
+          <p style="font-size:13px;color:#475569;margin-top:-6px;margin-bottom:14px;">
+            Test how {{ employee.name }} handles inquiries using its <strong>{{ employee.get_personality_display|default:employee.personality|lower }}</strong> tone and company knowledge.
+          </p>
+
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <!-- Category 1: Introduction -->
+            <div>
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#94A3B8;margin-bottom:6px;">
+                Identity &amp; Role
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                <button type="button" class="crisp-prompt-pill" data-test-prompt="Who are you and what do you do for {{ workspace.name|default:'this company' }}?">
+                  "Who are you and what do you do?"
+                </button>
+                <button type="button" class="crisp-prompt-pill" data-test-prompt="What company do you work for and how can you help me?">
+                  "How can you help me?"
+                </button>
+              </div>
+            </div>
+
+            <!-- Category 2: Knowledge Base -->
+            <div>
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#94A3B8;margin-bottom:6px;">
+                Knowledge &amp; Services
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                <button type="button" class="crisp-prompt-pill" data-test-prompt="What services or solutions do you offer?">
+                  "What services or solutions do you offer?"
+                </button>
+                <button type="button" class="crisp-prompt-pill" data-test-prompt="What are your pricing plans and packages?">
+                  "What are your pricing plans?"
+                </button>
+                <button type="button" class="crisp-prompt-pill" data-test-prompt="What are your business hours or availability?">
+                  "What are your business hours?"
+                </button>
+              </div>
+            </div>
+
+            <!-- Category 3: Handoff & Actions -->
+            <div>
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#94A3B8;margin-bottom:6px;">
+                Handoff &amp; Lead Capture
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                <button type="button" class="crisp-prompt-pill" data-test-prompt="Can I speak with a real human on the team?">
+                  "Can I speak with a real human?"
+                </button>
+                <button type="button" class="crisp-prompt-pill" data-test-prompt="I'd like to get in touch. Can someone reach out to me?">
+                  "I'd like to get in touch"
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Specialist Status Card (Real Data) -->
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">📋 Specialist Configuration</h3>
+            <button type="button" class="crisp-link-btn" data-switch-tab="settings">Edit Settings &gt;</button>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:14px;font-size:13px;">
+            <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;">
+              <span style="font-size:11px;color:#64748B;font-weight:700;text-transform:uppercase;display:block;">Role &amp; Department</span>
+              <strong style="color:#0F172A;font-size:14px;margin-top:2px;display:block;">
+                {{ employee.get_role_display }}{% if employee.department %} · {{ employee.department }}{% endif %}
+              </strong>
+            </div>
+
+            <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;">
+              <span style="font-size:11px;color:#64748B;font-weight:700;text-transform:uppercase;display:block;">Personality Tone</span>
+              <strong style="color:#0F172A;font-size:14px;margin-top:2px;display:block;">
+                {{ employee.get_personality_display|default:employee.personality|title }}
+              </strong>
+            </div>
+
+            <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;">
+              <span style="font-size:11px;color:#64748B;font-weight:700;text-transform:uppercase;display:block;">Knowledge Trained</span>
+              <strong style="color:#0F172A;font-size:14px;margin-top:2px;display:block;">
+                {{ ready_count }} ready ({{ chunk_total }} chunks)
+              </strong>
+            </div>
+
+            <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;">
+              <span style="font-size:11px;color:#64748B;font-weight:700;text-transform:uppercase;display:block;">Website Status</span>
+              <div style="margin-top:4px;">
+                {% if employee.is_active %}
+                <span class="crisp-badge crisp-badge-active"><span style="display:inline-block;width:6px;height:6px;border-radius:999px;background:#10B981;margin-right:4px;"></span> Live on Website</span>
+                {% else %}
+                <span class="crisp-badge crisp-badge-req">Offline</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:14px;padding-top:12px;border-top:1px solid #F1F4F9;font-size:12.5px;color:#475569;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+            <div>
+              <strong>Opening Greeting:</strong> <em>"{{ employee.greeting_message }}"</em>
+            </div>
+            <button type="button" class="crisp-link-btn" data-switch-tab="settings">Change greeting &gt;</button>
+          </div>
+        </div>
+
+        <!-- Shortcuts Card (from original playground) -->
+        <div class="crisp-card">
+          <div class="crisp-card-head">
+            <h3 class="crisp-card-title">⚡ Quick Actions &amp; Shortcuts</h3>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:10px;">
+            <a href="javascript:void(0)" data-switch-tab="settings" class="crisp-shortcut-btn">
+              <span style="font-size:16px;">⚙️</span>
+              <div>
+                <strong>Edit Personality</strong>
+                <p>Adjust tone, name &amp; colors</p>
+              </div>
+            </a>
+            <a href="javascript:void(0)" data-switch-tab="add-material" class="crisp-shortcut-btn">
+              <span style="font-size:16px;">📚</span>
+              <div>
+                <strong>Add Knowledge</strong>
+                <p>Train with FAQs, PDFs &amp; URLs</p>
+              </div>
+            </a>
+            <a href="javascript:void(0)" data-switch-tab="widget" class="crisp-shortcut-btn">
+              <span style="font-size:16px;">⧉</span>
+              <div>
+                <strong>Embed Code</strong>
+                <p>Get snippet for website</p>
+              </div>
+            </a>
+            <a href="{% url 'conversations' %}" class="crisp-shortcut-btn">
+              <span style="font-size:16px;">💬</span>
+              <div>
+                <strong>Inbox History</strong>
+                <p>Review visitor chats</p>
+              </div>
+            </a>
+          </div>
         </div>
       </section>
 
@@ -262,7 +376,7 @@
 
       <!-- TAB 3: ANALYTICS -->
       <section class="crisp-tab-panel" id="tab-analytics">
-        <h1 class="crisp-canvas-title">Agent Analytics</h1>
+        <h1 class="crisp-canvas-title">Employee Analytics</h1>
         <p style="color:#6B7280;font-size:13.5px;margin-top:-8px;margin-bottom:20px;">Performance metrics and conversation volume handled by {{ employee.name }}.</p>
 
         <div class="crisp-stats-grid">
@@ -672,7 +786,7 @@
 
       <!-- TAB 7: BILLING -->
       <section class="crisp-tab-panel" id="tab-billing">
-        <h1 class="crisp-canvas-title">Agent Billing &amp; Plan</h1>
+        <h1 class="crisp-canvas-title">Employee Billing &amp; Plan</h1>
         <p style="color:#6B7280;font-size:13.5px;margin-top:-8px;margin-bottom:20px;">Manage subscription plan and capacity for {{ workspace.name }}.</p>
 
         <div class="crisp-card">
@@ -943,6 +1057,105 @@
         </div>
       </section>
 
+      <!-- TAB 14: ALL TEAMMATES (CONSOLIDATED ROSTER) -->
+      <section class="crisp-tab-panel" id="tab-team">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:24px;">
+          <div>
+            <h1 class="crisp-canvas-title">AI Employees Roster</h1>
+            <p style="color:#64748B;font-size:13.5px;margin-top:-8px;margin-bottom:0;">All specialists trained for your workspace. Switch between them or hire a new teammate.</p>
+          </div>
+          <a class="lb-btn lb-btn-primary" href="{% url 'employee_hire' %}" style="display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(99,102,241,0.25);">
+            <span style="font-size:15px;line-height:1;">+</span> Hire AI Employee
+          </a>
+        </div>
+
+        <!-- Team Stats Grid -->
+        <div class="crisp-stats-grid">
+          <div class="crisp-stat-box">
+            <span>Specialists</span>
+            <strong>{{ all_employees|length }}</strong>
+          </div>
+          <div class="crisp-stat-box">
+            <span>Active on Website</span>
+            <strong>{% with count=0 %}{% for e in all_employees %}{% if e.is_active %}{% with count=count|add:1 %}{% endwith %}{% endif %}{% endfor %}{{ all_employees|length }}{% endwith %}</strong>
+          </div>
+          <div class="crisp-stat-box">
+            <span>Workspace Limit</span>
+            <strong>{{ workspace.employee_limit|default:'Unlimited' }}</strong>
+          </div>
+          <div class="crisp-stat-box">
+            <span>Currently Managing</span>
+            <strong style="font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ employee.name }}</strong>
+          </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="crisp-card" style="padding:12px 16px;margin-bottom:20px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+            <div style="position:relative;flex:1;min-width:240px;max-width:440px;">
+              <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94A3B8;pointer-events:none;font-size:14px;">🔍</span>
+              <input type="search" id="hub-team-search" placeholder="Search by name, role, department..." style="width:100%;padding:9px 12px 9px 36px;border:1px solid #E2E8F0;border-radius:10px;font-size:13px;outline:none;background:#F8FAFC;transition:all 0.15s;" onfocus="this.style.background='#fff';this.style.borderColor='#6366F1';" onblur="this.style.background='#F8FAFC';this.style.borderColor='#E2E8F0';" />
+            </div>
+            <span style="font-size:12.5px;color:#64748B;">
+              Showing <strong id="hub-team-count" style="color:#0F172A;">{{ all_employees|length }}</strong> teammate{{ all_employees|length|pluralize }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Teammate Cards Grid -->
+        <div class="crisp-team-grid" id="hub-team-cards">
+          {% for emp in all_employees %}
+          <div class="crisp-teammate-card {% if emp.pk == employee.pk %}is-current{% endif %}" data-search="{{ emp.name|lower }} {{ emp.get_role_display|lower }} {{ emp.department|lower }} {{ emp.get_personality_display|lower }}">
+            <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;">
+              <div style="width:40px;height:40px;border-radius:12px;background:{{ emp.brand_color|default:'#6366F1' }};color:#fff;display:grid;place-items:center;font-size:16px;font-weight:800;flex-shrink:0;box-shadow:0 3px 10px rgba(0,0,0,0.12);">
+                {{ emp.name|slice:":1"|upper }}
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                  <h3 style="margin:0;font-size:15px;font-weight:750;color:#0F172A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ emp.name }}</h3>
+                  {% if emp.pk == employee.pk %}
+                  <span class="crisp-badge" style="background:#EEF2FF;color:#4F46E5;border:1px solid #C7D2FE;font-size:9.5px;">Current</span>
+                  {% endif %}
+                </div>
+                <p style="margin:2px 0 0;font-size:12px;color:#64748B;">{{ emp.get_role_display }}{% if emp.department %} &bull; {{ emp.department }}{% endif %}</p>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;font-size:11.5px;">
+              <span style="background:#F1F5F9;color:#475569;padding:3px 8px;border-radius:6px;font-weight:500;">🎭 {{ emp.get_personality_display }}</span>
+              {% if emp.is_active %}
+              <span style="background:#ECFDF5;color:#059669;border:1px solid #A7F3D0;padding:2px 7px;border-radius:6px;font-weight:600;display:inline-flex;align-items:center;gap:4px;">
+                <span style="width:6px;height:6px;border-radius:999px;background:#10B981;"></span> Live
+              </span>
+              {% else %}
+              <span style="background:#F3F4F6;color:#6B7280;padding:2px 7px;border-radius:6px;font-weight:500;">Offline</span>
+              {% endif %}
+              <span style="color:#94A3B8;margin-left:auto;">📚 {{ emp.knowledge_sources.count }} source{{ emp.knowledge_sources.count|pluralize }}</span>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:12px;border-top:1px solid #F1F5F9;">
+              {% if emp.pk == employee.pk %}
+              <button type="button" class="lb-btn lb-btn-ghost lb-btn-sm" style="flex:1;text-align:center;font-size:12px;" data-switch-tab="settings">Settings</button>
+              <button type="button" class="lb-btn lb-btn-ghost lb-btn-sm" style="flex:1;text-align:center;font-size:12px;" data-switch-tab="knowledge">Train</button>
+              <button type="button" class="lb-btn lb-btn-primary lb-btn-sm" style="flex:1;text-align:center;font-size:12px;" data-switch-tab="playground">Playground</button>
+              {% else %}
+              <a href="{% url 'employee_hub' emp.pk %}" class="lb-btn lb-btn-primary lb-btn-sm" style="flex:2;text-align:center;font-size:12px;">Manage Hub &rarr;</a>
+              <a href="{% url 'employee_hub' emp.pk %}?tab=playground" class="lb-btn lb-btn-ghost lb-btn-sm" style="flex:1;text-align:center;font-size:12px;">Test</a>
+              {% endif %}
+            </div>
+          </div>
+          {% empty %}
+          <div style="grid-column:1/-1;text-align:center;padding:48px 20px;background:#FFFFFF;border:1px dashed #CBD5E1;border-radius:16px;">
+            <div style="font-size:36px;margin-bottom:12px;">👥</div>
+            <h3 style="margin:0 0 6px;font-size:16px;font-weight:700;color:#0F172A;">No teammates hired yet</h3>
+            <p style="margin:0 0 16px;font-size:13px;color:#64748B;">Hire your first specialist with custom instructions, role, and personality.</p>
+            <a href="{% url 'employee_hire' %}" class="lb-btn lb-btn-primary">Hire Specialist</a>
+          </div>
+          {% endfor %}
+        </div>
+        <p id="hub-team-no-results" style="display:none;text-align:center;color:#64748B;font-size:13.5px;padding:32px 0;">No teammates matched your search.</p>
+      </section>
+
     </div><!-- /.crisp-canvas -->
 
     <!-- ======================================================= -->
@@ -950,7 +1163,7 @@
     <!-- ======================================================= -->
     <aside class="crisp-simulator-pane" id="crispSimPane">
       <div class="crisp-sim-backdrop">
-        <p class="crisp-sim-header-label">Test your AI Agent here:</p>
+        <p class="crisp-sim-header-label">Test your AI Employee here:</p>
 
         <div class="crisp-widget-card" id="crispWidgetCard">
           <!-- Widget Topbar -->
@@ -1007,7 +1220,7 @@
   <!-- Mobile Simulator Toggle Button -->
   <button type="button" class="crisp-mobile-sim-toggle" id="crispMobileSimToggle">
     <span>💬</span>
-    <span>Test Agent</span>
+    <span>Test Employee</span>
   </button>
 </div><!-- /.crisp-hub -->
 
@@ -1137,7 +1350,9 @@
     widget: 'widget-code',
     'profile-settings': 'settings',
     'add-material': 'add-material',
-    'widget-code': 'widget-code'
+    'widget-code': 'widget-code',
+    team: 'team',
+    roster: 'team'
   };
 
   function activateTab(tabId, pushState = true) {
@@ -1183,6 +1398,44 @@
     });
   });
 
+  // Team roster live search
+  const teamSearch = document.getElementById('hub-team-search');
+  const teamCards = document.querySelectorAll('#hub-team-cards .crisp-teammate-card');
+  const teamEmpty = document.getElementById('hub-team-no-results');
+  const teamCount = document.getElementById('hub-team-count');
+
+  if (teamSearch) {
+    teamSearch.addEventListener('input', () => {
+      const q = teamSearch.value.trim().toLowerCase();
+      let visible = 0;
+      teamCards.forEach(card => {
+        const text = (card.getAttribute('data-search') || '').toLowerCase();
+        const match = !q || text.indexOf(q) !== -1;
+        card.style.display = match ? '' : 'none';
+        if (match) visible++;
+      });
+      if (teamCount) teamCount.textContent = visible;
+      if (teamEmpty) teamEmpty.style.display = (visible === 0 && teamCards.length > 0) ? 'block' : 'none';
+    });
+  }
+
+  // Interactive test prompt buttons
+  document.querySelectorAll('[data-test-prompt]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const prompt = btn.getAttribute('data-test-prompt');
+      if (!prompt || !chatInput || !chatForm) return;
+      chatInput.value = prompt;
+      if (simPane && !simPane.classList.contains('is-open') && window.innerWidth <= 1024) {
+        simPane.classList.add('is-open');
+      }
+      if (chatForm.requestSubmit) {
+        chatForm.requestSubmit();
+      } else {
+        chatForm.dispatchEvent(new Event('submit', { cancelable: true }));
+      }
+    });
+  });
+
   // Initialize active tab from URL or context
   const urlParams = new URLSearchParams(window.location.search);
   const initialTab = urlParams.get('tab') || '{{ active_tab|default:"playground" }}';
@@ -1194,7 +1447,7 @@
   if (mobileToggle && simPane) {
     mobileToggle.addEventListener('click', () => {
       simPane.classList.toggle('is-open');
-      mobileToggle.textContent = simPane.classList.contains('is-open') ? '✕ Close Preview' : '💬 Test Agent';
+      mobileToggle.textContent = simPane.classList.contains('is-open') ? '✕ Close Preview' : '💬 Test Employee';
     });
   }
 

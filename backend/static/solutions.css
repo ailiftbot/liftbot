@@ -53,7 +53,7 @@ main:has(.lb) {
   overflow: hidden;
   background: #f3f2ee;
   text-align: center;
-  padding: 120px 24px 100px;
+  padding: 72px 24px 56px;
 }
 
 .sol-hero__noise {
@@ -150,7 +150,7 @@ main:has(.lb) {
    ============================================================ */
 .sol-grid-section {
   background: var(--paper-dim);
-  padding: 100px 24px;
+  padding: 64px 24px;
   border-top: 1px solid var(--paper-line);
   border-bottom: 1px solid var(--paper-line);
 }
@@ -163,7 +163,7 @@ main:has(.lb) {
 .sol-grid-section__header {
   text-align: center;
   max-width: 600px;
-  margin: 0 auto 56px;
+  margin: 0 auto 36px;
 }
 
 .sol-grid {
@@ -250,7 +250,7 @@ main:has(.lb) {
    ============================================================ */
 .sol-statement {
   background: #f3f2ee;
-  padding: 100px 24px;
+  padding: 64px 24px;
   border-bottom: 1px solid var(--paper-line);
 }
 
@@ -370,7 +370,7 @@ main:has(.lb) {
    ============================================================ */
 .sol-cta {
   background: #f3f2ee;
-  padding: 120px 24px;
+  padding: 72px 24px;
   text-align: center;
 }
 
@@ -424,11 +424,11 @@ main:has(.lb) {
    RESPONSIVE UTILITIES
    ============================================================ */
 @media (max-width: 560px) {
-  .sol-hero { padding: 96px 20px 72px; }
+  .sol-hero { padding: 56px 20px 40px; }
   .sol-grid-section,
   .sol-statement,
   .sol-cta {
-    padding: 72px 20px;
+    padding: 48px 20px;
   }
   .sol-hero__cta,
   .sol-cta__actions {

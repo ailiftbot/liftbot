@@ -52,7 +52,7 @@ main:has(.lb) {
 .hiw-hero {
   position: relative;
   overflow: hidden;
-  padding: 120px 24px 100px;
+  padding: 72px 24px 56px;
   text-align: center;
   background: #f3f2ee;
 }
@@ -153,7 +153,7 @@ main:has(.lb) {
    ============================================================ */
 .hiw-steps {
   background: #f3f2ee;
-  padding: 100px 24px;
+  padding: 64px 24px;
   border-top: 1px solid #e7e5de;
   border-bottom: 1px solid #e7e5de;
 }
@@ -166,7 +166,7 @@ main:has(.lb) {
 .hiw-steps__header {
   text-align: center;
   max-width: 600px;
-  margin: 0 auto 56px;
+  margin: 0 auto 36px;
 }
 
 /* Card grid */
@@ -232,7 +232,7 @@ main:has(.lb) {
    ============================================================ */
 .hiw-workflow {
   background: #f3f2ee;
-  padding: 100px 24px;
+  padding: 64px 24px;
   border-bottom: 1px solid #e7e5de;
   text-align: center;
 }
@@ -305,7 +305,7 @@ main:has(.lb) {
 .hiw-cta {
   background: #f3f2ee;
   color: #15161b;
-  padding: 120px 24px;
+  padding: 72px 24px;
   text-align: center;
 }
 
@@ -352,10 +352,10 @@ main:has(.lb) {
    RESPONSIVE — 560px
    ============================================================ */
 @media (max-width: 560px) {
-  .hiw-hero { padding: 96px 20px 72px; }
-  .hiw-steps { padding: 72px 20px; }
-  .hiw-workflow { padding: 72px 20px; }
-  .hiw-cta { padding: 72px 20px; }
+  .hiw-hero { padding: 56px 20px 40px; }
+  .hiw-steps { padding: 48px 20px; }
+  .hiw-workflow { padding: 48px 20px; }
+  .hiw-cta { padding: 48px 20px; }
 
   .hiw-grid { grid-template-columns: 1fr; }
 

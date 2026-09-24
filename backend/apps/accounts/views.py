@@ -25,30 +25,38 @@ logger = logging.getLogger(__name__)
 
 def _send_otp_email(user, code):
     name = ''
-    if hasattr(user, 'profile'):
-        name = user.profile.full_name
-    send_mail(
-        subject='Your LiftBot verification code',
-        message=(
-            f'Hi {name or user.first_name or "there"},\n\n'
-            f'Your LiftBot email verification code is:\n\n'
-            f'    {code}\n\n'
-            f'This code expires in {getattr(settings, "OTP_EXPIRY_MINUTES", 10)} minutes.\n'
-            f'If you did not request this, ignore this email.\n'
-        ),
-        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@liftbot.ai'),
-        recipient_list=[user.email],
-        fail_silently=False,
-    )
+    try:
+        if hasattr(user, 'profile'):
+            name = user.profile.full_name
+    except Exception:
+        pass
+    try:
+        send_mail(
+            subject='Your LiftBot verification code',
+            message=(
+                f'Hi {name or user.first_name or "there"},\n\n'
+                f'Your LiftBot email verification code is:\n\n'
+                f'    {code}\n\n'
+                f'This code expires in {getattr(settings, "OTP_EXPIRY_MINUTES", 10)} minutes.\n'
+                f'If you did not request this, ignore this email.\n'
+            ),
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@liftbot.ai'),
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+    except Exception:
+        logger.exception('send_mail failed for user %s (%s)', user.pk, user.email)
+        raise
 
 
 def issue_and_send_otp(user):
     otp = OTP.issue_for(user)
     try:
         _send_otp_email(user, otp.code)
-    except Exception:
-        # Do not leave a code active when the email provider rejected it.
-        otp.delete()
+    except Exception as e:
+        # Fallback mechanism: Keep the generated OTP valid in the database so
+        # the user can still be assisted / verified even if SMTP connection or delivery failed.
+        logger.warning('OTP email delivery failed for user %s (%s): %s. Generated OTP %s remains valid in DB.', user.pk, user.email, e, otp.code)
         raise
     return otp
 
@@ -57,31 +65,71 @@ class SignUpView(View):
     template_name = 'accounts/signup.html'
 
     def get(self, request):
-        if request.user.is_authenticated:
-            return redirect('dashboard')
-        return render(request, self.template_name, {'form': SignUpForm()})
+        try:
+            if request.user.is_authenticated:
+                return redirect('dashboard')
+            return render(request, self.template_name, {'form': SignUpForm()})
+        except Exception:
+            logger.exception('SignUpView.get crashed')
+            return render(request, self.template_name, {'form': SignUpForm()})
 
     def post(self, request):
-        form = SignUpForm(request.POST)
+        is_json = (
+            request.content_type == 'application/json'
+            or 'application/json' in request.headers.get('Accept', '')
+            or request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        )
+
+        data = request.POST
+        if request.content_type == 'application/json':
+            import json
+            try:
+                data = json.loads(request.body.decode('utf-8'))
+            except Exception:
+                return JsonResponse({'status': 'error', 'message': 'Invalid JSON format'}, status=400)
+
+        form = SignUpForm(data)
         if form.is_valid():
-            user = form.save()
-            plan = BillingPlan.objects.filter(slug='starter').first()
-            workspace = Workspace.objects.create(
-                name=form.cleaned_data['company_name'],
-                owner=user,
-                plan=plan,
-                is_active=False,
-            )
-            WorkspaceMembership.objects.create(
-                workspace=workspace,
-                user=user,
-                role=WorkspaceMembership.Role.OWNER,
-            )
+            try:
+                user = form.save()
+                plan = BillingPlan.objects.filter(slug='starter').first() or BillingPlan.objects.first()
+                if not plan:
+                    try:
+                        plan = BillingPlan.objects.create(
+                            name='Starter',
+                            slug='starter',
+                            price_monthly=29.00,
+                            conversations_limit=1000,
+                            employees_limit=1,
+                            knowledge_docs_limit=20,
+                            is_active=True,
+                        )
+                    except Exception:
+                        logger.warning('Could not auto-create starter plan')
+                        plan = None
+
+                workspace = Workspace.objects.create(
+                    name=form.cleaned_data['company_name'],
+                    owner=user,
+                    plan=plan,
+                    is_active=False,
+                )
+                WorkspaceMembership.objects.create(
+                    workspace=workspace,
+                    user=user,
+                    role=WorkspaceMembership.Role.OWNER,
+                )
+            except Exception as e:
+                logger.exception('SignUpView.post: DB operations failed')
+                if is_json:
+                    from django.http import JsonResponse
+                    return JsonResponse({'status': 'error', 'message': 'Database error creating account. Please try again.'}, status=500)
+                form.add_error(None, 'Something went wrong creating your account. Please try again.')
+                return render(request, self.template_name, {'form': form})
 
             request.session['onboarding_user_id'] = user.id
 
-            # SMTP fail ho toh bhi signup crash na ho — GET pe verify page
-            # khud dobara try karega (neeche SignupVerifyOtpView.get dekho).
+            # Send OTP email with graceful fallback
             try:
                 issue_and_send_otp(user)
             except Exception:
@@ -94,7 +142,20 @@ class SignUpView(View):
             else:
                 messages.info(request, 'Account created. Enter the code we emailed you to verify your address.')
 
+            if is_json:
+                from django.http import JsonResponse
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Account created successfully.',
+                    'redirect_url': reverse('signup_verify_otp'),
+                })
+
             return redirect('signup_verify_otp')
+
+        if is_json:
+            from django.http import JsonResponse
+            return JsonResponse({'status': 'error', 'errors': form.errors.get_json_data()}, status=400)
+
         return render(request, self.template_name, {'form': form})
 
 
@@ -106,65 +167,159 @@ class SignupVerifyOtpView(View):
         user_id = request.session.get('onboarding_user_id')
         if not user_id:
             return None
-        return get_user_model().objects.filter(id=user_id).first()
+        try:
+            return get_user_model().objects.filter(id=user_id).first()
+        except Exception:
+            logger.exception('SignupVerifyOtpView._get_pending_user DB error')
+            return None
 
     def get(self, request):
-        user = self._get_pending_user(request)
-        if not user:
+        try:
+            user = self._get_pending_user(request)
+            if not user:
+                return redirect('signup')
+
+            # Safely check profile — may not exist if DB is inconsistent
+            profile = getattr(user, 'profile', None)
+            if profile and (profile.is_verified or profile.email_verified):
+                return self._proceed_to_billing(request, user)
+
+            if not OTP.has_valid_pending(user) and OTP.cooldown_remaining(user) == 0:
+                try:
+                    issue_and_send_otp(user)
+                    messages.info(request, f'A verification code was sent to {user.email}.')
+                except Exception:
+                    logger.exception('OTP email failed for user %s', user.pk)
+                    messages.error(request, 'We could not send the verification code. Try "Resend code" below.')
+
+            return render(request, self.template_name, {'form': OTPVerifyForm(), 'email': user.email})
+        except Exception:
+            logger.exception('SignupVerifyOtpView.get crashed')
+            messages.error(request, 'Something went wrong. Please try signing up again.')
             return redirect('signup')
-        if user.profile.is_verified or user.profile.email_verified:
-            return self._proceed_to_billing(request, user)
-
-        # Fix: agar koi valid (unexpired, unused) OTP pending nahi hai —
-        # jaise login se redirect hua ho, ya purana code expire ho chuka ho —
-        # yahin automatically ek naya bhej do. Cooldown respect karta hai.
-        if not OTP.has_valid_pending(user) and OTP.cooldown_remaining(user) == 0:
-            try:
-                issue_and_send_otp(user)
-                messages.info(request, f'A verification code was sent to {user.email}.')
-            except Exception:
-                logger.exception('OTP email failed for user %s', user.pk)
-                messages.error(request, 'We could not send the verification code. Try "Resend code" below.')
-
-        return render(request, self.template_name, {'form': OTPVerifyForm(), 'email': user.email})
 
     def post(self, request):
-        user = self._get_pending_user(request)
-        if not user:
+        is_json = (
+            request.content_type == 'application/json'
+            or 'application/json' in request.headers.get('Accept', '')
+            or request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        )
+
+        try:
+            user = self._get_pending_user(request)
+            if not user:
+                if is_json:
+                    from django.http import JsonResponse
+                    return JsonResponse({'status': 'error', 'message': 'No pending signup session found. Please sign up first.'}, status=400)
+                return redirect('signup')
+
+            data = request.POST
+            if request.content_type == 'application/json':
+                import json
+                try:
+                    data = json.loads(request.body.decode('utf-8'))
+                except Exception:
+                    from django.http import JsonResponse
+                    return JsonResponse({'status': 'error', 'message': 'Invalid JSON format'}, status=400)
+
+            form = OTPVerifyForm(data)
+            if not form.is_valid():
+                if is_json:
+                    from django.http import JsonResponse
+                    return JsonResponse({'status': 'error', 'errors': form.errors.get_json_data()}, status=400)
+                return render(request, self.template_name, {'form': form, 'email': user.email})
+
+            otp = OTP.match_for_user(user, form.cleaned_data['code'])
+            if otp is None:
+                if is_json:
+                    from django.http import JsonResponse
+                    return JsonResponse({'status': 'error', 'message': 'That code is invalid or has expired.'}, status=400)
+                form.add_error('code', 'That code is invalid or has expired.')
+                return render(request, self.template_name, {'form': form, 'email': user.email})
+
+            otp.is_used = True
+            otp.save(update_fields=['is_used'])
+
+            profile = getattr(user, 'profile', None)
+            if not profile:
+                profile, _ = UserProfile.objects.get_or_create(
+                    user=user,
+                    defaults={'full_name': user.get_full_name() or user.username},
+                )
+            profile.mark_verified()
+
+            return self._proceed_to_billing(request, user, is_json=is_json)
+        except Exception:
+            logger.exception('SignupVerifyOtpView.post crashed')
+            if is_json:
+                from django.http import JsonResponse
+                return JsonResponse({'status': 'error', 'message': 'Something went wrong verifying your code.'}, status=500)
+            messages.error(request, 'Something went wrong verifying your code. Please try again.')
+            return redirect('signup_verify_otp')
+
+    def _proceed_to_billing(self, request, user, is_json=False):
+        try:
+            workspace = user_workspace(user)
+            if not workspace:
+                logger.error('User %s has no workspace — redirecting to signup', user.pk)
+                if is_json:
+                    from django.http import JsonResponse
+                    return JsonResponse({'status': 'error', 'message': 'No workspace found. Please sign up again.'}, status=400)
+                messages.error(request, 'No workspace found. Please sign up again.')
+                return redirect('signup')
+
+            # Ensure plan exists for Transaction NOT NULL constraint
+            plan = workspace.plan or BillingPlan.objects.filter(slug='starter').first() or BillingPlan.objects.first()
+            if not plan:
+                try:
+                    plan = BillingPlan.objects.create(
+                        name='Starter',
+                        slug='starter',
+                        price_monthly=29.00,
+                        conversations_limit=1000,
+                        employees_limit=1,
+                        knowledge_docs_limit=20,
+                        is_active=True,
+                    )
+                except Exception:
+                    logger.exception('Could not create fallback starter plan for transaction')
+
+            if not workspace.plan and plan:
+                workspace.plan = plan
+                workspace.save(update_fields=['plan'])
+
+            txn = workspace.transactions.order_by('-created_at').first()
+            if txn is None and plan:
+                txn = Transaction.objects.create(
+                    workspace=workspace,
+                    plan=plan,
+                    amount=plan.price_monthly,
+                    status=Transaction.Status.PENDING,
+                )
+
+            request.session.pop('onboarding_user_id', None)
+            request.session['onboarding_workspace_id'] = workspace.id
+            if txn:
+                request.session['onboarding_transaction_id'] = txn.id
+
+            messages.success(request, 'Email verified! Now complete payment to activate your workspace.')
+
+            if is_json:
+                from django.http import JsonResponse
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Email verified successfully.',
+                    'redirect_url': reverse('billing_onboarding'),
+                })
+
+            return redirect('billing_onboarding')
+        except Exception:
+            logger.exception('_proceed_to_billing failed for user %s', user.pk)
+            if is_json:
+                from django.http import JsonResponse
+                return JsonResponse({'status': 'error', 'message': 'An error occurred proceeding to billing.'}, status=500)
+            messages.error(request, 'Something went wrong. Please try again.')
             return redirect('signup')
-
-        form = OTPVerifyForm(request.POST)
-        if not form.is_valid():
-            return render(request, self.template_name, {'form': form, 'email': user.email})
-
-        otp = OTP.match_for_user(user, form.cleaned_data['code'])
-        if otp is None:
-            form.add_error('code', 'That code is invalid or has expired.')
-            return render(request, self.template_name, {'form': form, 'email': user.email})
-
-        otp.is_used = True
-        otp.save(update_fields=['is_used'])
-        user.profile.mark_verified()
-        return self._proceed_to_billing(request, user)
-
-    def _proceed_to_billing(self, request, user):
-        workspace = user_workspace(user)
-
-        txn = workspace.transactions.order_by('-created_at').first()
-        if txn is None:
-            txn = Transaction.objects.create(
-                workspace=workspace,
-                plan=workspace.plan,
-                amount=workspace.plan.price_monthly if workspace.plan else 0,
-                status=Transaction.Status.PENDING,
-            )
-
-        request.session.pop('onboarding_user_id', None)
-        request.session['onboarding_workspace_id'] = workspace.id
-        request.session['onboarding_transaction_id'] = txn.id
-
-        messages.success(request, 'Email verified! Now complete payment to activate your workspace.')
-        return redirect('billing_onboarding')
 
 
 class SignupResendOtpView(View):

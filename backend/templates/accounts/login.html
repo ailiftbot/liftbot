@@ -298,6 +298,12 @@
   <img src="{% static 'img/liftbot-login-bg.png' %}" alt="" class="lb-auth__bg-img">
 
   <div class="lb-auth__card">
+    <div style="margin-bottom:16px;">
+      <a href="{% url 'home' %}" style="display:inline-flex;align-items:center;gap:10px;text-decoration:none;">
+        <img src="{% static 'img/logo.png' %}" alt="LiftBot logo" style="width:40px;height:40px;object-fit:contain;">
+        <span style="font-weight:800;font-size:18px;color:#111827;">LiftBot</span>
+      </a>
+    </div>
     <h1 class="lb-auth__title">Welcome back</h1>
     <p class="lb-auth__subtitle">Log in to your LiftBot account</p>
 

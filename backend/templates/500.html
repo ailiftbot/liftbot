@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Server Error — LiftBot</title>
+  <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}" />
+  <link rel="alternate icon" type="image/png" href="{% static 'img/favicon.png' %}" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet" />
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+      background: #0f0f14;
+      color: #E5E7EB;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+      padding: 24px;
+    }
+    .error-wrap { max-width: 460px; }
+    .error-code {
+      font-size: 96px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #7C3AED, #6366F1, #818CF8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 12px; color:#fff; }
+    p { font-size: 15px; line-height: 1.6; color: #9CA3AF; margin-bottom: 28px; }
+    a {
+      display: inline-block;
+      background: #7C3AED;
+      color: #fff;
+      padding: 12px 32px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+    a:hover { background: #6D28D9; }
+  </style>
+</head>
+<body>
+  <div class="error-wrap">
+    <div style="margin-bottom:24px;">
+      <a href="/" style="display:inline-flex;align-items:center;gap:10px;text-decoration:none;background:none;padding:0;">
+        <img src="{% static 'img/logo.png' %}" alt="LiftBot logo" style="width:54px;height:54px;object-fit:contain;">
+      </a>
+    </div>
+    <div class="error-code">500</div>
+    <h1>Something went wrong</h1>
+    <p>We're looking into it. Please try again in a moment, or head back to the homepage.</p>
+    <a href="/">Back to Home</a>
+  </div>
+</body>
+</html>

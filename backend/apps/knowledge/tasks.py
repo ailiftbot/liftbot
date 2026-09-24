@@ -2,7 +2,11 @@ import logging
 
 import requests
 from bs4 import BeautifulSoup
-from celery import shared_task
+try:
+    from celery import shared_task
+except ImportError:
+    def shared_task(func):
+        return func
 from django.conf import settings
 from pypdf import PdfReader
 

@@ -2,7 +2,10 @@ import json
 import logging
 import uuid
 
-import redis
+try:
+    import redis
+except ImportError:
+    redis = None
 import requests
 from django.conf import settings
 from django.contrib import messages

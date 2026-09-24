@@ -70,19 +70,28 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 ASGI_APPLICATION = 'config.asgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': env('MYSQL_DATABASE', default='liftbot'),
-        'USER': env('MYSQL_USER', default='liftbot'),
-        'PASSWORD': env('MYSQL_PASSWORD', default='liftbot_pass'),
-        'HOST': env('MYSQL_HOST', default='127.0.0.1'),
-        'PORT': env('MYSQL_PORT', default='3306'),
-        'OPTIONS': {
-            'charset': 'utf8mb4',
-        },
+DB_ENGINE = env('DATABASE_ENGINE', default='django.db.backends.mysql')
+if DB_ENGINE == 'django.db.backends.sqlite3':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': env('MYSQL_DATABASE', default='liftbot'),
+            'USER': env('MYSQL_USER', default='liftbot'),
+            'PASSWORD': env('MYSQL_PASSWORD', default='liftbot_pass'),
+            'HOST': env('MYSQL_HOST', default='127.0.0.1'),
+            'PORT': env('MYSQL_PORT', default='3306'),
+            'OPTIONS': {
+                'charset': 'utf8mb4',
+            },
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -117,16 +126,25 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'home'
 
-EMAIL_BACKEND = env(
-    'EMAIL_BACKEND',
-    default='django.core.mail.backends.console.EmailBackend',
-)
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='LiftBot <noreply@liftbot.ai>')
 EMAIL_HOST = env('EMAIL_HOST', default='')
 EMAIL_PORT = env.int('EMAIL_PORT', default=587)
 EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
+EMAIL_USE_SSL = env.bool('EMAIL_USE_SSL', default=False)
+EMAIL_TIMEOUT = env.int('EMAIL_TIMEOUT', default=10)
+
+if EMAIL_HOST:
+    EMAIL_BACKEND = env(
+        'EMAIL_BACKEND',
+        default='django.core.mail.backends.smtp.EmailBackend',
+    )
+else:
+    EMAIL_BACKEND = env(
+        'EMAIL_BACKEND',
+        default='django.core.mail.backends.console.EmailBackend',
+    )
 
 CONTACT_EMAIL_SALES = env('CONTACT_EMAIL_SALES', default='sales@liftbot.app')
 CONTACT_EMAIL_PRODUCT = env('CONTACT_EMAIL_PRODUCT', default='contact@liftbot.app')
@@ -163,3 +181,37 @@ PUBLIC_WIDGET_API_URL = env(
 # Product copy rule: never say "chatbot" in UI.
 PRODUCT_NAME = 'LiftBot'
 PRODUCT_TAGLINE = 'Hire AI Employees for your website'
+
+# ── Logging ─────────────────────────────────────────────────────
+# Log unhandled exceptions so 500s are traceable in production.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} {levelname} {name} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'apps': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+        },
+    },
+}

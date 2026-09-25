@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% load static %}
 
 {% block title %}How LiftBot Works | Create and Deploy an AI Employee{% endblock %}
@@ -27,8 +27,8 @@
         You don&rsquo;t need to build an AI system from scratch.
       </p>
       <div class="hiw-hero__cta">
-        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">Create Your AI Employee &rarr;</a>
-        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline">Book a demo &rarr;</a>
+        <a href="{% url 'signup' %}" class="lb__btn lb__btn--primary">Create Your AI Employee →</a>
+        <button type="button" class="lb__btn lb__btn--outline open-demo-modal">Book a Demo →</button>
       </div>
     </div>
   </section>
@@ -115,8 +115,8 @@
       <h2 class="hiw-cta__h2">Create your AI employee in minutes.</h2>
       <p class="hiw-cta__sub">You don&rsquo;t need to build an AI system from scratch. LiftBot gives you everything you need.</p>
       <div class="hiw-cta__actions">
-        <a href="{% url 'early_access' %}" class="lb__btn" style="background:#15161b; color:#fff;">Create Your AI Employee &rarr;</a>
-        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline">Book a demo &rarr;</a>
+        <a href="{% url 'signup' %}" class="lb__btn" style="background:#15161b; color:#fff;">Create Your AI Employee →</a>
+        <button type="button" class="lb__btn lb__btn--outline open-demo-modal">Book a Demo →</button>
       </div>
     </div>
   </section>

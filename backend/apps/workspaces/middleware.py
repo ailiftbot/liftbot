@@ -14,9 +14,9 @@ EXEMPT_URL_NAMES = {
     'home', 'about', 'contact', 'ai_employees', 'features', 'how_it_works', 'solutions',
     'industries', 'industry_detail', 'use_cases', 'demo', 'pricing', 'customers',
     'resources', 'blog', 'early_access', 'faq', 'guide', 'support', 'security',
-    'privacy', 'terms', 'cookies',
+    'privacy', 'terms', 'cookies', 'schedule_demo',
 }
-EXEMPT_PATH_PREFIXES = ('/admin', '/api/widget/', '/static/', '/media/')
+EXEMPT_PATH_PREFIXES = ('/admin', '/api/widget/', '/static/', '/media/', '/api/schedule-demo/')
 
 
 class OnboardingGateMiddleware:

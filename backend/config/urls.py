@@ -6,9 +6,8 @@ from django.views.generic import TemplateView
 from django.http import Http404
 from django.shortcuts import render
 from .contact import contact_view
+from .demo_request import schedule_demo_view
 from .early_access import early_access_view
-
-from .contact import contact_view
 
 
 # ============================================================
@@ -193,6 +192,7 @@ urlpatterns = [
     path('privacy/', TemplateView.as_view(template_name='marketing/privacy.html'), name='privacy'),
     path('terms/', TemplateView.as_view(template_name='marketing/terms.html'), name='terms'),
     path('cookies/', TemplateView.as_view(template_name='marketing/cookies.html'), name='cookies'),
+    path('api/schedule-demo/', schedule_demo_view, name='schedule_demo'),
     # ---------------------------------------------
 
     # --- Existing App Routes ---

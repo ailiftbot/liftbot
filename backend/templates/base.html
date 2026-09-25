@@ -163,8 +163,234 @@
       .brand { font-size: 15px; }
       .hma-btn { font-size: 11.5px; padding: 6px 10px; }
     }
-    @media (max-width: 340px) {
-      .hma-btn { font-size: 11px; padding: 5px 9px; }
+    .lb-btn-book-demo {
+      background: transparent;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+    .lb-btn-book-demo:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.6);
+      color: #fff;
+    }
+    .hma-btn--demo {
+      background: transparent;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .hma-btn--demo:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* ── Schedule Demo Modal (matches official spec) ── */
+    .lb-demo-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 2500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.22s ease, visibility 0.22s;
+    }
+    .lb-demo-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    .lb-demo-modal {
+      background: #ffffff;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 24px 50px -12px rgba(0, 0, 0, 0.28);
+      border: 1px solid #E5E7EB;
+      position: relative;
+      padding: 36px 36px 32px;
+      transform: translateY(16px) scale(0.98);
+      transition: transform 0.22s ease;
+      max-height: 92vh;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+    .lb-demo-overlay.active .lb-demo-modal {
+      transform: translateY(0) scale(1);
+    }
+    .lb-demo-close {
+      position: absolute;
+      top: 16px;
+      right: 18px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      line-height: 1;
+      color: #6B7280;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s, background 0.15s;
+    }
+    .lb-demo-close:hover {
+      color: #111827;
+      background: #F3F4F6;
+    }
+    .lb-demo-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #111827;
+      text-align: center;
+      margin: 0 0 24px;
+      letter-spacing: -0.01em;
+    }
+    .lb-demo-form {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .lb-demo-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .lb-demo-row-phone {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 10px;
+    }
+    .lb-demo-input,
+    .lb-demo-select,
+    .lb-demo-textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 11px 14px;
+      font-size: 14px;
+      color: #111827;
+      background: #FFFFFF;
+      border: 1px solid #D1D5DB;
+      border-radius: 6px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .lb-demo-input:focus,
+    .lb-demo-select:focus,
+    .lb-demo-textarea:focus {
+      border-color: #7C3AED;
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+    }
+    .lb-demo-input::placeholder,
+    .lb-demo-textarea::placeholder {
+      color: #9CA3AF;
+    }
+    .lb-demo-label {
+      display: block;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+    .lb-demo-textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    .lb-demo-submit-btn {
+      width: 100%;
+      background: #111827;
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      padding: 13px;
+      font-size: 14.5px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.18s, transform 0.1s;
+      margin-top: 4px;
+    }
+    .lb-demo-submit-btn:hover {
+      background: #1F2937;
+    }
+    .lb-demo-submit-btn:active {
+      transform: scale(0.99);
+    }
+    .lb-demo-submit-btn:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+    .lb-demo-success {
+      display: none;
+      text-align: center;
+      padding: 16px 10px;
+    }
+    .lb-demo-success.active {
+      display: block;
+    }
+    .lb-demo-success-icon {
+      width: 52px;
+      height: 52px;
+      background: #ECFDF5;
+      color: #059669;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 14px;
+      font-size: 24px;
+      font-weight: 800;
+    }
+    .lb-demo-success h3 {
+      font-size: 19px;
+      font-weight: 700;
+      margin: 0 0 8px;
+      color: #111827;
+    }
+    .lb-demo-success p {
+      font-size: 14px;
+      color: #6B7280;
+      line-height: 1.5;
+      margin: 0 0 18px;
+    }
+    .lb-demo-alert {
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      display: none;
+      margin-bottom: 8px;
+    }
+    .lb-demo-alert.error {
+      background: #FEF2F2;
+      color: #DC2626;
+      border: 1px solid #FCA5A5;
+      display: block;
+    }
+    @media (max-width: 600px) {
+      .lb-demo-modal {
+        padding: 24px 18px 24px;
+      }
+      .lb-demo-row-2 {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+      .lb-demo-row-phone {
+        grid-template-columns: 120px 1fr;
+      }
     }
   </style>
   {% block extra_css %}{% endblock %}
@@ -272,6 +498,8 @@
       <div class="nav-item"><a class="nav-link {% if current == 'about' %}active{% endif %}" href="{% url 'about' %}">About</a></div>
       <div class="nav-item"><a class="nav-link {% if current == 'contact' %}active{% endif %}" href="{% url 'contact' %}">Contact</a></div>
 
+      <button type="button" class="lb-btn-book-demo open-demo-modal">Book a Demo</button>
+
       {% if user.is_authenticated %}
         <div class="nav-item"><a class="nav-link {% if current == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">Dashboard</a></div>
       {% else %}
@@ -282,6 +510,7 @@
 
     <div class="header-right-mobile">
       <div class="header-mobile-actions">
+        <button type="button" class="hma-btn hma-btn--demo open-demo-modal">Book a Demo</button>
         {% if user.is_authenticated %}
           <a class="hma-btn hma-btn--cta" href="{% url 'dashboard' %}">Dashboard</a>
         {% else %}
@@ -306,7 +535,7 @@
     <div class="lb-footer-inner">
       <div class="lb-footer-top">
         <div class="lb-footer-brand">
-          <a class="brand" href="{% url 'home' %}">LiftBot</a>
+          <a class="brand" href="{% url 'home' %}"><img src="{% static 'img/logo.png' %}" alt="LiftBot logo">LiftBot</a>
           <p>AI Employees for Modern Businesses.</p>
           <p>Create AI employees that help your business communicate, qualify, support and automate.</p>
         </div>
@@ -368,6 +597,82 @@
     </div>
   </footer>
 
+  <!-- Schedule Personal Demo Modal -->
+  <div class="lb-demo-overlay" id="lbDemoModalOverlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="lbDemoModalTitle">
+    <div class="lb-demo-modal">
+      <button type="button" class="lb-demo-close" id="lbDemoModalClose" aria-label="Close modal">&times;</button>
+      
+      <div id="lbDemoSuccessState" class="lb-demo-success">
+        <div class="lb-demo-success-icon">✓</div>
+        <h3>Demo Scheduled!</h3>
+        <p>Thank you for your interest in LiftBot. Our product specialist will reach out to you shortly to confirm your personalized walkthrough.</p>
+        <button type="button" class="lb-demo-submit-btn" id="lbDemoSuccessClose">Done</button>
+      </div>
+
+      <div id="lbDemoFormState">
+        <h2 class="lb-demo-title" id="lbDemoModalTitle">Schedule Your Personal Demo</h2>
+        
+        <div class="lb-demo-alert error" id="lbDemoAlert"></div>
+
+        <form id="lbDemoForm" class="lb-demo-form" novalidate>
+          {% csrf_token %}
+          
+          <div class="lb-demo-row-2">
+            <div>
+              <input type="text" name="first_name" id="id_demo_first_name" class="lb-demo-input" placeholder="First Name" required />
+            </div>
+            <div>
+              <input type="text" name="last_name" id="id_demo_last_name" class="lb-demo-input" placeholder="Last Name" required />
+            </div>
+          </div>
+
+          <div>
+            <input type="email" name="email" id="id_demo_email" class="lb-demo-input" placeholder="Work Email Address" required />
+          </div>
+
+          <div class="lb-demo-row-phone">
+            <div>
+              <select name="country_code" id="id_demo_country_code" class="lb-demo-select">
+                <option value="India (+91)" selected>India (+91)</option>
+                <option value="United States (+1)">United States (+1)</option>
+                <option value="United Kingdom (+44)">United Kingdom (+44)</option>
+                <option value="UAE (+971)">UAE (+971)</option>
+                <option value="Canada (+1)">Canada (+1)</option>
+                <option value="Australia (+61)">Australia (+61)</option>
+                <option value="Germany (+49)">Germany (+49)</option>
+                <option value="Singapore (+65)">Singapore (+65)</option>
+                <option value="Saudi Arabia (+966)">Saudi Arabia (+966)</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <input type="tel" name="phone" id="id_demo_phone" class="lb-demo-input" placeholder="Phone Number" required />
+            </div>
+          </div>
+
+          <div>
+            <label class="lb-demo-label" for="id_demo_product">Select Product</label>
+            <select name="product" id="id_demo_product" class="lb-demo-select" required>
+              <option value="Online Browser Testing" selected>Online Browser Testing</option>
+              <option value="AI Sales & Support">AI Sales & Support</option>
+              <option value="AI Employee">AI Employee</option>
+              <option value="AI Lead Qualification">AI Lead Qualification</option>
+              <option value="AI Receptionist">AI Receptionist</option>
+              <option value="Customer Support Automation">Customer Support Automation</option>
+              <option value="Custom AI Solution">Custom AI Solution</option>
+            </select>
+          </div>
+
+          <div>
+            <textarea name="message" id="id_demo_message" rows="3" class="lb-demo-textarea" placeholder="Your message"></textarea>
+          </div>
+
+          <button type="submit" id="lbDemoSubmitBtn" class="lb-demo-submit-btn">Schedule Demo</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <script>
     (function () {
       var toggle = document.getElementById('navToggle');
@@ -403,6 +708,132 @@
       window.addEventListener('resize', function () {
         if (window.innerWidth > 1024) closeMenu();
       });
+
+      /* ── Schedule Demo Modal Handler ── */
+      var demoOverlay = document.getElementById('lbDemoModalOverlay');
+      var demoCloseBtn = document.getElementById('lbDemoModalClose');
+      var demoSuccessCloseBtn = document.getElementById('lbDemoSuccessClose');
+      var demoForm = document.getElementById('lbDemoForm');
+      var demoAlertBox = document.getElementById('lbDemoAlert');
+      var demoFormState = document.getElementById('lbDemoFormState');
+      var demoSuccessState = document.getElementById('lbDemoSuccessState');
+      var demoSubmitBtn = document.getElementById('lbDemoSubmitBtn');
+
+      function openDemoModal() {
+        if (!demoOverlay) return;
+        demoOverlay.classList.add('active');
+        demoOverlay.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        var firstInput = document.getElementById('id_demo_first_name');
+        if (firstInput) setTimeout(function () { firstInput.focus(); }, 120);
+      }
+
+      function closeDemoModal() {
+        if (!demoOverlay) return;
+        demoOverlay.classList.remove('active');
+        demoOverlay.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        if (demoAlertBox) {
+          demoAlertBox.style.display = 'none';
+          demoAlertBox.textContent = '';
+        }
+        setTimeout(function () {
+          if (demoForm) demoForm.reset();
+          if (demoFormState) demoFormState.style.display = 'block';
+          if (demoSuccessState) demoSuccessState.classList.remove('active');
+        }, 300);
+      }
+
+      document.addEventListener('click', function (e) {
+        var trigger = e.target.closest('.open-demo-modal');
+        if (trigger) {
+          e.preventDefault();
+          if (navMobile && navMobile.classList.contains('open')) closeMenu();
+          openDemoModal();
+        }
+      });
+
+      if (demoCloseBtn) demoCloseBtn.addEventListener('click', closeDemoModal);
+      if (demoSuccessCloseBtn) demoSuccessCloseBtn.addEventListener('click', closeDemoModal);
+
+      if (demoOverlay) {
+        demoOverlay.addEventListener('click', function (e) {
+          if (e.target === demoOverlay) closeDemoModal();
+        });
+      }
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && demoOverlay && demoOverlay.classList.contains('active')) {
+          closeDemoModal();
+        }
+      });
+
+      if (demoForm) {
+        demoForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          demoAlertBox.style.display = 'none';
+          demoAlertBox.textContent = '';
+
+          var firstName = document.getElementById('id_demo_first_name').value.trim();
+          var lastName = document.getElementById('id_demo_last_name').value.trim();
+          var email = document.getElementById('id_demo_email').value.trim();
+          var phone = document.getElementById('id_demo_phone').value.trim();
+
+          if (!firstName || !lastName || !email || !phone) {
+            demoAlertBox.textContent = 'Please fill out all required fields.';
+            demoAlertBox.style.display = 'block';
+            return;
+          }
+
+          var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(email)) {
+            demoAlertBox.textContent = 'Please enter a valid work email address.';
+            demoAlertBox.style.display = 'block';
+            return;
+          }
+
+          demoSubmitBtn.disabled = true;
+          demoSubmitBtn.textContent = 'Scheduling...';
+
+          var formData = new FormData(demoForm);
+
+          fetch('/api/schedule-demo/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          })
+          .then(function (res) {
+            return res.json().then(function (data) {
+              return { ok: res.ok, data: data };
+            });
+          })
+          .then(function (result) {
+            demoSubmitBtn.disabled = false;
+            demoSubmitBtn.textContent = 'Schedule Demo';
+
+            if (!result.ok) {
+              var msg = result.data.message || 'We could not submit your request. Please check your inputs.';
+              if (result.data.errors) {
+                var firstKey = Object.keys(result.data.errors)[0];
+                if (firstKey) msg = result.data.errors[firstKey][0];
+              }
+              demoAlertBox.textContent = msg;
+              demoAlertBox.style.display = 'block';
+            } else {
+              demoFormState.style.display = 'none';
+              demoSuccessState.classList.add('active');
+            }
+          })
+          .catch(function () {
+            demoSubmitBtn.disabled = false;
+            demoSubmitBtn.textContent = 'Schedule Demo';
+            demoAlertBox.textContent = 'Network error. Please try again or email us at support@liftbot.app.';
+            demoAlertBox.style.display = 'block';
+          });
+        });
+      }
     })();
   </script>
   {% block extra_js %}{% endblock %}

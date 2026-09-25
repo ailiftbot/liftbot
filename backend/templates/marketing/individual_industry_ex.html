@@ -25,8 +25,8 @@
       <p class="ind-hero__sub">{{ industry.hero_line1 }}</p>
       <p class="ind-hero__sub">{{ industry.hero_line2 }}</p>
       <div class="ind-hero__cta">
-        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">{{ industry.cta_text }}</a>
-        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline">Book a demo →</a>
+        <a href="{% url 'signup' %}" class="lb__btn lb__btn--primary">{{ industry.cta_text }}</a>
+        <button type="button" class="lb__btn lb__btn--outline open-demo-modal">Book a Demo →</button>
       </div>
     </div>
   </section>
@@ -257,7 +257,7 @@
           {% endfor %}
         </div>
 
-        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">{{ industry.cta_text }}</a>
+        <a href="{% url 'signup' %}" class="lb__btn lb__btn--primary">{{ industry.cta_text }}</a>
       </div>
 
       <div class="iid-help__right">
@@ -363,8 +363,8 @@
         Start with one AI employee configured around your industry — and grow from there.
       </p>
       <div class="lb__cta-actions">
-        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary" id="lastbtn">{{ industry.cta_text }}</a>
-        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline">Book a Demo →</a>
+        <a href="{% url 'signup' %}" class="lb__btn lb__btn--primary" id="lastbtn">{{ industry.cta_text }}</a>
+        <button type="button" class="lb__btn lb__btn--outline open-demo-modal">Book a Demo →</button>
       </div>
       <p style="margin-top:24px;">
         <a href="{% url 'industries' %}" class="lb__link-arrow" style="color:var(--ink); border-color:var(--paper-line);">← Back to all industries</a>

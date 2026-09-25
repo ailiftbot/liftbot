@@ -97,10 +97,10 @@
   {# ── PRE-LAUNCH PANEL (revealed on scenario click) ── #}
   <section class="dem-prelaunch" id="demo-panel" data-reveal>
     <div class="dem-prelaunch__inner">
-      <h2 class="dem-prelaunch__h2">Schedule a personalized walkthrough.</h2>
-      <p class="dem-prelaunch__sub">See how LiftBot's AI Employees can be tailored to your specific workflows.</p>
+      <h2 class="dem-prelaunch__h2">LiftBot is currently available through early access.</h2>
+      <p class="dem-prelaunch__sub">Join the program to learn about availability and upcoming plans.</p>
       <div class="dem-prelaunch__actions">
-        <button type="button" class="lb__btn lb__btn--primary open-demo-modal">Book a Demo</button>
+        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">Request Early Access</a>
       </div>
     </div>
   </section>
@@ -148,12 +148,11 @@
   {# ── FINAL CTA ── #}
   <section class="dem-cta">
     <div class="dem-cta__inner" data-reveal>
-      <span class="lb__eyebrow">Get Started</span>
-      <h2 class="dem-cta__h2">Hire your AI Employee today.</h2>
-      <p class="dem-cta__sub">Join modern businesses using LiftBot to handle customer conversations, qualify leads, and scale operations.</p>
+      <span class="lb__eyebrow">Pre-launch</span>
+      <h2 class="dem-cta__h2">Get early access to LiftBot.</h2>
+      <p class="dem-cta__sub">LiftBot is currently available through early access. Join the program to learn about availability and upcoming plans.</p>
       <div class="dem-cta__actions">
-        <a href="{% url 'signup' %}" class="lb__btn" style="background:#15161b; color:#fff;">Start Hiring</a>
-        <button type="button" class="lb__btn lb__btn--outline open-demo-modal" style="color:#15161b; border-color:rgba(21,22,27,0.3);">Book a Demo</button>
+        <a href="{% url 'early_access' %}" class="lb__btn" style="background:#15161b; color:#fff;">Request Early Access</a>
       </div>
     </div>
   </section>

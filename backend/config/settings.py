@@ -164,6 +164,8 @@ CONTACT_EMAIL_PRODUCT = env('CONTACT_EMAIL_PRODUCT', default='contact@liftbot.ap
 CONTACT_EMAIL_SUPPORT = env('CONTACT_EMAIL_SUPPORT', default='support@liftbot.app')
 OTP_EXPIRY_MINUTES = env.int('OTP_EXPIRY_MINUTES', default=10)
 OTP_RESEND_COOLDOWN_SECONDS = env.int('OTP_RESEND_COOLDOWN_SECONDS', default=60)
+BOOK_DEMO_EMAIL = env('BOOK_DEMO_EMAIL', default='ailiftbot@gmail.com')
+GOOGLE_SHEET_WEBHOOK_URL = env('GOOGLE_SHEET_WEBHOOK_URL', default='')
 
 # Stripe (optional — without keys, billing uses manual plan assign)
 STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY', default='')

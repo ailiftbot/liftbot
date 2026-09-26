@@ -1,0 +1,107 @@
+{% load static %}
+<!-- Book a Demo Modal -->
+<div class="bdm-overlay" id="bdmOverlay" aria-hidden="true"></div>
+
+<div class="bdm-modal" id="bdmModal" role="dialog" aria-modal="true" aria-labelledby="bdmTitle">
+  <button type="button" class="bdm-close" data-bdm-close aria-label="Close dialog">&times;</button>
+
+  <div id="bdmFormWrap">
+    <div class="bdm-header">
+      <h2 id="bdmTitle">Book a Demo</h2>
+      <p>Experience how LiftBot AI employees can transform your business conversations.</p>
+    </div>
+
+    <div class="bdm-global-error" id="bdmGlobalError" role="alert"></div>
+
+    <form class="bdm-form" id="bdmForm" novalidate>
+      <div class="bdm-row">
+        <div class="bdm-field" id="bdmFieldFirstName">
+          <label for="bdmFirstName">First Name <span class="bdm-req">*</span></label>
+          <input type="text" id="bdmFirstName" name="first_name" placeholder="John" autocomplete="given-name" required />
+          <div class="bdm-error-msg"></div>
+        </div>
+        <div class="bdm-field" id="bdmFieldLastName">
+          <label for="bdmLastName">Last Name <span class="bdm-req">*</span></label>
+          <input type="text" id="bdmLastName" name="last_name" placeholder="Doe" autocomplete="family-name" required />
+          <div class="bdm-error-msg"></div>
+        </div>
+      </div>
+
+      <div class="bdm-field" id="bdmFieldEmail">
+        <label for="bdmEmail">Work Email <span class="bdm-req">*</span></label>
+        <input type="email" id="bdmEmail" name="work_email" placeholder="john@company.com" autocomplete="email" required />
+        <div class="bdm-error-msg"></div>
+      </div>
+
+      <div class="bdm-field" id="bdmFieldPhone">
+        <label for="bdmPhone">Phone Number <span class="bdm-req">*</span></label>
+        <div class="bdm-phone-row">
+          <select name="country_code" id="bdmCountryCode" aria-label="Country Code">
+            <option value="+91" selected>India (+91)</option>
+            <option value="+1">US / Canada (+1)</option>
+            <option value="+44">UK (+44)</option>
+            <option value="+971">UAE (+971)</option>
+            <option value="+61">Australia (+61)</option>
+            <option value="+65">Singapore (+65)</option>
+            <option value="+49">Germany (+49)</option>
+            <option value="+33">France (+33)</option>
+            <option value="+81">Japan (+81)</option>
+            <option value="+86">China (+86)</option>
+            <option value="+55">Brazil (+55)</option>
+            <option value="+27">South Africa (+27)</option>
+            <option value="+966">Saudi Arabia (+966)</option>
+            <option value="+974">Qatar (+974)</option>
+            <option value="+60">Malaysia (+60)</option>
+            <option value="+63">Philippines (+63)</option>
+            <option value="+234">Nigeria (+234)</option>
+            <option value="+254">Kenya (+254)</option>
+            <option value="+52">Mexico (+52)</option>
+            <option value="+62">Indonesia (+62)</option>
+          </select>
+          <input type="tel" name="phone" id="bdmPhone" placeholder="98765 43210" autocomplete="tel" required />
+        </div>
+        <div class="bdm-error-msg"></div>
+      </div>
+
+      <div class="bdm-field" id="bdmFieldProduct">
+        <label for="bdmProduct">Select Product <span class="bdm-req">*</span></label>
+        <select id="bdmProduct" name="product" required>
+          <option value="" disabled selected>Choose a solution / product...</option>
+          <option value="ai-sales-employee">AI Sales Employee</option>
+          <option value="ai-support-employee">AI Support Employee</option>
+          <option value="ai-receptionist">AI Receptionist</option>
+          <option value="ai-lead-qualification">AI Lead Qualification Employee</option>
+          <option value="ai-appointment-assistant">AI Appointment Assistant</option>
+          <option value="custom-ai-employee">Custom AI Employee</option>
+          <option value="full-platform">Full LiftBot Platform</option>
+        </select>
+        <div class="bdm-error-msg"></div>
+      </div>
+
+      <div class="bdm-field" id="bdmFieldMessage">
+        <label for="bdmMessage">Message / What are you looking to automate?</label>
+        <textarea id="bdmMessage" name="message" rows="3" placeholder="Tell us about your use case, goals, or current team size..."></textarea>
+        <div class="bdm-error-msg"></div>
+      </div>
+
+      <button type="submit" class="bdm-submit" id="bdmSubmit">
+        <span class="bdm-submit-text">Book My Demo</span>
+        <span class="bdm-spinner" aria-hidden="true"></span>
+      </button>
+    </form>
+  </div>
+
+  <div class="bdm-result" id="bdmResultSuccess" role="status">
+    <div class="bdm-result-icon success">&#10003;</div>
+    <h3>Demo Request Received!</h3>
+    <p>Thank you! Your demo request has been submitted successfully. Our team will contact you shortly.</p>
+    <button type="button" class="bdm-result-btn" data-bdm-reset>Done</button>
+  </div>
+
+  <div class="bdm-result" id="bdmResultError" role="alert">
+    <div class="bdm-result-icon error">&#10005;</div>
+    <h3>Submission Issue</h3>
+    <p>We could not process your request right now. Please try again or reach out to us directly.</p>
+    <button type="button" class="bdm-result-btn" data-bdm-reset>Close</button>
+  </div>
+</div>

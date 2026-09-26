@@ -2,13 +2,16 @@
 
 
 class WidgetCorsMiddleware:
-    WIDGET_PREFIX = '/api/widget/'
+    CORS_PREFIXES = ('/api/widget/', '/api/contact/')
 
     def __init__(self, get_response):
         self.get_response = get_response
 
+    def _matches(self, path):
+        return any(path.startswith(prefix) for prefix in self.CORS_PREFIXES)
+
     def __call__(self, request):
-        if request.path.startswith(self.WIDGET_PREFIX) and request.method == 'OPTIONS':
+        if self._matches(request.path) and request.method == 'OPTIONS':
             from django.http import HttpResponse
 
             response = HttpResponse(status=204)
@@ -16,7 +19,7 @@ class WidgetCorsMiddleware:
             return response
 
         response = self.get_response(request)
-        if request.path.startswith(self.WIDGET_PREFIX):
+        if self._matches(request.path):
             self._apply(response, request)
         return response
 

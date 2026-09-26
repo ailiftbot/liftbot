@@ -21,56 +21,51 @@
   .lb-auth {
     position: relative;
     width: 100%;
-    height: calc(100vw * 0.545);
-    max-height: none;
     overflow: hidden;
     line-height: 0;
-    margin-bottom: -95px;
   }
 
   .lb-auth__bg-img {
     display: block;
     width: 100%;
     height: auto;
-    position: absolute;
-    top: -95px;
-    left: 0;
+    pointer-events: none;
   }
 
   .lb-auth__card {
     position: absolute;
     top: 50%;
-    right: clamp(20px, 7vw, 90px);
+    right: clamp(20px, 6vw, 80px);
     transform: translateY(-50%);
     z-index: 1;
-    width: 100%;
-    max-width: 420px;
+    width: min(34vw, 410px);
+    min-width: 310px;
     background: #ffffff;
-    border-radius: 22px;
-    padding: 40px 36px;
-    box-shadow: 0 30px 70px -16px rgba(16, 24, 40, 0.22);
+    border-radius: 20px;
+    padding: clamp(16px, 2vw, 24px) clamp(18px, 2.2vw, 28px);
+    box-shadow: 0 24px 60px -12px rgba(16, 24, 40, 0.22);
+    box-sizing: border-box;
     line-height: normal;
-    /* reset the line-height:0 trick from the parent */
   }
 
   .lb-auth__title {
-    margin: 0 0 6px;
-    font-size: 26px;
+    margin: 0 0 4px;
+    font-size: clamp(20px, 1.8vw, 24px);
     font-weight: 800;
     color: #111827;
     font-family: "Plus Jakarta Sans", system-ui, sans-serif;
   }
 
   .lb-auth__subtitle {
-    margin: 0 0 26px;
-    font-size: 14.5px;
+    margin: 0 0 clamp(10px, 1.2vw, 16px);
+    font-size: clamp(12.5px, 1vw, 13.5px);
     color: #6B7280;
   }
 
   .lb-auth__form {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: clamp(8px, 1vw, 12px);
   }
 
   .lb-auth__form-errors {
@@ -86,10 +81,10 @@
 
   .lb-auth__field label {
     display: block;
-    font-size: 13.5px;
+    font-size: 13px;
     font-weight: 700;
     color: #111827;
-    margin-bottom: 7px;
+    margin-bottom: 5px;
   }
 
   .lb-auth__input-wrap {
@@ -124,8 +119,8 @@
     box-sizing: border-box;
     border: 1px solid #E5E7EB;
     border-radius: 12px;
-    padding: 12px 14px 12px 42px;
-    font-size: 14.5px;
+    padding: 10px 14px 10px 40px;
+    font-size: 14px;
     font-family: inherit;
     color: #111827;
     background: #fff;
@@ -145,13 +140,13 @@
   }
 
   .lb-auth__submit {
-    margin-top: 4px;
+    margin-top: 2px;
     background: linear-gradient(90deg, #7C3AED, #6D28D9);
     color: #fff;
     border: 0;
     border-radius: 999px;
-    padding: 13px;
-    font-size: 15px;
+    padding: 11px;
+    font-size: 14.5px;
     font-weight: 700;
     cursor: pointer;
     transition: opacity 0.15s;
@@ -164,10 +159,10 @@
   .lb-auth__divider {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin: 22px 0;
+    gap: 10px;
+    margin: 14px 0;
     color: #9CA3AF;
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 600;
     letter-spacing: 0.04em;
   }
@@ -189,8 +184,8 @@
     background: #fff;
     border: 1px solid #E5E7EB;
     border-radius: 999px;
-    padding: 12px;
-    font-size: 14.5px;
+    padding: 10px;
+    font-size: 14px;
     font-weight: 600;
     color: #111827;
     cursor: pointer;
@@ -204,8 +199,8 @@
 
   .lb-auth__forgot {
     text-align: center;
-    margin: 18px 0 0;
-    font-size: 13.5px;
+    margin: 12px 0 0;
+    font-size: 13px;
   }
 
   .lb-auth__forgot a {
@@ -229,8 +224,10 @@
   @media (max-width: 860px) {
     .lb-auth {
       position: relative;
+      min-height: auto;
       height: auto;
-      max-height: none;
+      display: block;
+      padding: 0;
       overflow: visible;
       margin-bottom: 0;
     }
@@ -298,6 +295,12 @@
   <img src="{% static 'img/liftbot-login-bg.png' %}" alt="" class="lb-auth__bg-img">
 
   <div class="lb-auth__card">
+    <div style="margin-bottom:12px;">
+      <a href="{% url 'home' %}" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;">
+        <img src="{% static 'img/logo.png' %}" alt="LiftBot logo" style="width:34px;height:34px;object-fit:contain;">
+        <span style="font-weight:800;font-size:17px;color:#111827;">LiftBot</span>
+      </a>
+    </div>
     <h1 class="lb-auth__title">Welcome back</h1>
     <p class="lb-auth__subtitle">Log in to your LiftBot account</p>
 

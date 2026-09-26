@@ -7,8 +7,7 @@ from django.http import Http404
 from django.shortcuts import render
 from .contact import contact_view
 from .early_access import early_access_view
-
-from .contact import contact_view
+from .book_demo import book_demo_view
 
 
 # ============================================================
@@ -170,6 +169,8 @@ urlpatterns = [
     path('', TemplateView.as_view(template_name='marketing/home.html'), name='home'),
     path('about/', TemplateView.as_view(template_name='marketing/about.html'), name='about'),
     path('contact/', contact_view, name='contact'),
+    path('api/contact/', contact_view, name='api_contact'),
+    path('api/book-demo/', book_demo_view, name='api_book_demo'),
     path('ai-employees/', TemplateView.as_view(template_name='marketing/ai_employees.html'), name='ai_employees'),
     path('features/', TemplateView.as_view(template_name='marketing/features.html'), name='features'),
     path('how-it-works/', TemplateView.as_view(template_name='marketing/how_it_works.html'), name='how_it_works'),

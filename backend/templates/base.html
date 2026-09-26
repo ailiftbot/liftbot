@@ -5,7 +5,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% block title %}LiftBot{% endblock %}</title>
-  <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}" />
+  <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}" />
+  <link rel="alternate icon" type="image/png" href="{% static 'img/favicon.png' %}" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -18,22 +19,29 @@
     img, video, svg { max-width:100%; height:auto; }
 
     header {
-      display:flex; justify-content:space-between; align-items:center; padding:16px 28px;
+      display:flex; justify-content:space-between; align-items:center; padding:12px clamp(14px, 2vw, 28px);
       background:#0B1220; color:#fff; position: sticky; top: 0; z-index: 1050;
-      gap: 12px;
+      gap: 10px;
     }
-    .brand { font-weight:800; font-size:18px; color:#fff; text-decoration:none; display:flex; align-items:center; gap:8px; }
-    .brand img { height:52px; width:auto; display:block; }
+    .brand { font-weight:800; font-size:18px; color:#fff; text-decoration:none; display:flex; align-items:center; gap:8px; flex-shrink: 0; }
+    .brand img { height:38px; width:38px; object-fit:contain; display:block; flex-shrink: 0; }
 
-    nav { display: flex; align-items: center; gap: 6px; }
-    nav > .nav-item { position: relative; }
+    nav { display: flex; align-items: center; gap: clamp(2px, 0.4vw, 5px); flex-wrap: nowrap; flex-shrink: 0; }
+    nav > .nav-item { position: relative; flex-shrink: 0; }
     nav a.nav-link {
       position: relative;
-      display:flex; align-items:center; gap:5px; color:#D1D5DB; text-decoration:none;
-      font-size:13.5px; font-weight:600; padding:8px 10px; border-radius:8px; transition: color 0.2s, background 0.2s;
+      display:flex; align-items:center; gap:4px; color:#D1D5DB; text-decoration:none;
+      font-size:clamp(12px, 0.88vw, 13.5px); font-weight:600; padding:6px clamp(5px, 0.55vw, 9px); border-radius:8px;
+      white-space: nowrap; transition: color 0.2s, background 0.2s;
     }
     nav a.nav-link:hover { color:#fff; background:rgba(255,255,255,0.06); }
-    nav a.cta { background:var(--p); color:#fff; padding:9px 16px; border-radius:999px; margin-left:6px; text-decoration:none; }
+    nav a.nav-link.bdm-trigger-link { color: #A78BFA; }
+    nav a.nav-link.bdm-trigger-link:hover { color: #C4B5FD; background: rgba(167, 139, 250, 0.1); }
+    nav a.cta {
+      background:var(--p); color:#fff; padding:7px clamp(12px, 1vw, 16px);
+      border-radius:999px; margin-left:4px; text-decoration:none;
+      font-size:clamp(12px, 0.88vw, 13.5px); font-weight:700; white-space: nowrap; flex-shrink: 0;
+    }
     nav a.cta:hover { background:var(--pd); }
     .chev { font-size:10px; margin-top:1px; opacity:.8; }
 
@@ -136,7 +144,7 @@
     .lb-footer-bottom-links a { color:#6B7280; text-decoration:none; }
     .lb-footer-bottom-links a:hover { color:#D1D5DB; }
 
-    @media (max-width: 1024px) {
+    @media (max-width: 1080px) {
       nav { display: none; }
       .nav-toggle { display: block; flex-shrink: 0; }
       .header-mobile-actions { display: flex; }
@@ -167,6 +175,7 @@
       .hma-btn { font-size: 11px; padding: 5px 9px; }
     }
   </style>
+  <link rel="stylesheet" href="{% static 'book_demo.css' %}" />
   {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -203,6 +212,7 @@
 
     <a class="{% if current == 'about' %}active{% endif %}" href="{% url 'about' %}">About</a>
     <a class="{% if current == 'contact' %}active{% endif %}" href="{% url 'contact' %}">Contact</a>
+    <a href="#" data-bdm-open style="color:#A78BFA; font-weight:700;">Book a Demo</a>
 
     {% if user.is_authenticated %}
       <a class="{% if current == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">Dashboard</a>
@@ -271,6 +281,7 @@
 
       <div class="nav-item"><a class="nav-link {% if current == 'about' %}active{% endif %}" href="{% url 'about' %}">About</a></div>
       <div class="nav-item"><a class="nav-link {% if current == 'contact' %}active{% endif %}" href="{% url 'contact' %}">Contact</a></div>
+      <div class="nav-item"><a class="nav-link bdm-trigger-link" href="#" data-bdm-open>Book a Demo</a></div>
 
       {% if user.is_authenticated %}
         <div class="nav-item"><a class="nav-link {% if current == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">Dashboard</a></div>
@@ -285,6 +296,7 @@
         {% if user.is_authenticated %}
           <a class="hma-btn hma-btn--cta" href="{% url 'dashboard' %}">Dashboard</a>
         {% else %}
+          <a class="hma-btn hma-btn--ghost" href="#" data-bdm-open style="border-color: rgba(167, 139, 250, 0.4); color: #C4B5FD;">Demo</a>
           <a class="hma-btn hma-btn--ghost" href="{% url 'login' %}">Log in</a>
           <a class="hma-btn hma-btn--cta" href="{% url 'signup' %}">Start hiring</a>
         {% endif %}
@@ -306,7 +318,7 @@
     <div class="lb-footer-inner">
       <div class="lb-footer-top">
         <div class="lb-footer-brand">
-          <a class="brand" href="{% url 'home' %}">LiftBot</a>
+          <a class="brand" href="{% url 'home' %}"><img src="{% static 'img/logo.png' %}" alt="LiftBot logo" style="height:36px;width:36px;object-fit:contain;">LiftBot</a>
           <p>AI Employees for Modern Businesses.</p>
           <p>Create AI employees that help your business communicate, qualify, support and automate.</p>
         </div>
@@ -401,10 +413,12 @@
       });
 
       window.addEventListener('resize', function () {
-        if (window.innerWidth > 1024) closeMenu();
+        if (window.innerWidth > 1080) closeMenu();
       });
     })();
   </script>
+  {% include "marketing/book_demo_modal.html" %}
+  <script src="{% static 'book_demo.js' %}" defer></script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -2,7 +2,11 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.urls import resolve, Resolver404
 
+import logging
+
 from .views import user_workspace
+
+logger = logging.getLogger(__name__)
 
 # URL names jo bina verified email / bina active workspace ke bhi accessible rehne chahiye
 EXEMPT_URL_NAMES = {
@@ -11,12 +15,12 @@ EXEMPT_URL_NAMES = {
     'verify_otp', 'send_otp', 'resend_verification', 'verify_email',
     'password_reset', 'password_reset_done', 'password_reset_confirm', 'password_reset_complete',
     'billing_onboarding', 'billing_onboarding_pay', 'billing_onboarding_status',
-    'home', 'about', 'contact', 'ai_employees', 'features', 'how_it_works', 'solutions',
+    'home', 'about', 'contact', 'api_contact', 'ai_employees', 'features', 'how_it_works', 'solutions',
     'industries', 'industry_detail', 'use_cases', 'demo', 'pricing', 'customers',
     'resources', 'blog', 'early_access', 'faq', 'guide', 'support', 'security',
     'privacy', 'terms', 'cookies',
 }
-EXEMPT_PATH_PREFIXES = ('/admin', '/api/widget/', '/static/', '/media/')
+EXEMPT_PATH_PREFIXES = ('/admin', '/api/', '/static/', '/media/')
 
 
 class OnboardingGateMiddleware:
@@ -32,30 +36,34 @@ class OnboardingGateMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.user.is_authenticated and not request.user.is_staff:
-            if not request.path.startswith(EXEMPT_PATH_PREFIXES):
-                try:
-                    url_name = resolve(request.path_info).url_name
-                except Resolver404:
-                    url_name = None
+        try:
+            if request.user.is_authenticated and not request.user.is_staff:
+                if not request.path.startswith(EXEMPT_PATH_PREFIXES):
+                    try:
+                        url_name = resolve(request.path_info).url_name
+                    except Resolver404:
+                        url_name = None
 
-                if url_name not in EXEMPT_URL_NAMES:
-                    profile = getattr(request.user, 'profile', None)
+                    if url_name not in EXEMPT_URL_NAMES:
+                        profile = getattr(request.user, 'profile', None)
 
-                    # Gate 1: email verify pehle
-                    if profile and not (profile.is_verified or profile.email_verified):
-                        request.session['onboarding_user_id'] = request.user.id
-                        messages.warning(request, 'Please verify your email to continue.')
-                        return redirect('signup_verify_otp')
+                        # Gate 1: email verify pehle
+                        if profile and not (profile.is_verified or profile.email_verified):
+                            request.session['onboarding_user_id'] = request.user.id
+                            messages.warning(request, 'Please verify your email to continue.')
+                            return redirect('signup_verify_otp')
 
-                    # Gate 2: payment ke baad hi dashboard
-                    workspace = user_workspace(request.user)
-                    if workspace and not workspace.is_active:
-                        request.session['onboarding_workspace_id'] = workspace.id
-                        last_txn = workspace.transactions.order_by('-created_at').first()
-                        if last_txn:
-                            request.session['onboarding_transaction_id'] = last_txn.id
-                        messages.warning(request, 'Please complete payment to activate your workspace.')
-                        return redirect('billing_onboarding')
+                        # Gate 2: payment ke baad hi dashboard
+                        workspace = user_workspace(request.user)
+                        if workspace and not workspace.is_active:
+                            request.session['onboarding_workspace_id'] = workspace.id
+                            last_txn = workspace.transactions.order_by('-created_at').first()
+                            if last_txn:
+                                request.session['onboarding_transaction_id'] = last_txn.id
+                            messages.warning(request, 'Please complete payment to activate your workspace.')
+                            return redirect('billing_onboarding')
+        except Exception:
+            # Never let middleware crash the request — log and proceed.
+            logger.exception('OnboardingGateMiddleware error')
 
         return self.get_response(request)

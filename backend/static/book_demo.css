@@ -1,0 +1,371 @@
+/* ═══════════════════════════════════════════════════════════
+   Book a Demo Modal — LiftBot
+   Matches existing brand: dark header bar, clean white form,
+   purple/violet accents.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Overlay ── */
+.bdm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: rgba(11, 18, 32, 0.72);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s;
+}
+.bdm-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ── Modal ── */
+.bdm-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 9999;
+  transform: translate(-50%, -50%) scale(0.96);
+  width: min(94vw, 500px);
+  max-height: 92vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 32px 64px -16px rgba(0, 0, 0, 0.35),
+              0 0 0 1px rgba(0, 0, 0, 0.04);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.35) transparent;
+}
+.bdm-modal::-webkit-scrollbar {
+  width: 5px;
+}
+.bdm-modal::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 16px 0;
+}
+.bdm-modal::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.35);
+  border-radius: 999px;
+}
+.bdm-modal::-webkit-scrollbar-thumb:hover {
+  background: rgba(107, 114, 128, 0.6);
+}
+.bdm-modal.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* ── Close button ── */
+.bdm-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid #E5E7EB;
+  background: #fff;
+  color: #6B7280;
+  font-size: 18px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  z-index: 2;
+  line-height: 1;
+}
+.bdm-close:hover {
+  background: #F3F4F6;
+  color: #111827;
+  border-color: #D1D5DB;
+}
+
+/* ── Header ── */
+.bdm-header {
+  padding: 24px 28px 12px;
+  text-align: center;
+}
+.bdm-header h2 {
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 4px;
+}
+.bdm-header p {
+  font-size: 0.84rem;
+  color: #6B7280;
+  margin: 0;
+}
+
+/* ── Form ── */
+.bdm-form {
+  padding: 0 28px 22px;
+}
+
+.bdm-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.bdm-field {
+  margin-bottom: 12px;
+}
+
+.bdm-field label {
+  display: block;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.bdm-field label .bdm-req {
+  color: #EF4444;
+  margin-left: 2px;
+}
+
+.bdm-field input,
+.bdm-field select,
+.bdm-field textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 10px;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-size: 0.88rem;
+  color: #111827;
+  background: #FAFAFA;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.bdm-field input::placeholder,
+.bdm-field textarea::placeholder {
+  color: #9CA3AF;
+}
+.bdm-field input:focus,
+.bdm-field select:focus,
+.bdm-field textarea:focus {
+  border-color: #7C3AED;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.bdm-field textarea {
+  resize: vertical;
+  min-height: 54px;
+  height: 58px;
+}
+
+.bdm-field select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+/* Phone row: country code + number side by side */
+.bdm-phone-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 10px;
+}
+
+/* ── Error state ── */
+.bdm-field.has-error input,
+.bdm-field.has-error select,
+.bdm-field.has-error textarea {
+  border-color: #EF4444;
+  background: #FEF2F2;
+}
+.bdm-field.has-error input:focus,
+.bdm-field.has-error select:focus,
+.bdm-field.has-error textarea:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+.bdm-error-msg {
+  font-size: 0.74rem;
+  color: #EF4444;
+  margin-top: 4px;
+  display: none;
+}
+.bdm-field.has-error .bdm-error-msg {
+  display: block;
+}
+
+/* ── Submit button ── */
+.bdm-submit {
+  width: 100%;
+  padding: 11px 20px;
+  border: none;
+  border-radius: 12px;
+  background: #111827;
+  color: #fff;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s, transform 0.1s;
+  margin-top: 4px;
+}
+.bdm-submit:hover {
+  background: #1F2937;
+}
+.bdm-submit:active {
+  transform: scale(0.99);
+}
+.bdm-submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* ── Loading spinner ── */
+.bdm-spinner {
+  display: none;
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: bdm-spin 0.6s linear infinite;
+}
+.bdm-submit.loading .bdm-spinner {
+  display: inline-block;
+}
+.bdm-submit.loading .bdm-submit-text {
+  display: none;
+}
+@keyframes bdm-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Success / Error states ── */
+.bdm-result {
+  text-align: center;
+  padding: 48px 32px;
+  display: none;
+}
+.bdm-result.show {
+  display: block;
+}
+.bdm-result-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  font-size: 26px;
+}
+.bdm-result-icon.success {
+  background: #ECFDF5;
+  color: #059669;
+}
+.bdm-result-icon.error {
+  background: #FEF2F2;
+  color: #DC2626;
+}
+.bdm-result h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px;
+}
+.bdm-result p {
+  font-size: 0.88rem;
+  color: #6B7280;
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+.bdm-result-btn {
+  display: inline-block;
+  padding: 10px 22px;
+  border-radius: 10px;
+  border: 1.5px solid #E5E7EB;
+  background: #fff;
+  color: #374151;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.bdm-result-btn:hover {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+}
+
+/* ── Global form error ── */
+.bdm-global-error {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  color: #DC2626;
+  margin-bottom: 16px;
+  display: none;
+}
+.bdm-global-error.show {
+  display: block;
+}
+
+/* ── Navbar Book a Demo button ── */
+nav a.nav-link.bdm-trigger-link {
+  color: #A78BFA;
+}
+nav a.nav-link.bdm-trigger-link:hover {
+  color: #C4B5FD;
+  background: rgba(167, 139, 250, 0.08);
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .bdm-modal {
+    width: 96vw;
+    max-height: 92vh;
+    border-radius: 14px;
+  }
+  .bdm-header {
+    padding: 28px 20px 16px;
+  }
+  .bdm-header h2 {
+    font-size: 1.2rem;
+  }
+  .bdm-form {
+    padding: 0 20px 24px;
+  }
+  .bdm-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .bdm-phone-row {
+    grid-template-columns: 120px 1fr;
+    gap: 8px;
+  }
+  .bdm-result {
+    padding: 36px 20px;
+  }
+}
+
+@media (max-width: 400px) {
+  .bdm-phone-row {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,7 +1,10 @@
 import json
 import logging
 
-import redis
+try:
+    import redis
+except ImportError:
+    redis = None
 from django.conf import settings
 from django.utils import timezone
 
@@ -11,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 def _redis():
+    if redis is None:
+        return None
     return redis.from_url(settings.REDIS_URL, decode_responses=True)
 
 

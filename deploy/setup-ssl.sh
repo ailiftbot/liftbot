@@ -171,8 +171,9 @@ if [[ -n "${APP_DIR}" && -f "${APP_DIR}/.env" ]]; then
       sed -i "s|^DJANGO_ALLOWED_HOSTS=.*|&,${DOMAIN}|" "${APP_DIR}/.env"
     fi
   fi
-  if [[ -f "${APP_DIR}/docker-compose.yml" ]]; then
-    (cd "${APP_DIR}" && docker compose up -d --force-recreate backend) || true
+  # Production stack only — docker-compose.yml is the dev stack and publishes DB/Redis ports.
+  if [[ -f "${APP_DIR}/docker-compose.prod.yml" ]]; then
+    (cd "${APP_DIR}" && docker compose -f docker-compose.prod.yml up -d --force-recreate backend worker) || true
   fi
   grep -E 'ALLOWED_HOSTS|CSRF|PUBLIC_' "${APP_DIR}/.env"
 else

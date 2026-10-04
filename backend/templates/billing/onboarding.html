@@ -8,35 +8,51 @@
     Activate <strong>{{ workspace.name }}</strong> to unlock your dashboard.
   </p>
 
-  <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:16px;margin-bottom:22px;">
-    <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;">
-      <span>Plan</span><strong>{{ plan.name|default:"Starter" }}</strong>
-    </div>
-    <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;">
-      <span>Amount</span><strong>${{ transaction.amount }}</strong>
-    </div>
-    <div style="display:flex;justify-content:space-between;font-size:14px;">
-      <span>Reference</span><span style="color:#6B7280;">{{ transaction.reference }}</span>
-    </div>
-  </div>
-
   {% if transaction.status == 'failed' %}
   <p style="color:#DC2626;font-size:13px;margin-bottom:14px;">
     Your last payment attempt failed{% if transaction.failure_reason %}: {{ transaction.failure_reason }}{% endif %}. Please try again.
   </p>
   {% endif %}
 
-  {# Placeholder checkout — replace with the real gateway's button/redirect once integrated #}
   <form method="post" action="{% url 'billing_onboarding_pay' %}">
     {% csrf_token %}
+    <fieldset style="border:0;padding:0;margin:0 0 18px;display:grid;gap:10px;">
+      <legend style="font-size:13px;font-weight:700;margin-bottom:10px;">Choose your plan</legend>
+      {% for p in plans %}
+      <label style="display:flex;align-items:center;gap:12px;border:1px solid #E5E7EB;border-radius:12px;padding:12px 14px;cursor:pointer;">
+        <input type="radio" name="plan" value="{{ p.slug }}" {% if p.id == plan.id %}checked{% endif %} required>
+        <span style="flex:1;">
+          <strong style="display:block;font-size:14px;">{{ p.name }}</strong>
+          <span style="font-size:12px;color:#6B7280;">{{ p.conversation_limit }} conversations / month</span>
+        </span>
+        <strong style="font-size:15px;">${{ p.price_monthly|floatformat:0 }}<span style="font-size:12px;color:#6B7280;font-weight:500;">/mo</span></strong>
+      </label>
+      {% endfor %}
+    </fieldset>
+
+    {% if stripe_enabled %}
+    <button type="submit"
+      style="width:100%;background:#7C3AED;color:#fff;border:0;border-radius:999px;padding:13px;font-weight:700;cursor:pointer;">
+      Continue to secure checkout
+    </button>
+    <p style="font-size:12px;color:#9CA3AF;margin-top:14px;text-align:center;">
+      Payments are processed by Stripe. Cancel anytime from Billing.
+    </p>
+    {% elif simulated %}
     <button type="submit" name="simulate" value="success"
       style="width:100%;background:#7C3AED;color:#fff;border:0;border-radius:999px;padding:13px;font-weight:700;cursor:pointer;">
-      Pay ${{ transaction.amount }} & Activate
+      Simulate payment &amp; activate (dev mode)
     </button>
+    <p style="font-size:12px;color:#9CA3AF;margin-top:14px;text-align:center;">
+      Stripe keys are not set — DEBUG mode simulates the payment.
+    </p>
+    {% else %}
+    <p style="font-size:13px;color:#DC2626;text-align:center;">
+      Online payments are temporarily unavailable. Please contact support.
+    </p>
+    {% endif %}
   </form>
 
-  <p style="font-size:12px;color:#9CA3AF;margin-top:14px;text-align:center;">
-    Payment gateway integration coming soon — this step will redirect to a secure checkout.
-  </p>
+  <p style="font-size:12px;color:#9CA3AF;margin-top:10px;text-align:center;">Reference {{ transaction.reference }}</p>
 </div>
 {% endblock %}

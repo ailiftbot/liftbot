@@ -10,5 +10,6 @@ urlpatterns = [
     path('<int:pk>/edit/', views.employee_edit, name='employee_edit'),
     path('<int:pk>/fire/', views.employee_fire, name='employee_fire'),
     path('<int:pk>/playground/', views.playground, name='employee_playground'),
+    path('<int:pk>/playground/message/', views.playground_message, name='playground_message'),
     path('<int:pk>/playground/history/', views.playground_history, name='playground_history'),
 ]

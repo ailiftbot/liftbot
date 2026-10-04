@@ -1,88 +1,181 @@
 {% extends 'base_app.html' %}
 {% block title %}Conversation #{{ session.id }} — LiftBot{% endblock %}
 {% block page_title %}{{ session.employee.name }}{% endblock %}
-{% block page_subtitle %}Visitor {{ session.visitor_id|slice:":8" }} · {% if session.is_human_mode %}You are in control{% else %}AI Employee active{% endif %}{% endblock %}
+{% block page_subtitle %}{% if visitor_profile.name or visitor_profile.email %}{{ visitor_profile.name|default:visitor_profile.email }}{% else %}Visitor {{ session.visitor_id|slice:":8" }}{% endif %} · <span id="mode-label">{% if session.is_human_mode %}You are in control{% else %}AI Employee active{% endif %}</span>{% endblock %}
+{% block extra_css %}
+<style>
+  .conv-layout { display:grid; grid-template-columns:minmax(0,720px) minmax(0,280px); gap:16px; align-items:start; }
+  .conv-side { padding:16px 18px; font-size:13px; }
+  .conv-side h2 { font-size:13px; margin:0 0 10px; }
+  .conv-side dl { display:grid; grid-template-columns:70px minmax(0,1fr); gap:6px 10px; margin:0 0 12px; }
+  .conv-side dt { color:var(--lb-muted); }
+  .conv-side dd { margin:0; word-break:break-word; }
+  #live-msgs { height:min(60vh, 520px); }
+  #reply-error { display:none; padding:8px 12px; font-size:12.5px; color:#C0362C; background:#FDECEC; border-top:1px solid #F7CFCB; }
+  form[hidden] { display:none !important; }
+  .lb-link { color:var(--lb-purple); font-weight:600; text-decoration:none; }
+  @media (max-width: 960px) { .conv-layout { grid-template-columns:1fr; } #live-msgs { height:55vh; } }
+</style>
+{% endblock %}
 {% block top_actions %}
-  {% if session.is_human_mode %}
-  <form method="post" action="{% url 'conversation_release' session.pk %}">{% csrf_token %}
+  <a class="lb-btn lb-btn-ghost" href="{% url 'conversations' %}">&larr; Inbox</a>
+  <form id="release-form" method="post" action="{% url 'conversation_release' session.pk %}" {% if not session.is_human_mode %}hidden{% endif %}>{% csrf_token %}
     <button class="lb-btn lb-btn-ghost" type="submit">Return to AI Employee</button>
   </form>
-  {% else %}
-  <form method="post" action="{% url 'conversation_takeover' session.pk %}">{% csrf_token %}
+  <form id="takeover-form" method="post" action="{% url 'conversation_takeover' session.pk %}" {% if session.is_human_mode %}hidden{% endif %}>{% csrf_token %}
     <button class="lb-btn lb-btn-primary" type="submit">Take over</button>
   </form>
-  {% endif %}
 {% endblock %}
 {% block content %}
-<div class="lb-card" style="max-width:720px;overflow:hidden;padding:0;">
-  <div id="live-msgs" style="height:420px;overflow:auto;padding:16px;background:#F9FAFB;display:flex;flex-direction:column;gap:8px;"
+<div class="conv-layout">
+<div class="lb-card" style="overflow:hidden;padding:0;">
+  <div id="live-msgs" style="overflow:auto;padding:16px;background:#F9FAFB;display:flex;flex-direction:column;gap:8px;"
        data-poll="{% url 'conversation_poll' session.pk %}"
-       data-after="{{ messages.last.id|default:0 }}">
-    {% for m in messages %}
+       data-after="{{ chat_messages.last.id|default:0 }}">
+    {% for m in chat_messages %}
     <div class="msg" data-id="{{ m.id }}" style="align-self:{% if m.role == 'visitor' %}flex-end{% else %}flex-start{% endif %};max-width:85%;">
-      <div style="font-size:11px;color:var(--lb-muted);margin-bottom:2px;">{{ m.get_role_display }}{% if m.author %} · {{ m.author.first_name|default:m.author.email }}{% endif %}</div>
-      <div style="padding:8px 12px;border-radius:14px;font-size:13px;line-height:1.4;
+      <div style="font-size:11px;color:var(--lb-muted);margin-bottom:2px;">{% if m.role == 'employee' %}{{ session.employee.name }}{% else %}{{ m.get_role_display }}{% endif %}{% if m.author %} · {{ m.author.first_name|default:m.author.email }}{% endif %}</div>
+      <div style="padding:8px 12px;border-radius:14px;font-size:13px;line-height:1.4;white-space:pre-wrap;word-break:break-word;
         background:{% if m.role == 'visitor' %}#7C3AED{% elif m.role == 'human' %}#DBEAFE{% elif m.role == 'system' %}#FEF3C7{% else %}#fff{% endif %};
         color:{% if m.role == 'visitor' %}#fff{% else %}#111827{% endif %};
         border:{% if m.role == 'visitor' %}0{% else %}1px solid #E5E7EB{% endif %};">{{ m.content }}</div>
     </div>
+    {% empty %}
+    <div id="no-msgs" style="margin:auto;color:var(--lb-muted);font-size:13px;">No messages in this conversation yet.</div>
     {% endfor %}
   </div>
+  <div id="reply-error" role="alert"></div>
   <form id="reply-form" method="post" action="{% url 'conversation_reply' session.pk %}" style="display:flex;gap:8px;padding:12px;border-top:1px solid #E5E7EB;background:#fff;">
     {% csrf_token %}
-    <input name="content" id="reply-input" style="flex:1;border:1px solid #E5E7EB;border-radius:999px;padding:10px 14px;" placeholder="Reply as teammate…" autocomplete="off" />
-    <button class="lb-btn lb-btn-primary" type="submit">Send</button>
+    <input name="content" id="reply-input" style="flex:1;min-width:0;border:1px solid #E5E7EB;border-radius:999px;padding:10px 14px;" placeholder="Reply as teammate…" autocomplete="off" aria-label="Reply" />
+    <button class="lb-btn lb-btn-primary" type="submit" id="reply-send">Send</button>
   </form>
 </div>
+
+<aside class="lb-card conv-side">
+  <h2>Visitor</h2>
+  <dl>
+    <dt>Name</dt><dd>{{ visitor_profile.name|default:'—' }}</dd>
+    <dt>Email</dt><dd>{{ visitor_profile.email|default:'—' }}</dd>
+    <dt>Phone</dt><dd>{{ visitor_profile.phone|default:'—' }}</dd>
+    <dt>ID</dt><dd style="font-family:monospace;font-size:12px;">{{ session.visitor_id|slice:':12' }}</dd>
+    <dt>Started</dt><dd>{{ session.started_at|date:'M j, H:i' }}</dd>
+  </dl>
+  <h2>Leads</h2>
+  {% for lead in session_leads %}
+    <div><a class="lb-link" href="{% url 'lead_detail' lead.pk %}">{{ lead }}</a> <span style="color:var(--lb-muted);">· {{ lead.get_status_display }}</span></div>
+  {% empty %}
+    <div style="color:var(--lb-muted);">No lead captured in this conversation.</div>
+  {% endfor %}
+</aside>
+</div>
+{{ role_labels|json_script:"role-labels" }}
 <script>
 (() => {
   const box = document.getElementById('live-msgs');
+  const roleLabels = JSON.parse(document.getElementById('role-labels').textContent || '{}');
+  const takeoverForm = document.getElementById('takeover-form');
+  const releaseForm = document.getElementById('release-form');
+  const modeLabel = document.getElementById('mode-label');
+  const errBox = document.getElementById('reply-error');
+  const POLL_MS = 4000;
   let afterId = parseInt(box.dataset.after || '0', 10);
   const pollUrl = box.dataset.poll;
+  let timer = null;
+  let inflight = false;
+
+  box.scrollTop = box.scrollHeight;
+
+  function setHumanMode(on) {
+    if (takeoverForm) takeoverForm.hidden = !!on;
+    if (releaseForm) releaseForm.hidden = !on;
+    if (modeLabel) modeLabel.textContent = on ? 'You are in control' : 'AI Employee active';
+  }
+
+  function showError(msg) {
+    errBox.textContent = msg || '';
+    errBox.style.display = msg ? 'block' : 'none';
+  }
 
   function appendMsg(m) {
     if (document.querySelector('.msg[data-id="'+m.id+'"]')) return;
+    const empty = document.getElementById('no-msgs');
+    if (empty) empty.remove();
     afterId = Math.max(afterId, m.id);
+    const nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
     const wrap = document.createElement('div');
     wrap.className = 'msg';
     wrap.dataset.id = m.id;
     wrap.style.cssText = 'align-self:' + (m.role === 'visitor' ? 'flex-end' : 'flex-start') + ';max-width:85%;';
     const role = document.createElement('div');
     role.style.cssText = 'font-size:11px;color:#6B7280;margin-bottom:2px;';
-    role.textContent = m.role + (m.author ? ' · ' + m.author : '');
+    role.textContent = (roleLabels[m.role] || m.role) + (m.author ? ' · ' + m.author : '');
     const bubble = document.createElement('div');
     const bg = m.role === 'visitor' ? '#7C3AED' : (m.role === 'human' ? '#DBEAFE' : (m.role === 'system' ? '#FEF3C7' : '#fff'));
     const color = m.role === 'visitor' ? '#fff' : '#111827';
-    bubble.style.cssText = 'padding:8px 12px;border-radius:14px;font-size:13px;line-height:1.4;background:'+bg+';color:'+color+';border:'+(m.role==='visitor'?'0':'1px solid #E5E7EB')+';';
+    bubble.style.cssText = 'padding:8px 12px;border-radius:14px;font-size:13px;line-height:1.4;white-space:pre-wrap;word-break:break-word;background:'+bg+';color:'+color+';border:'+(m.role==='visitor'?'0':'1px solid #E5E7EB')+';';
     bubble.textContent = m.content;
     wrap.appendChild(role); wrap.appendChild(bubble);
     box.appendChild(wrap);
-    box.scrollTop = box.scrollHeight;
+    if (nearBottom || m.role === 'human') box.scrollTop = box.scrollHeight;
   }
 
-  setInterval(async () => {
+  async function poll() {
+    if (inflight || document.hidden) return;
+    inflight = true;
     try {
-      const res = await fetch(pollUrl + '?after_id=' + afterId);
+      const res = await fetch(pollUrl + '?after_id=' + afterId, {credentials: 'same-origin'});
+      if (!res.ok) return;
       const data = await res.json();
       (data.messages || []).forEach(appendMsg);
-    } catch (_) {}
-  }, 2000);
+      if (typeof data.human_mode === 'boolean') setHumanMode(data.human_mode);
+    } catch (_) {
+      // network blip — try again next tick
+    } finally {
+      inflight = false;
+    }
+  }
 
-  document.getElementById('reply-form').addEventListener('submit', async (e) => {
+  function start() { if (!timer) timer = setInterval(poll, POLL_MS); }
+  function stop() { if (timer) { clearInterval(timer); timer = null; } }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { stop(); } else { poll(); start(); }
+  });
+  if (!document.hidden) start();
+
+  const form = document.getElementById('reply-form');
+  const input = document.getElementById('reply-input');
+  const sendBtn = document.getElementById('reply-send');
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const input = document.getElementById('reply-input');
     const content = input.value.trim();
     if (!content) return;
-    const fd = new FormData(e.target);
+    const fd = new FormData(form);
     fd.set('content', content);
-    input.value = '';
-    const res = await fetch(e.target.action, {
-      method: 'POST',
-      headers: {'X-Requested-With': 'XMLHttpRequest'},
-      body: fd,
-    });
-    const data = await res.json();
-    if (data.message) appendMsg(data.message);
+    sendBtn.disabled = true;
+    showError('');
+    try {
+      const res = await fetch(form.action, {
+        method: 'POST',
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
+        body: fd,
+        credentials: 'same-origin',
+      });
+      let data = {};
+      try { data = await res.json(); } catch (_) {}
+      if (!res.ok || !data.message) {
+        throw new Error(data.error || ('Message not sent (error ' + res.status + '). Please try again.'));
+      }
+      input.value = '';
+      appendMsg(data.message);
+      setHumanMode(true);
+    } catch (err) {
+      showError(err.message && err.message !== 'Failed to fetch' ? err.message : 'Message not sent — check your connection and try again.');
+    } finally {
+      sendBtn.disabled = false;
+      input.focus();
+    }
   });
 })();
 </script>

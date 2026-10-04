@@ -1,6 +1,5 @@
 import logging
 import re
-from datetime import datetime
 
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -15,34 +14,56 @@ logger = logging.getLogger(__name__)
 EMAIL_RE = re.compile(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}')
 PHONE_RE = re.compile(r'(?:\+?\d{1,3}[-.\s]?)?(?:\(?\d{2,4}\)?[-.\s]?)?\d{3,4}[-.\s]?\d{4}')
 
-SCHEDULE_KEYWORDS = (
-    'schedule', 'book', 'appointment', 'visit', 'meeting', 'callback', 'call back', 'demo',
+MIN_PHONE_DIGITS = 10
+
+# Phrase-level patterns: single words like "need" or "price" match almost every
+# message and used to flood the team with tasks.
+SCHEDULE_RE = re.compile(
+    r'\b(schedule (a|an)|book (a|an|me)|appointment|set up a (call|meeting)|'
+    r'call ?back|(request|book|schedule) a demo|site visit|viewing)\b'
 )
-HANDOFF_KEYWORDS = (
-    'speak to', 'talk to', 'human', 'sales team', 'your team', 'connect me', 'call me', 'reach out',
+HANDOFF_RE = re.compile(
+    r'\b(speak to|talk to) (a |an |the |your )?(human|person|someone|agent|team|sales)|'
+    r'\b(real|actual) (person|human)\b|\bconnect me\b|\bcall me\b|\breach out to me\b'
 )
-QUALIFY_KEYWORDS = (
-    'interested in', 'looking for', 'budget', 'need', 'want to buy', 'price', 'cost', 'timeline',
+QUALIFY_RE = re.compile(
+    r'\b(interested in (buying|purchasing|your)|want to (buy|purchase|order)|my budget|'
+    r'budget (is|of)|ready to (buy|start|sign)|get a quote|pricing for)\b'
 )
+
+
+def _text(value, limit: int) -> str:
+    return value.strip()[:limit] if isinstance(value, str) else ''
+
+
+def _normalize_phone(raw: str) -> str:
+    digits = re.sub(r'\D', '', raw)
+    if len(digits) < MIN_PHONE_DIGITS or len(digits) > 15:
+        return ''
+    return raw.strip()
 
 
 def extract_contact(text: str) -> dict:
     email = EMAIL_RE.search(text)
-    phone = PHONE_RE.search(text)
+    phone = ''
+    for match in PHONE_RE.finditer(text):
+        phone = _normalize_phone(match.group(0))
+        if phone:
+            break
     return {
         'email': email.group(0) if email else '',
-        'phone': phone.group(0).strip() if phone else '',
+        'phone': phone,
     }
 
 
 def detect_intents(text: str) -> list[str]:
     lower = text.lower()
     intents = []
-    if any(k in lower for k in SCHEDULE_KEYWORDS):
+    if SCHEDULE_RE.search(lower):
         intents.append(EmployeeTask.TaskType.SCHEDULE)
-    if any(k in lower for k in HANDOFF_KEYWORDS):
+    if HANDOFF_RE.search(lower):
         intents.append(EmployeeTask.TaskType.HANDOFF)
-    if any(k in lower for k in QUALIFY_KEYWORDS):
+    if QUALIFY_RE.search(lower):
         intents.append(EmployeeTask.TaskType.QUALIFY)
     return intents
 
@@ -111,6 +132,11 @@ def create_tasks_for_intents(workspace, employee, session, message: str, profile
     caps = set(employee.capabilities) if employee.capabilities is not None else set(employee.default_capabilities())
     created = []
     for intent in detect_intents(message):
+        # One open task per type per conversation is enough.
+        if EmployeeTask.objects.filter(
+            session=session, task_type=intent, status=EmployeeTask.Status.OPEN,
+        ).exists():
+            continue
         if intent == EmployeeTask.TaskType.SCHEDULE and CAPABILITY_SCHEDULE not in caps:
             continue
         if intent == EmployeeTask.TaskType.HANDOFF and CAPABILITY_NOTIFY not in caps:
@@ -162,9 +188,15 @@ def handle_widget_action(workspace, employee, session, profile, action: str, dat
     if action == 'collect_contact':
         if CAPABILITY_COLLECT not in caps:
             return {'ok': False, 'error': 'This employee cannot collect contacts.'}
-        name = (data.get('name') or '').strip()
-        email = (data.get('email') or '').strip()
-        phone = (data.get('phone') or '').strip()
+        name = _text(data.get('name'), 150)
+        email = _text(data.get('email'), 254)
+        phone = _text(data.get('phone'), 40)
+        if email and not EMAIL_RE.fullmatch(email):
+            return {'ok': False, 'error': 'Please enter a valid email address.'}
+        if phone and not _normalize_phone(phone):
+            return {'ok': False, 'error': 'Please enter a valid phone number.'}
+        if not (email or phone):
+            return {'ok': False, 'error': 'Please share an email or phone number so the team can reach you.'}
         if name:
             profile.name = name
         if email:
@@ -193,9 +225,14 @@ def handle_widget_action(workspace, employee, session, profile, action: str, dat
     if action == 'schedule':
         if CAPABILITY_SCHEDULE not in caps:
             return {'ok': False, 'error': 'This employee cannot schedule.'}
-        slot_id = data.get('slot_id') or data.get('starts_at')
-        label = data.get('label') or slot_id
-        starts = parse_datetime(slot_id) if slot_id else None
+        slot_id = _text(data.get('slot_id') or data.get('starts_at'), 64)
+        label = _text(data.get('label'), 120) or slot_id
+        try:
+            starts = parse_datetime(slot_id) if slot_id else None
+        except ValueError:
+            starts = None
+        if starts is None:
+            return {'ok': False, 'error': 'Please pick one of the available times.'}
         if starts and timezone.is_naive(starts):
             starts = timezone.make_aware(starts)
         lead = upsert_lead_from_profile(
@@ -229,14 +266,14 @@ def handle_widget_action(workspace, employee, session, profile, action: str, dat
             return {'ok': False, 'error': 'This employee cannot hand off yet.'}
         lead = upsert_lead_from_profile(
             workspace, employee, session, profile,
-            data.get('note') or 'Visitor requested team handoff',
+            _text(data.get('note'), 500) or 'Visitor requested team handoff',
         )
         task = create_task(
             workspace, employee, session,
             EmployeeTask.TaskType.HANDOFF,
             f'Team handoff — {employee.name}',
             {
-                'note': data.get('note', ''),
+                'note': _text(data.get('note'), 500),
                 'visitor_id': profile.visitor_id,
                 'visitor_name': profile.name,
                 'visitor_email': profile.email,

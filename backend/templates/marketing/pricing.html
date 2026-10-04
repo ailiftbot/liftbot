@@ -9,73 +9,81 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{% static 'marketing.css' %}">
 <link rel="stylesheet" href="{% static 'pricing.css' %}">
+<style>
+  .pr-plans { padding: 24px 16px 72px; }
+  .pr-plans__inner { max-width: 1120px; margin: 0 auto; }
+  .pr-plans__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+  .pr-plan { position: relative; background: #fff; border: 1px solid #E5E7EB; border-radius: 20px; padding: 28px; display: flex; flex-direction: column; box-shadow: 0 10px 30px -18px rgba(16,24,40,.25); color: #15161b; }
+  .pr-plan--featured { border-color: #4b3aff; box-shadow: 0 18px 40px -18px rgba(75,58,255,.45); }
+  .pr-plan__tag { position: absolute; top: -12px; left: 28px; background: #4b3aff; color: #fff; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 4px 12px; }
+  .pr-plan__name { margin: 0 0 8px; font-size: 20px; font-weight: 700; }
+  .pr-plan__price { margin: 0 0 18px; color: #4B5563; font-size: 15px; }
+  .pr-plan__price span { font-size: 38px; font-weight: 800; color: #15161b; font-variant-numeric: tabular-nums; }
+  .pr-plan__list { list-style: none; margin: 0 0 24px; padding: 0; display: flex; flex-direction: column; gap: 10px; font-size: 14.5px; color: #374151; flex: 1; }
+  .pr-plan__list li { padding-left: 22px; position: relative; }
+  .pr-plan__list li::before { content: "✓"; position: absolute; left: 0; color: #4b3aff; font-weight: 800; }
+  .pr-plan__cta { display: block; text-align: center; background: #15161b; color: #fff; border-radius: 999px; padding: 12px 18px; font-weight: 700; text-decoration: none; }
+  .pr-plan--featured .pr-plan__cta { background: #4b3aff; }
+  .pr-plans__empty { text-align: center; color: #4B5563; }
+  .pr-plans__empty a { color: #4b3aff; font-weight: 600; }
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="lb">
 
-  {# ── HERO / PRE-LAUNCH PANEL ── #}
+  {# ── HERO ── #}
   <section class="pr-hero">
     <div class="pr-hero__noise" aria-hidden="true"></div>
     <div class="pr-hero__glow" aria-hidden="true"></div>
     <div class="pr-hero__inner">
       <div class="pr-hero__badge">Pricing</div>
-      <h1 class="pr-hero__h1">Pricing is on its way.</h1>
+      <h1 class="pr-hero__h1">Simple monthly plans.</h1>
       <p class="pr-hero__sub">
-        LiftBot is currently available through early access. Join the program to learn about availability and upcoming plans.
+        Start with one AI Employee and grow as your business needs more. Billed monthly — cancel any time from your billing page.
       </p>
-      <div class="pr-hero__cta">
-        <a href="{% url 'early_access' %}" class="lb__btn lb__btn--primary">Request Early Access</a>
-        <a href="{% url 'demo' %}" class="lb__btn lb__btn--outline">Book a demo &rarr;</a>
-      </div>
     </div>
   </section>
 
-  {# ── WHAT TO EXPECT ── #}
-  <section class="pr-expect">
-    <div class="pr-expect__inner">
-      <div class="pr-expect__header" data-reveal>
-        <span class="lb__eyebrow">What to expect</span>
-        <h2 class="lb__h2" style="margin-top:16px;">Built to grow with your business.</h2>
-        <p class="lb__lede" style="margin-inline:auto; text-align:center;">
-          Every AI employee starts with one job — pricing will follow that same idea. Start small, and only pay for what your business actually needs.
-        </p>
+  {# ── PLANS ── #}
+  <section class="pr-plans">
+    <div class="pr-plans__inner">
+      {% if plans %}
+      <div class="pr-plans__grid">
+        {% for plan in plans %}
+        <article class="pr-plan{% if plan.slug == 'pro' %} pr-plan--featured{% endif %}">
+          {% if plan.slug == 'pro' %}<span class="pr-plan__tag">Most popular</span>{% endif %}
+          <h2 class="pr-plan__name">{{ plan.name }}</h2>
+          <p class="pr-plan__price"><span>${{ plan.price_monthly|floatformat:"-2" }}</span>/month</p>
+          <ul class="pr-plan__list">
+            <li>{{ plan.employee_limit }} AI Employee{{ plan.employee_limit|pluralize }}</li>
+            <li>{{ plan.conversation_limit }} conversations / month</li>
+            <li>{{ plan.token_limit }} AI tokens / month</li>
+            <li>Knowledge training from PDFs, URLs and FAQs</li>
+            <li>Lead capture, team handoff and webhooks</li>
+          </ul>
+          {% if user.is_authenticated %}
+          <a href="{% url 'billing' %}" class="pr-plan__cta">Choose plan</a>
+          {% else %}
+          <a href="{% url 'signup' %}" class="pr-plan__cta">Start now</a>
+          {% endif %}
+        </article>
+        {% endfor %}
       </div>
-
-      <div class="pr-expect__grid" data-reveal>
-        <div class="pr-expect-card">
-          <div class="pr-expect-card__icon pr-expect-card__icon--1">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg>
-          </div>
-          <h3 class="pr-expect-card__title">Start with one role</h3>
-          <p class="pr-expect-card__desc">Pick one AI employee for the problem costing you the most time today.</p>
-        </div>
-        <div class="pr-expect-card">
-          <div class="pr-expect-card__icon pr-expect-card__icon--2">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>
-          </div>
-          <h3 class="pr-expect-card__title">Grow as you need</h3>
-          <p class="pr-expect-card__desc">Add more roles or capabilities as your business scales — no need to commit upfront.</p>
-        </div>
-        <div class="pr-expect-card">
-          <div class="pr-expect-card__icon pr-expect-card__icon--3">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>
-          </div>
-          <h3 class="pr-expect-card__title">Early access pricing</h3>
-          <p class="pr-expect-card__desc">Early access members will be the first to know about plans and pricing before public launch.</p>
-        </div>
-      </div>
+      {% else %}
+      <p class="pr-plans__empty">Plans are being updated. <a href="{% url 'contact' %}">Talk to us</a> for current pricing.</p>
+      {% endif %}
     </div>
   </section>
 
   {# ── FINAL CTA ── #}
   <section class="pr-cta">
     <div class="pr-cta__inner" data-reveal>
-      <span class="lb__eyebrow" style="color:#4b3aff; background:rgba(75,58,255,0.08); border-color:rgba(75,58,255,0.24);">Pre-launch</span>
-      <h2 class="pr-cta__h2">Be the first to know when pricing goes live.</h2>
-      <p class="pr-cta__sub">Join early access to learn about availability and upcoming plans before anyone else.</p>
+      <h2 class="pr-cta__h2">Not sure which plan fits?</h2>
+      <p class="pr-cta__sub">Tell us about your business and we'll help you pick the right AI Employee setup.</p>
       <div class="pr-cta__actions">
-        <a href="{% url 'early_access' %}" class="lb__btn" style="background:#15161b; color:#fff;">Request Early Access</a>
+        <a href="{% url 'demo' %}" class="lb__btn" style="background:#15161b; color:#fff;">Book a demo</a>
+        <a href="{% url 'contact' %}" class="lb__btn lb__btn--outline" style="color:#15161b; border-color:rgba(21,22,27,0.3);">Contact sales &rarr;</a>
       </div>
     </div>
   </section>

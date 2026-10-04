@@ -11,7 +11,7 @@
 
 {% block top_actions %}
   {% if employee %}
-  <a class="lb-btn lb-btn-ghost" href="{% url 'employee_detail' employee.pk %}">Cancel</a>
+  <a class="lb-btn lb-btn-ghost" href="{% url 'employee_hub' employee.pk %}?tab=settings">Cancel</a>
   {% else %}
   <a class="lb-btn lb-btn-ghost" href="{% url 'employee_list' %}">Cancel</a>
   {% endif %}

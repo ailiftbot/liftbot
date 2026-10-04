@@ -14,6 +14,12 @@ class UserProfileInline(admin.StackedInline):
 class UserAdmin(BaseUserAdmin):
     inlines = [UserProfileInline]
 
+    def get_inline_instances(self, request, obj=None):
+        # The profile is created by a post_save signal; only edit it on change.
+        if obj is None:
+            return []
+        return super().get_inline_instances(request, obj)
+
 
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Workspace invite — LiftBot{% endblock %}
+
+{% block content %}
+<div class="lb-invite-card">
+  {% if state == 'invalid' %}
+    <h1>This invite is no longer valid</h1>
+    <p>The link may have expired, been revoked, or already been used. Ask a workspace admin to send you a new invite.</p>
+    <a class="lb-invite-btn" href="{% url 'home' %}">Go to LiftBot</a>
+
+  {% elif state == 'anonymous' %}
+    <h1>Join {{ invite.workspace.name }}</h1>
+    <p>You've been invited to join <strong>{{ invite.workspace.name }}</strong> on LiftBot as {{ invite.get_role_display }}. The invite was sent to <strong>{{ invite.email }}</strong>.</p>
+    <a class="lb-invite-btn" href="{% url 'signup' %}">Create an account</a>
+    <p class="lb-invite-alt">Already have an account with {{ invite.email }}? <a href="{% url 'login' %}">Log in</a> and we'll add you to the workspace.</p>
+
+  {% elif state == 'mismatch' %}
+    <h1>Wrong account</h1>
+    <p>This invite was sent to <strong>{{ invite.email }}</strong>, but you're logged in as <strong>{{ user.email }}</strong>.</p>
+    <p>Log out, then open the invite link again and sign in with {{ invite.email }}.</p>
+    <form method="post" action="{% url 'logout' %}">
+      {% csrf_token %}
+      <button class="lb-invite-btn" type="submit">Log out</button>
+    </form>
+
+  {% else %}
+    <h1>Join {{ invite.workspace.name }}</h1>
+    <p>{% if invite.invited_by %}{{ invite.invited_by.email }} invited you{% else %}You've been invited{% endif %} to join <strong>{{ invite.workspace.name }}</strong> as {{ invite.get_role_display }}.</p>
+    <form method="post">
+      {% csrf_token %}
+      <button class="lb-invite-btn" type="submit">Accept invite</button>
+    </form>
+  {% endif %}
+</div>
+<style>
+  .lb-invite-card { max-width:460px; margin:48px auto; background:#fff; border:1px solid #E5E7EB; border-radius:16px; padding:32px; box-shadow:0 8px 24px rgba(16,24,40,.06); color:#111827; }
+  .lb-invite-card h1 { margin:0 0 10px; font-size:22px; font-weight:800; }
+  .lb-invite-card p { margin:0 0 16px; color:#4B5563; font-size:14.5px; line-height:1.5; }
+  .lb-invite-btn { display:inline-block; background:#7C3AED; color:#fff; border:0; border-radius:999px; padding:12px 22px; font-weight:700; font-size:14.5px; text-decoration:none; cursor:pointer; font-family:inherit; }
+  .lb-invite-alt { margin-top:16px !important; font-size:13.5px !important; }
+  .lb-invite-alt a { color:#7C3AED; font-weight:600; }
+</style>
+{% endblock %}

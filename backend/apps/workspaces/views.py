@@ -14,17 +14,13 @@ from apps.knowledge.models import KnowledgeSource
 from apps.leads.models import Lead
 
 from .models import WorkspaceMembership
+from .permissions import current_membership
 from .public_urls import widget_urls
 
 
 def user_workspace(user):
-    membership = (
-        WorkspaceMembership.objects
-        .select_related('workspace', 'workspace__plan')
-        .filter(user=user)
-        .order_by('created_at')
-        .first()
-    )
+    """The workspace the user is working in (profile.active_workspace, else oldest membership)."""
+    membership = current_membership(user)
     return membership.workspace if membership else None
 
 
@@ -74,9 +70,8 @@ def dashboard(request):
     if workspace:
         session_qs = (
             ChatSession.objects
-            .filter(employee__workspace=workspace)
+            .filter(employee__workspace=workspace, is_test=False)
             .select_related('employee')
-            .prefetch_related('messages')
             .order_by('-last_message_at')
         )
         conversation_count = session_qs.count()
@@ -222,12 +217,6 @@ def dashboard(request):
     })
 
 
-def home(request):
-    if request.user.is_authenticated:
-        return redirect('dashboard')
-    return render(request, 'home.html')
-
-
 def helloworld(request):
     """Public widget demo page — /helloworld/ or /helloworld/?token=…"""
     urls = widget_urls(request)
@@ -252,16 +241,32 @@ def analytics(request):
         messages.info(request, 'Create a workspace first.')
         return redirect('dashboard')
 
+    range_options = (7, 30, 90)
+    try:
+        range_days = int(request.GET.get('range') or 30)
+    except (TypeError, ValueError):
+        range_days = 30
+    if range_days not in range_options:
+        range_days = 30
+
     now = timezone.now()
-    day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    day_start = timezone.localtime(now).replace(hour=0, minute=0, second=0, microsecond=0)
     week_ago = now - timedelta(days=7)
     month_ago = now - timedelta(days=30)
-    chart_start = day_start - timedelta(days=13)
+    period_start = day_start - timedelta(days=range_days - 1)
 
+    # Playground/test sessions never count toward analytics (guarded until the
+    # ChatSession.is_test field has landed everywhere).
+    has_is_test = any(f.name == 'is_test' for f in ChatSession._meta.get_fields())
     sessions = ChatSession.objects.filter(employee__workspace=workspace)
     messages_qs = Message.objects.filter(session__employee__workspace=workspace)
     leads = Lead.objects.filter(workspace=workspace)
     tasks = EmployeeTask.objects.filter(workspace=workspace)
+    if has_is_test:
+        sessions = sessions.exclude(is_test=True)
+        messages_qs = messages_qs.exclude(session__is_test=True)
+        leads = leads.exclude(session__is_test=True)
+        tasks = tasks.exclude(session__is_test=True)
     visitors = VisitorProfile.objects.filter(workspace=workspace)
     employees = list(AIEmployee.objects.filter(workspace=workspace, is_active=True))
 
@@ -269,16 +274,18 @@ def analytics(request):
     conv_7d = sessions.filter(started_at__gte=week_ago).count()
     conv_30d = sessions.filter(started_at__gte=month_ago).count()
     conv_today = sessions.filter(started_at__gte=day_start).count()
+    conv_period = sessions.filter(started_at__gte=period_start).count()
 
     msg_total = messages_qs.count()
     msg_visitor = messages_qs.filter(role=Message.Role.VISITOR).count()
     msg_employee = messages_qs.filter(role=Message.Role.EMPLOYEE).count()
     msg_human = messages_qs.filter(role=Message.Role.HUMAN).count()
-    tokens_period = messages_qs.filter(created_at__gte=month_ago).aggregate(t=Sum('tokens_used'))['t'] or 0
+    tokens_period = messages_qs.filter(created_at__gte=period_start).aggregate(t=Sum('tokens_used'))['t'] or 0
 
     lead_total = leads.count()
     lead_7d = leads.filter(created_at__gte=week_ago).count()
     lead_30d = leads.filter(created_at__gte=month_ago).count()
+    lead_period = leads.filter(created_at__gte=period_start).count()
 
     task_open = tasks.filter(status=EmployeeTask.Status.OPEN).count()
     task_done = tasks.filter(status=EmployeeTask.Status.DONE).count()
@@ -286,11 +293,11 @@ def analytics(request):
     task_schedule = tasks.filter(task_type=EmployeeTask.TaskType.SCHEDULE).count()
     human_sessions = sessions.filter(status=ChatSession.Status.HUMAN).count()
 
-    # Last 14 days conversation chart
+    # Conversation / lead chart over the selected range
     by_day = {
         row['day'].date() if hasattr(row['day'], 'date') else row['day']: row['c']
         for row in (
-            sessions.filter(started_at__gte=chart_start)
+            sessions.filter(started_at__gte=period_start)
             .annotate(day=TruncDate('started_at'))
             .values('day')
             .annotate(c=Count('id'))
@@ -300,22 +307,24 @@ def analytics(request):
     leads_by_day = {
         row['day'].date() if hasattr(row['day'], 'date') else row['day']: row['c']
         for row in (
-            leads.filter(created_at__gte=chart_start)
+            leads.filter(created_at__gte=period_start)
             .annotate(day=TruncDate('created_at'))
             .values('day')
             .annotate(c=Count('id'))
         )
         if row['day']
     }
+    label_every = {7: 1, 30: 5, 90: 15}[range_days]
     chart_days = []
     max_bar = 1
-    for i in range(14):
-        d = (chart_start + timedelta(days=i)).date()
+    for i in range(range_days):
+        d = (period_start + timedelta(days=i)).date()
         conv_n = by_day.get(d, 0)
         lead_n = leads_by_day.get(d, 0)
         max_bar = max(max_bar, conv_n, lead_n)
+        show_label = (i % label_every == 0) or i == range_days - 1
         chart_days.append({
-            'label': d.strftime('%a'),
+            'label': (d.strftime('%a') if range_days == 7 else d.strftime('%b %d')) if show_label else '',
             'date': d.strftime('%b %d'),
             'conversations': conv_n,
             'leads': lead_n,
@@ -326,10 +335,10 @@ def analytics(request):
 
     # Per-employee breakdown
     session_counts = dict(
-        sessions.values('employee_id').annotate(c=Count('id')).values_list('employee_id', 'c')
+        sessions.filter(started_at__gte=period_start).values('employee_id').annotate(c=Count('id')).values_list('employee_id', 'c')
     )
     lead_counts = dict(
-        leads.values('employee_id').annotate(c=Count('id')).values_list('employee_id', 'c')
+        leads.filter(created_at__gte=period_start).values('employee_id').annotate(c=Count('id')).values_list('employee_id', 'c')
     )
     task_counts = dict(
         tasks.filter(status=EmployeeTask.Status.OPEN)
@@ -361,6 +370,8 @@ def analytics(request):
             'conv_today': conv_today,
             'conv_7d': conv_7d,
             'conv_30d': conv_30d,
+            'conv_period': conv_period,
+            'lead_period': lead_period,
             'msg_total': msg_total,
             'msg_visitor': msg_visitor,
             'msg_employee': msg_employee,
@@ -378,6 +389,8 @@ def analytics(request):
             'employees': len(employees),
         },
         'chart_days': chart_days,
+        'range_days': range_days,
+        'range_options': range_options,
         'employee_rows': employee_rows,
         'recent_leads': recent_leads,
         'recent_tasks': recent_tasks,
@@ -393,67 +406,6 @@ def analytics(request):
     })
 
 
-@login_required
-def workspace_settings(request):
-    workspace = user_workspace(request.user)
-    if not workspace:
-        messages.info(request, 'Create a workspace first.')
-        return redirect('dashboard')
-
-    profile = getattr(request.user, 'profile', None)
-
-    if request.method == 'POST':
-        section = request.POST.get('section') or 'workspace'
-
-        if section == 'workspace':
-            name = (request.POST.get('name') or '').strip()
-            brand = (request.POST.get('brand_color') or '').strip() or '#0F766E'
-            if name:
-                workspace.name = name[:200]
-            if brand.startswith('#') and len(brand) in (4, 7):
-                workspace.brand_color = brand
-            workspace.save(update_fields=['name', 'brand_color', 'updated_at'])
-            messages.success(request, 'Workspace settings saved.')
-
-        elif section == 'webhook':
-            workspace.webhook_url = (request.POST.get('webhook_url') or '').strip()
-            workspace.save(update_fields=['webhook_url', 'updated_at'])
-            messages.success(request, 'Webhook URL saved.')
-
-        elif section == 'account':
-            full_name = (request.POST.get('full_name') or '').strip()
-            first = (request.POST.get('first_name') or '').strip()
-            last = (request.POST.get('last_name') or '').strip()
-            request.user.first_name = first[:150]
-            request.user.last_name = last[:150]
-            request.user.save(update_fields=['first_name', 'last_name'])
-            if profile is not None:
-                profile.full_name = full_name or f'{first} {last}'.strip()
-                profile.save(update_fields=['full_name'])
-            messages.success(request, 'Account updated.')
-
-        elif section == 'regenerate_workspace_token':
-            import secrets
-            workspace.widget_token = secrets.token_urlsafe(24)
-            workspace.save(update_fields=['widget_token', 'updated_at'])
-            messages.success(request, 'Team widget token regenerated. Update embeds that use the old token.')
-
-        return redirect('settings')
-
-    memberships = (
-        WorkspaceMembership.objects
-        .filter(workspace=workspace)
-        .select_related('user')
-        .order_by('created_at')
-    )
-
-    urls = widget_urls(request)
-    return render(request, 'workspaces/settings.html', {
-        'workspace': workspace,
-        'profile': profile,
-        'memberships': memberships,
-        'team_embed_snippet': workspace.team_embed_snippet(
-            widget_url=urls['widget'], api_base=urls['api']
-        ),
-        'public_app_url': urls['app'],
-    })
+# Settings, team management and workspace lifecycle views live in
+# apps/workspaces/settings_views.py (re-exported here for old imports).
+from .settings_views import workspace_settings  # noqa: E402,F401

@@ -37,11 +37,12 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      RAG_INTERNAL_TOKEN: ${RAG_INTERNAL_TOKEN}
+      # Never pass an empty token: fall back to the dev default shared with Django.
+      RAG_INTERNAL_TOKEN: ${RAG_INTERNAL_TOKEN:-liftbot-rag-internal-token}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
       GROQ_API_KEY: ${GROQ_API_KEY}
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
-      REDIS_URL: ${REDIS_URL}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
     ports:
       - "8101:8100"
     volumes:
@@ -58,11 +59,14 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
+      # Dev compose: DEBUG on explicitly (settings default is now off).
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-1}
       MYSQL_HOST: db
-      REDIS_URL: ${REDIS_URL}
-      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
-      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/1}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/2}
       RAG_SERVICE_URL: http://rag:8100
+      RAG_INTERNAL_TOKEN: ${RAG_INTERNAL_TOKEN:-liftbot-rag-internal-token}
     ports:
       - "8001:8000"
     volumes:
@@ -89,11 +93,14 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
+      # Dev compose: DEBUG on explicitly (settings default is now off).
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-1}
       MYSQL_HOST: db
-      REDIS_URL: ${REDIS_URL}
-      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
-      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/1}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/2}
       RAG_SERVICE_URL: http://rag:8100
+      RAG_INTERNAL_TOKEN: ${RAG_INTERNAL_TOKEN:-liftbot-rag-internal-token}
     volumes:
       - ./backend:/app
       - media_data:/app/media

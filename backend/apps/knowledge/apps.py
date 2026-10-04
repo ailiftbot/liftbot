@@ -6,3 +6,6 @@ class KnowledgeConfig(AppConfig):
     name = 'apps.knowledge'
     label = 'knowledge'
     verbose_name = 'Knowledge Base'
+
+    def ready(self):
+        from . import signals  # noqa: F401

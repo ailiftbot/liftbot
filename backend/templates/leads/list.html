@@ -2,33 +2,118 @@
 {% block title %}Leads — LiftBot{% endblock %}
 {% block page_title %}Leads{% endblock %}
 {% block page_subtitle %}Contacts captured mid-conversation by your AI Employees.{% endblock %}
+{% block extra_css %}{% include 'chat/_list_styles.html' %}{% endblock %}
+{% block top_actions %}
+  {% if total_count %}
+  <a class="lb-btn lb-btn-ghost" href="{% url 'leads_export' %}{% if querystring %}?{{ querystring }}{% endif %}">Export CSV</a>
+  {% endif %}
+{% endblock %}
 {% block content %}
+<form class="lb-card lb-filters" method="get" action="{% url 'leads' %}" role="search">
+  <label class="grow">Search
+    <input type="search" name="q" value="{{ filters.q }}" placeholder="Name, email, phone or intent" />
+  </label>
+  <label>AI Employee
+    <select name="employee">
+      <option value="">All</option>
+      {% for emp in employees %}
+      <option value="{{ emp.id }}" {% if filters.employee == emp.id|stringformat:'s' %}selected{% endif %}>{{ emp.name }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Source
+    <select name="source">
+      <option value="">All</option>
+      {% for value, label in source_choices %}
+      <option value="{{ value }}" {% if filters.source == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Status
+    <select name="status">
+      <option value="">All</option>
+      {% for value, label in status_choices %}
+      <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>From
+    <input type="date" name="date_from" value="{{ filters.date_from }}" />
+  </label>
+  <label>To
+    <input type="date" name="date_to" value="{{ filters.date_to }}" />
+  </label>
+  <div class="actions">
+    <button class="lb-btn lb-btn-primary lb-btn-sm" type="submit">Apply</button>
+    {% if is_filtered %}<a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'leads' %}">Reset</a>{% endif %}
+  </div>
+</form>
+
 <div class="lb-card lb-resp-table-wrap">
+  {% if leads %}
   <table class="lb-resp-table">
     <thead>
       <tr>
         <th>Name</th>
-        <th>Email</th>
-        <th>Phone</th>
-        <th>Employee</th>
+        <th>Contact</th>
+        <th>AI Employee</th>
         <th>Intent</th>
+        <th>Status</th>
+        <th>Conversation</th>
         <th>When</th>
       </tr>
     </thead>
     <tbody>
       {% for lead in leads %}
       <tr>
-        <td data-label="Name" style="font-weight:600;">{{ lead.name|default:'—' }}</td>
-        <td data-label="Email">{{ lead.email|default:'—' }}</td>
-        <td data-label="Phone">{{ lead.phone|default:'—' }}</td>
-        <td data-label="Employee">{{ lead.employee.name|default:'—' }}</td>
-        <td data-label="Intent" style="font-size:12px;color:var(--lb-muted);max-width:200px;">{{ lead.intent_summary|truncatechars:80|default:'—' }}</td>
-        <td data-label="When" style="color:var(--lb-muted);">{{ lead.created_at|date:'M j, H:i' }}</td>
+        <td data-label="Name" style="font-weight:600;">
+          <a class="lb-link" href="{% url 'lead_detail' lead.pk %}">{{ lead.name|default:'Unnamed visitor' }}</a>
+          <div class="lb-muted" style="font-size:11.5px;font-weight:500;">{{ lead.get_source_display }}</div>
+        </td>
+        <td data-label="Contact">
+          {% if lead.email %}<div>{{ lead.email }}</div>{% endif %}
+          {% if lead.phone %}<div class="lb-muted">{{ lead.phone }}</div>{% endif %}
+          {% if not lead.email and not lead.phone %}—{% endif %}
+        </td>
+        <td data-label="AI Employee">{{ lead.employee.name|default:'—' }}</td>
+        <td data-label="Intent" style="font-size:12px;color:var(--lb-muted);max-width:220px;">{{ lead.intent_summary|truncatechars:80|default:'—' }}</td>
+        <td data-label="Status">
+          <form class="lb-inline-form js-status-form" method="post" action="{% url 'lead_update_status' lead.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}" />
+            <select class="lb-inline-select" name="status" aria-label="Lead status">
+              {% for value, label in status_choices %}
+              <option value="{{ value }}" {% if lead.status == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+            <button class="lb-btn lb-btn-ghost lb-btn-sm js-hide" type="submit">Save</button>
+            <span class="lb-inline-status" aria-live="polite"></span>
+          </form>
+        </td>
+        <td data-label="Conversation">
+          {% if lead.session_id %}
+          <a class="lb-link" href="{% url 'conversation_detail' lead.session_id %}">View chat</a>
+          {% else %}<span class="lb-muted">—</span>{% endif %}
+        </td>
+        <td data-label="When" style="color:var(--lb-muted);white-space:nowrap;">{{ lead.created_at|date:'M j, H:i' }}</td>
       </tr>
-      {% empty %}
-      <tr><td colspan="6" style="padding:28px 16px;color:var(--lb-muted);">No leads captured yet.</td></tr>
       {% endfor %}
     </tbody>
   </table>
+  {% include 'chat/_pagination.html' with page_obj=page_obj querystring=querystring %}
+  {% elif is_filtered %}
+  <div class="lb-empty-state">
+    <strong>No leads match these filters</strong>
+    Try a different search term or widen the date range.
+    <div><a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'leads' %}">Clear filters</a></div>
+  </div>
+  {% else %}
+  <div class="lb-empty-state">
+    <strong>No leads captured yet</strong>
+    When visitors share their name, email or phone with your AI Employee, they show up here.
+    <div><a class="lb-btn lb-btn-primary lb-btn-sm" href="{% url 'conversations' %}">See conversations</a></div>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}
+{% block extra_js %}{% include 'chat/_status_form_js.html' %}{% endblock %}

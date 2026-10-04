@@ -1,0 +1,75 @@
+{% extends 'base_app.html' %}
+{% block title %}{{ lead }} — Leads — LiftBot{% endblock %}
+{% block page_title %}{{ lead.name|default:'Unnamed visitor' }}{% endblock %}
+{% block page_subtitle %}Lead captured {{ lead.created_at|date:'M j, Y H:i' }}{% if lead.employee %} by {{ lead.employee.name }}{% endif %} · {{ lead.get_source_display }}{% endblock %}
+{% block extra_css %}{% include 'chat/_list_styles.html' %}
+<style>
+  .lead-grid { display:grid; grid-template-columns: minmax(0,1fr) minmax(0,1.4fr); gap:16px; align-items:start; }
+  .lead-panel { padding:18px; }
+  .lead-panel h2 { font-size:14px; margin:0 0 12px; }
+  .lead-dl { display:grid; grid-template-columns: 110px minmax(0,1fr); gap:8px 12px; margin:0; font-size:13px; }
+  .lead-dl dt { color:var(--lb-muted); }
+  .lead-dl dd { margin:0; word-break:break-word; }
+  .lead-form textarea { width:100%; min-height:180px; font:inherit; font-size:13px; border:1px solid var(--lb-border); border-radius:10px; padding:10px 12px; resize:vertical; box-sizing:border-box; }
+  .lead-form .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:12px; }
+  @media (max-width: 860px) { .lead-grid { grid-template-columns: 1fr; } .lead-dl { grid-template-columns: 90px minmax(0,1fr); } }
+</style>
+{% endblock %}
+{% block top_actions %}
+  <a class="lb-btn lb-btn-ghost" href="{% url 'leads' %}">&larr; All leads</a>
+  {% if lead.session_id %}<a class="lb-btn lb-btn-primary" href="{% url 'conversation_detail' lead.session_id %}">Open conversation</a>{% endif %}
+{% endblock %}
+{% block content %}
+<div class="lead-grid">
+  <section class="lb-card lead-panel">
+    <h2>Contact</h2>
+    <dl class="lead-dl">
+      <dt>Name</dt><dd>{{ lead.name|default:'—' }}</dd>
+      <dt>Email</dt><dd>{% if lead.email %}<a class="lb-link" href="mailto:{{ lead.email }}">{{ lead.email }}</a>{% else %}—{% endif %}</dd>
+      <dt>Phone</dt><dd>{% if lead.phone %}<a class="lb-link" href="tel:{{ lead.phone }}">{{ lead.phone }}</a>{% else %}—{% endif %}</dd>
+      <dt>AI Employee</dt><dd>{{ lead.employee.name|default:'—' }}</dd>
+      <dt>Source</dt><dd>{{ lead.get_source_display }}</dd>
+      <dt>Status</dt><dd><span class="lb-badge {% if lead.status == 'won' %}lb-badge-green{% elif lead.status == 'lost' %}lb-badge-gray{% elif lead.status == 'new' %}lb-badge-orange{% else %}lb-badge-purple{% endif %}">{{ lead.get_status_display }}</span></dd>
+      <dt>Intent</dt><dd style="white-space:pre-line;">{{ lead.intent_summary|default:'—' }}</dd>
+      <dt>Conversation</dt><dd>{% if lead.session_id %}<a class="lb-link" href="{% url 'conversation_detail' lead.session_id %}">Conversation #{{ lead.session_id }}</a>{% else %}—{% endif %}</dd>
+      <dt>Updated</dt><dd>{{ lead.updated_at|date:'M j, Y H:i' }}</dd>
+    </dl>
+  </section>
+
+  <section class="lb-card lead-panel">
+    <h2>Status &amp; notes</h2>
+    <form class="lead-form" method="post" action="{% url 'lead_detail' lead.pk %}">
+      {% csrf_token %}
+      <label for="lead-status" class="lb-muted" style="font-size:12px;font-weight:600;">Status</label>
+      <div style="margin:4px 0 12px;">
+        <select id="lead-status" class="lb-inline-select" name="status">
+          {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if lead.status == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <label for="lead-notes" class="lb-muted" style="font-size:12px;font-weight:600;">Notes (only your team sees these)</label>
+      <textarea id="lead-notes" name="notes" maxlength="10000" placeholder="Call outcome, budget, next step…">{{ lead.notes }}</textarea>
+      <div class="row">
+        <button class="lb-btn lb-btn-primary" type="submit">Save</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<section class="lb-card" style="margin-top:16px;padding:0;overflow:hidden;">
+  <div style="padding:16px 18px 0;"><h2 style="font-size:14px;margin:0;">Related tasks</h2></div>
+  {% if tasks %}
+  <ul class="lb-feed" style="padding:4px 18px 8px;">
+    {% for task in tasks %}
+    <li>
+      <strong>{{ task.title }}</strong>
+      <span>{{ task.get_task_type_display }} · {{ task.get_status_display }} · {{ task.employee.name }} · {{ task.created_at|timesince }} ago</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="lb-empty-state" style="padding:22px 18px;">No tasks linked to this lead yet.</div>
+  {% endif %}
+</section>
+{% endblock %}

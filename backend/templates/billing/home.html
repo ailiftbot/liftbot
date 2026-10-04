@@ -1,9 +1,14 @@
 {% extends 'base_app.html' %}
 {% block title %}Billing — LiftBot{% endblock %}
 {% block page_title %}Billing{% endblock %}
-{% block page_subtitle %}Seat plans (1 / 3 / Unlimited AI Employees). Stripe checkout when keys are set; otherwise assign manually.{% endblock %}
+{% block page_subtitle %}Plans, usage and invoices for your workspace.{% endblock %}
 
 {% block top_actions %}
+{% if can_manage_billing %}
+<form method="post" action="{% url 'billing_portal' %}" style="display:inline;">{% csrf_token %}
+  <button class="lb-btn lb-btn-ghost" type="submit">Manage payment &amp; invoices</button>
+</form>
+{% endif %}
 <a class="lb-btn lb-btn-ghost" href="{% url 'analytics' %}">Analytics</a>
 <a class="lb-btn lb-btn-ghost" href="{% url 'settings' %}">Settings</a>
 {% endblock %}
@@ -25,7 +30,7 @@
 </div>
 {% endif %}
 
-<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px;">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:18px;">
   {% for plan in plans %}
   <div class="lb-card" style="padding:18px;{% if workspace.plan_id == plan.id %}outline:2px solid #7C3AED;{% endif %}">
     <div style="font-weight:750;font-size:18px;">{{ plan.name }}</div>
@@ -37,7 +42,7 @@
     </ul>
     {% if workspace.plan_id != plan.id %}
     <form method="post" action="{% url 'billing_checkout' plan.slug %}">{% csrf_token %}
-      <button class="lb-btn lb-btn-primary lb-btn-sm" type="submit">{% if stripe_enabled %}Subscribe{% else %}Select plan{% endif %}</button>
+      <button class="lb-btn lb-btn-primary lb-btn-sm" type="submit">{% if stripe_enabled %}{% if workspace.stripe_subscription_id %}Switch plan{% else %}Subscribe{% endif %}{% else %}Select plan{% endif %}</button>
     </form>
     {% else %}
     <span class="lb-badge lb-badge-purple">Current</span>

@@ -1,0 +1,21 @@
+{% comment %}Usage: {% include 'chat/_pagination.html' with page_obj=page_obj querystring=querystring %}{% endcomment %}
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="lb-pager" aria-label="Pagination">
+  <span class="lb-pager-info">
+    {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }}
+  </span>
+  <span class="lb-pager-links">
+    {% if page_obj.has_previous %}
+      <a class="lb-btn lb-btn-ghost lb-btn-sm" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" rel="prev">&larr; Prev</a>
+    {% else %}
+      <span class="lb-btn lb-btn-ghost lb-btn-sm is-disabled" aria-disabled="true">&larr; Prev</span>
+    {% endif %}
+    <span class="lb-pager-num">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+      <a class="lb-btn lb-btn-ghost lb-btn-sm" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}" rel="next">Next &rarr;</a>
+    {% else %}
+      <span class="lb-btn lb-btn-ghost lb-btn-sm is-disabled" aria-disabled="true">Next &rarr;</span>
+    {% endif %}
+  </span>
+</nav>
+{% endif %}

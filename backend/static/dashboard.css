@@ -417,7 +417,9 @@ details.qs-dropdown > summary { list-style: none; }
   border-radius: 8px;
   transition: background 0.15s ease;
 }
+a.conv-item { color: inherit; text-decoration: none; }
 .conv-item:hover { background: #FAFAFC; }
+.conv-item:focus-visible { outline: 2px solid var(--lb-purple); outline-offset: 2px; }
 .conv-item:last-child { border-bottom: 0; }
 .conv-av {
   width: 36px; height: 36px; border-radius: 999px;

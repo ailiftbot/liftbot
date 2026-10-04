@@ -16,4 +16,6 @@ urlpatterns = [
     path('password-reset/complete/', views.LiftbotPasswordResetCompleteView.as_view(), name='password_reset_complete'),
     path('signup/verify/', views.SignupVerifyOtpView.as_view(), name='signup_verify_otp'),
     path('signup/verify/resend/', views.SignupResendOtpView.as_view(), name='signup_resend_otp'),
+    path('settings/password/', views.LiftbotPasswordChangeView.as_view(), name='password_change'),
+    path('settings/password/done/', views.LiftbotPasswordChangeDoneView.as_view(), name='password_change_done'),
 ]

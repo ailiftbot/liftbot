@@ -10,11 +10,13 @@ EXEMPT_URL_NAMES = {
     'signup_verify_otp', 'signup_resend_otp',
     'verify_otp', 'send_otp', 'resend_verification', 'verify_email',
     'password_reset', 'password_reset_done', 'password_reset_confirm', 'password_reset_complete',
-    'billing_onboarding', 'billing_onboarding_pay', 'billing_onboarding_status',
+    'billing_onboarding', 'billing_onboarding_pay', 'billing_onboarding_status', 'stripe_webhook',
     'home', 'about', 'contact', 'ai_employees', 'features', 'how_it_works', 'solutions',
     'industries', 'industry_detail', 'use_cases', 'demo', 'pricing', 'customers',
     'resources', 'blog', 'early_access', 'faq', 'guide', 'support', 'security',
     'privacy', 'terms', 'cookies',
+    # Users without a workspace / joining via invite must reach these.
+    'workspace_create', 'invite_accept', 'account_delete',
 }
 EXEMPT_PATH_PREFIXES = ('/admin', '/api/widget/', '/static/', '/media/')
 

@@ -46,6 +46,11 @@
       {% if s.status == 'ready' %}<span class="lb-badge lb-badge-green">Ready</span>
       {% elif s.status == 'failed' %}<span class="lb-badge lb-badge-orange">Failed</span>
       {% else %}<span class="lb-badge lb-badge-purple">{{ s.get_status_display }}</span>{% endif %}
+      {% if s.status == 'failed' or s.status == 'pending' %}
+      <form method="post" action="{% url 'knowledge_retry' employee.pk s.pk %}" style="display:inline;">{% csrf_token %}
+        <button class="lb-btn lb-btn-ghost lb-btn-sm" type="submit" {% if s.error_message %}title="{{ s.error_message }}"{% endif %}>Retry</button>
+      </form>
+      {% endif %}
       <a class="lb-btn lb-btn-ghost lb-btn-sm pg-danger-link" href="{% url 'knowledge_delete' employee.pk s.pk %}">Remove</a>
     </div>
   </article>

@@ -1,0 +1,38 @@
+<script>
+(() => {
+  // Progressive enhancement: status <select>s inside .js-status-form save on change via fetch.
+  document.querySelectorAll('.js-status-form').forEach((form) => {
+    const select = form.querySelector('select[name="status"]');
+    const note = form.querySelector('.lb-inline-status');
+    form.querySelectorAll('.js-hide').forEach((el) => { el.hidden = true; });
+    if (!select) return;
+    let current = select.value;
+    select.addEventListener('change', async () => {
+      const prev = current;
+      const body = new FormData(form);  // build before disabling (disabled fields are omitted)
+      select.disabled = true;
+      if (note) { note.textContent = 'Saving…'; note.style.color = 'var(--lb-muted)'; }
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          headers: {'X-Requested-With': 'XMLHttpRequest'},
+          body,
+          credentials: 'same-origin',
+        });
+        let data = {};
+        try { data = await res.json(); } catch (_) {}
+        if (!res.ok || !data.ok) throw new Error(data.error || 'Could not save');
+        current = data.status || select.value;
+        if (note) { note.textContent = 'Saved'; note.style.color = 'var(--lb-green)'; }
+        form.dispatchEvent(new CustomEvent('status-saved', {detail: data, bubbles: true}));
+      } catch (err) {
+        select.value = prev;
+        if (note) { note.textContent = err.message || 'Could not save'; note.style.color = '#C0362C'; }
+      } finally {
+        select.disabled = false;
+        if (note) setTimeout(() => { if (note.textContent === 'Saved') note.textContent = ''; }, 2000);
+      }
+    });
+  });
+})();
+</script>

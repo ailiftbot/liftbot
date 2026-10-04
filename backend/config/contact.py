@@ -6,6 +6,8 @@ from django.core.mail import EmailMessage
 from django.shortcuts import render
 from django.utils import timezone
 
+from .spam import honeypot_triggered, rate_limited
+
 logger = logging.getLogger(__name__)
 
 TOPIC_CHOICES = [
@@ -54,7 +56,7 @@ def send_contact_inquiry(full_name, email, topic, message):
     mail = EmailMessage(
         subject=f'[LiftBot Contact] {label} — {full_name}',
         body=body,
-        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@liftbot.ai'),
+        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@liftbot.app'),
         to=[recipient],
         reply_to=[email],
     )
@@ -67,6 +69,12 @@ def contact_view(request):
         return render(request, 'marketing/talk_to_us.html', {'form': ContactForm()})
 
     form = ContactForm(request.POST)
+    if honeypot_triggered(request):
+        # Pretend success so bots don't learn to skip the field.
+        return render(request, 'marketing/talk_to_us.html', {'submitted': True})
+    if rate_limited(request, 'contact'):
+        form.add_error(None, 'Too many messages from your network. Please try again in an hour.')
+        return render(request, 'marketing/talk_to_us.html', {'form': form}, status=429)
     if not form.is_valid():
         return render(request, 'marketing/talk_to_us.html', {'form': form})
 

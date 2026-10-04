@@ -36,9 +36,16 @@
 
 {% block content %}
 {% if not workspace %}
-  <div class="lb-card" style="padding:24px;">
-    <h2 style="margin-top:0;">Create your workspace</h2>
-    <p style="color:var(--lb-muted);">Sign up again or contact support — no workspace is linked to this account.</p>
+  <div class="lb-card" style="padding:24px;max-width:560px;">
+    <h2 style="margin-top:0;">Your workspace isn't set up yet</h2>
+    <p style="color:var(--lb-muted);">
+      This account isn't linked to a workspace, so there are no AI Employees to manage yet.
+      Check your account in Settings, or contact our team and we'll get you connected.
+    </p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+      <a class="lb-btn lb-btn-primary" href="{% url 'settings' %}">Open Settings</a>
+      <a class="lb-btn lb-btn-ghost" href="{% url 'support' %}">Contact support</a>
+    </div>
   </div>
 {% else %}
 
@@ -144,16 +151,35 @@
           <a href="{% url 'conversations' %}">View All Conversations</a>
         </div>
         {% for s in sessions %}
-        <div class="conv-item">
+        <a class="conv-item" href="{% url 'conversation_detail' s.id %}">
           <div class="conv-av" style="background:{% cycle '#7C3AED' '#2563EB' '#059669' '#D97706' '#DB2777' %}">{{ s.initials }}</div>
           <div>
             <h4>Visitor {{ s.visitor }}</h4>
             <p>{{ s.snippet }}</p>
           </div>
           <time>{{ s.when }}</time>
-        </div>
+        </a>
         {% empty %}
-        <p style="font-size:13px;color:var(--lb-muted);margin:8px 0;">No conversations yet. Install the widget or use Playground.</p>
+        <p style="font-size:13px;color:var(--lb-muted);margin:8px 0;">No conversations yet. Install the widget on your website to start talking with visitors.</p>
+        {% endfor %}
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Recent Leads</h3>
+          <a href="{% url 'leads' %}">View All Leads</a>
+        </div>
+        {% for lead in leads|slice:":5" %}
+        <a class="conv-item" href="{% url 'lead_detail' lead.pk %}">
+          <div class="conv-av" style="background:{% cycle '#059669' '#2563EB' '#7C3AED' '#D97706' '#DB2777' %}">{{ lead.name|default:lead.email|default:"?"|slice:":1"|upper }}</div>
+          <div>
+            <h4>{{ lead.name|default:lead.email|default:"Unnamed lead" }}</h4>
+            <p>{% if lead.intent_summary %}{{ lead.intent_summary }}{% else %}{{ lead.email|default:lead.phone|default:"No contact details yet" }}{% endif %}{% if lead.employee %} · via {{ lead.employee.name }}{% endif %}</p>
+          </div>
+          <time>{{ lead.created_at|timesince }} ago</time>
+        </a>
+        {% empty %}
+        <p style="font-size:13px;color:var(--lb-muted);margin:8px 0;">No leads yet. When your AI Employee collects a visitor's contact details, they'll appear here.</p>
         {% endfor %}
       </div>
     </section>
@@ -165,8 +191,8 @@
       <h3>AI Employee Preview</h3>
       <div class="widget-frame lb-expanded-preview" id="dash-preview"
            {% if primary_employee %}
-           data-token="{{ primary_employee.widget_token }}"
-           data-api="{{ public_widget_api }}/"
+           data-endpoint="{% url 'playground_message' primary_employee.pk %}"
+           data-csrf="{{ csrf_token }}"
            data-name="{{ primary_employee.name }}"
            data-role="{{ primary_employee.get_role_display }}"
            data-greeting="{{ primary_employee.greeting_message }}"
@@ -207,7 +233,7 @@
       <div class="codebox" id="embed-code" style="margin-bottom:12px;">{{ embed_snippet }}<button type="button" id="copy-embed">Copy</button></div>
       <p style="margin:0 0 8px;font-size:12px;color:var(--lb-muted);"><strong>Whole team</strong> — visitor picks department:</p>
       <div class="codebox" id="team-embed-code">{{ team_embed_snippet }}<button type="button" id="copy-team-embed">Copy</button></div>
-      <p style="margin-top:10px;"><a href="{% url 'employee_detail' primary_employee.pk %}" style="color:var(--lb-purple);font-size:12px;font-weight:600;text-decoration:none;">View installation guide →</a></p>
+      <p style="margin-top:10px;"><a href="{% url 'employee_hub' primary_employee.pk %}?tab=widget-code" style="color:var(--lb-purple);font-size:12px;font-weight:600;text-decoration:none;">View installation guide →</a></p>
       {% else %}
       <div class="codebox">Hire an AI Employee to get your embed code.</div>
       {% endif %}
@@ -233,9 +259,9 @@
   // Existing dashboard preview logic
   (() => {
     const root = document.getElementById('dash-preview');
-    if (!root || !root.dataset.token) return;
-    const token = root.dataset.token;
-    const api = root.dataset.api;
+    if (!root || !root.dataset.endpoint) return;
+    const endpoint = root.dataset.endpoint;
+    const csrfToken = root.dataset.csrf;
     const msgs = document.getElementById('dash-msgs');
     const greeting = document.getElementById('dash-greeting');
     const form = document.getElementById('dash-form');
@@ -262,10 +288,12 @@
       add('you', msg);
       const thinking = add('them', 'Thinking…');
       try {
-        const res = await fetch(api + 'message/', {
+        // Authenticated test endpoint: no quota use, works while the employee is inactive.
+        const res = await fetch(endpoint, {
           method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ token, message: msg, session_id: sessionId, stream: false }),
+          credentials: 'same-origin',
+          headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+          body: JSON.stringify({ message: msg, session_id: sessionId }),
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {

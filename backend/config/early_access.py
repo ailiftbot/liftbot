@@ -6,6 +6,8 @@ from django.core.mail import EmailMessage
 from django.shortcuts import render
 from django.utils import timezone
 
+from .spam import honeypot_triggered, rate_limited
+
 logger = logging.getLogger(__name__)
 
 INDUSTRY_CHOICES = [
@@ -58,7 +60,7 @@ def send_early_access_inquiry(data):
     mail = EmailMessage(
         subject=f'[LiftBot Early Access] {data["business_name"]} — {data["full_name"]}',
         body=body,
-        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@liftbot.ai'),
+        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@liftbot.app'),
         to=[recipient],
         reply_to=[data['work_email']],
     )
@@ -71,6 +73,11 @@ def early_access_view(request):
         return render(request, 'marketing/early_access.html', {'form': EarlyAccessForm()})
 
     form = EarlyAccessForm(request.POST)
+    if honeypot_triggered(request):
+        return render(request, 'marketing/early_access.html', {'submitted': True})
+    if rate_limited(request, 'early_access'):
+        form.add_error(None, 'Too many requests from your network. Please try again in an hour.')
+        return render(request, 'marketing/early_access.html', {'form': form}, status=429)
     if not form.is_valid():
         return render(request, 'marketing/early_access.html', {'form': form})
 

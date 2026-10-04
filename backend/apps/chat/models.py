@@ -25,6 +25,11 @@ class ChatSession(models.Model):
     started_at = models.DateTimeField(auto_now_add=True)
     last_message_at = models.DateTimeField(auto_now=True)
     metadata = models.JSONField(default=dict, blank=True)
+    is_test = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text='Playground / dashboard preview session — excluded from quota and analytics.',
+    )
 
     class Meta:
         ordering = ('-last_message_at',)

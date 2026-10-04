@@ -1,14 +1,38 @@
 from django import forms
+from django.utils.html import format_html
 
 from apps.chat.constants import ALL_CAPABILITIES, CAPABILITY_LABELS
 
 from .models import AIEmployee
 
 
+class CapabilityCheckboxes(forms.CheckboxSelectMultiple):
+    """Checkboxes plus a hidden marker so "all unchecked" differs from "not submitted".
+
+    Browsers send nothing for unchecked boxes, so without the marker a form that
+    simply doesn't render the field would wipe the employee's capabilities.
+    """
+
+    marker_suffix = '__present'
+
+    def render(self, name, value, attrs=None, renderer=None):
+        html = super().render(name, value, attrs, renderer)
+        form_attr = self.attrs.get('form')
+        marker = format_html(
+            '<input type="hidden" name="{}" value="1"{}>',
+            name + self.marker_suffix,
+            format_html(' form="{}"', form_attr) if form_attr else '',
+        )
+        return html + marker
+
+    def value_omitted_from_data(self, data, files, name):
+        return name + self.marker_suffix not in data and name not in data
+
+
 class AIEmployeeForm(forms.ModelForm):
     capability_choices = forms.MultipleChoiceField(
         choices=[(c, CAPABILITY_LABELS[c]) for c in ALL_CAPABILITIES],
-        widget=forms.CheckboxSelectMultiple,
+        widget=CapabilityCheckboxes,
         required=False,
         label='What this AI Employee can do',
     )
@@ -59,8 +83,13 @@ class AIEmployeeForm(forms.ModelForm):
 
     def save(self, commit=True):
         employee = super().save(commit=False)
-        caps = self.cleaned_data.get('capability_choices')
-        employee.capabilities = caps if caps is not None else employee.default_capabilities()
+        field_name = self.add_prefix('capability_choices')
+        omitted = self.fields['capability_choices'].widget.value_omitted_from_data(self.data, self.files, field_name)
+        if not omitted:
+            employee.capabilities = list(self.cleaned_data.get('capability_choices') or [])
+        elif not employee.pk or employee.capabilities is None:
+            employee.capabilities = employee.default_capabilities()
+        # else: field not submitted — keep the employee's existing capabilities.
         employee.system_prompt = employee.build_system_prompt()
         if commit:
             employee.save()

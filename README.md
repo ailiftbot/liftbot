@@ -50,15 +50,31 @@ Create a superuser:
 docker compose exec backend python manage.py createsuperuser
 ```
 
+## Local dev without Docker (SQLite)
+
+```bash
+cd backend
+python -m venv .venv && . .venv/bin/activate
+pip install -r requirements.txt
+export DJANGO_DEBUG=1          # DEBUG is OFF by default
+unset MYSQL_HOST               # blank MYSQL_HOST = SQLite (backend/db.sqlite3)
+python manage.py migrate
+python manage.py seed_plans    # signup needs at least one active plan
+python manage.py runserver
+```
+
+Emails (signup codes, invites) print to the console unless you configure SMTP.
+Run the tests with `python manage.py test apps.accounts apps.workspaces`.
+
 ### Local flow
 
-1. Sign up → workspace created on Starter plan  
-2. Hire an AI Employee  
-3. Train with PDF / URL / FAQ / text  
-4. Copy the embed snippet onto any site  
-5. Test in Playground  
+1. Sign up (terms consent required) → verify the 6-digit email code → onboarding payment (Stripe Checkout; simulated only when `DJANGO_DEBUG=1` and no Stripe keys)
+2. Hire an AI Employee
+3. Train with PDF / URL / FAQ / text
+4. Copy the embed snippet onto any site
+5. Invite teammates from **Settings → Team members** (owner/admin only); they accept via the emailed `/invite/<token>/` link
 
-Billing plans are seeded automatically (`Starter $19` / `Pro $49` / `Business $99`). Assign plans in Django Admin for MVP.
+Billing plans are seeded automatically (`Starter $19` / `Pro $49` / `Business $99`) and shown on `/pricing/`.
 
 ---
 
@@ -105,8 +121,10 @@ Connect the Vercel landing “Get started” button to your Docker-hosted LiftBo
 
 ```bash
 cp .env.example .env
-# set DJANGO_DEBUG=0, strong DJANGO_SECRET_KEY, real ALLOWED_HOSTS / CSRF,
-# PUBLIC_APP_URL=https://app.yourdomain.com, LLM keys, optional Stripe
+# set a strong DJANGO_SECRET_KEY and RAG_INTERNAL_TOKEN (prod compose refuses
+# to start without them), real ALLOWED_HOSTS / CSRF origins,
+# PUBLIC_APP_URL=https://app.yourdomain.com, SMTP email, LLM keys, Stripe keys.
+# DJANGO_DEBUG is forced to 0 by docker-compose.prod.yml.
 
 docker compose -f docker-compose.prod.yml up --build -d
 docker compose -f docker-compose.prod.yml exec backend python manage.py createsuperuser
@@ -114,18 +132,41 @@ docker compose -f docker-compose.prod.yml exec backend python manage.py createsu
 
 Nginx listens on port 80 and proxies to Django. Put TLS (Caddy/Certbot) in front for HTTPS.
 
+With `DJANGO_DEBUG=0` Django refuses to start on the dev secret key, sets secure
+session/CSRF cookies, `nosniff` and `X-Frame-Options: DENY`. Set
+`SECURE_SSL_REDIRECT=1` once HTTPS works end to end (this also enables a
+1-year HSTS header). Logs go to stdout (`docker compose logs backend`); set
+`ADMINS` to also receive 500-error emails.
+
 ### Stripe
 
 1. Add `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET` to `.env`
 2. Point Stripe webhook to `https://yourdomain/billing/webhook/stripe/`
 3. Optional: set `stripe_price_id` on each BillingPlan in Admin
-4. Without keys, **Select plan** on Billing still works manually
+4. Without keys, onboarding payment is simulated only when `DJANGO_DEBUG=1`
 
 ---
 
 ## Environment variables
 
-See `.env.example`. Minimum for live AI replies: at least one of `GROQ_API_KEY`, `GOOGLE_API_KEY`, `OPENROUTER_API_KEY`. Without keys, RAG runs in offline demo mode.
+See `.env.example`. Minimum for live AI replies: at least one of `GROQ_API_KEY`, `GOOGLE_API_KEY`, `OPENROUTER_API_KEY`. Without keys, RAG runs in offline mode: replies quote the best-matching passage from the AI Employee's training material (no generation).
+
+## Upgrading an existing deployment
+
+- Run migrations (`docker compose ... up` does this on boot).
+- The RAG container now runs as a non-root user (uid 1000). Volumes created by the old root container need a one-off fix:
+  `docker compose run --rm --user root rag chown -R 1000:1000 /app/indexes /app/uploads`
+- `RAG_INTERNAL_TOKEN` is now required — set a long random value in `.env` (the RAG service refuses to start without it).
+- Embeddings moved to `gemini-embedding-001`. Existing indexes are re-embedded automatically on first use per AI Employee.
+- `DJANGO_DEBUG` now defaults to off; production must set `DJANGO_SECRET_KEY`.
+- Stripe: point the webhook at `/billing/webhook/stripe/` and enable `checkout.session.completed`, `invoice.paid` and `customer.subscription.deleted`.
+
+## Tests
+
+```bash
+cd backend && python manage.py test          # Django apps
+cd rag && RAG_INTERNAL_TOKEN=test pytest -q tests   # RAG service
+```
 
 ## Product language rule
 

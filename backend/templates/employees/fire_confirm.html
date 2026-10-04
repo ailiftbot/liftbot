@@ -7,7 +7,7 @@
   <form method="post">
     {% csrf_token %}
     <button class="lb-btn lb-btn-primary" style="background:#DC2626;" type="submit">Confirm</button>
-    <a class="lb-btn lb-btn-ghost" href="{% url 'employee_detail' employee.pk %}">Cancel</a>
+    <a class="lb-btn lb-btn-ghost" href="{% url 'employee_hub' employee.pk %}?tab=status">Cancel</a>
   </form>
 </div>
 {% endblock %}

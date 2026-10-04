@@ -1001,6 +1001,11 @@ body.lb-app:has(.crisp-hub) {
   justify-content: space-between;
 }
 
+.crisp-input-hint {
+  font-size: 11px;
+  color: #94A3B8;
+}
+
 .crisp-input-icons {
   display: flex;
   align-items: center;

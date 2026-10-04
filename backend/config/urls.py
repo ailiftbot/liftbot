@@ -8,8 +8,6 @@ from django.shortcuts import render
 from .contact import contact_view
 from .early_access import early_access_view
 
-from .contact import contact_view
-
 
 # ============================================================
 # INDUSTRY DETAIL DATA (Section 06+07 — dynamic per-slug pages)
@@ -161,6 +159,13 @@ def industry_detail(request, slug):
     )
 
 
+def pricing_view(request):
+    from apps.billing.models import BillingPlan
+
+    plans = list(BillingPlan.objects.filter(is_active=True).order_by('price_monthly', 'id'))
+    return render(request, 'marketing/pricing.html', {'plans': plans})
+
+
 # ============================================================
 
 urlpatterns = [
@@ -180,11 +185,11 @@ urlpatterns = [
 
     path('use-cases/', TemplateView.as_view(template_name='marketing/usecases.html'), name='use_cases'),
     path('demo/', TemplateView.as_view(template_name='marketing/demo.html'), name='demo'),
-    path('pricing/', TemplateView.as_view(template_name='marketing/pricing.html'), name='pricing'),
+    path('pricing/', pricing_view, name='pricing'),
     path('customers/', TemplateView.as_view(template_name='marketing/customers.html'), name='customers'),
     path('resources/', TemplateView.as_view(template_name='marketing/resources.html'), name='resources'),
     path('blog/', TemplateView.as_view(template_name='marketing/blog.html'), name='blog'),
-   path('early-access/', early_access_view, name='early_access'),
+    path('early-access/', early_access_view, name='early_access'),
     path('faq/', TemplateView.as_view(template_name='marketing/faq.html'), name='faq'),
     path('guide/', TemplateView.as_view(template_name='marketing/liftbot_guide.html'), name='guide'),
     path('support/', TemplateView.as_view(template_name='marketing/support.html'), name='support'),
@@ -208,3 +213,5 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Error pages: templates/404.html, 403.html, 500.html (500 is standalone).

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Create a workspace — LiftBot{% endblock %}
+
+{% block content %}
+<div class="lb-wsc-card">
+  <h1>Create a workspace</h1>
+  <p>A workspace holds your AI Employees, knowledge and leads. You'll choose a plan on the next step.</p>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<p class="lb-wsc-error" role="alert">{{ form.non_field_errors|striptags }}</p>{% endif %}
+    <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+    {{ form.name }}
+    {% if form.name.errors %}<p class="lb-wsc-error">{{ form.name.errors|striptags }}</p>{% endif %}
+    <button type="submit">Create workspace</button>
+  </form>
+</div>
+<style>
+  .lb-wsc-card { max-width:440px; margin:48px auto; background:#fff; border:1px solid #E5E7EB; border-radius:16px; padding:32px; box-shadow:0 8px 24px rgba(16,24,40,.06); color:#111827; }
+  .lb-wsc-card h1 { margin:0 0 8px; font-size:22px; font-weight:800; }
+  .lb-wsc-card p { margin:0 0 18px; color:#6B7280; font-size:14px; }
+  .lb-wsc-card label { display:block; font-size:13px; font-weight:600; margin-bottom:6px; }
+  .lb-wsc-card input { width:100%; box-sizing:border-box; border:1px solid #E5E7EB; border-radius:10px; padding:10px 12px; font:inherit; }
+  .lb-wsc-card button { width:100%; margin-top:16px; background:#7C3AED; color:#fff; border:0; border-radius:999px; padding:12px; font-weight:700; cursor:pointer; font-family:inherit; }
+  .lb-wsc-card .lb-wsc-error { color:#DC2626; font-size:12.5px; margin:6px 0 0; }
+</style>
+{% endblock %}

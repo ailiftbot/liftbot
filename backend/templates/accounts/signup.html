@@ -180,6 +180,36 @@
     margin-top: 4px;
   }
 
+  .lb-signup-alert {
+    background: #FEF2F2;
+    border: 1px solid #FCA5A5;
+    color: #B91C1C;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 9px 12px;
+  }
+
+  .lb-signup-consent label {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    font-weight: 500;
+    color: #374151;
+    line-height: 1.4;
+  }
+
+  .lb-signup-field.lb-signup-consent input {
+    width: auto;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  .lb-signup-consent a {
+    color: #7C3AED;
+    font-weight: 600;
+  }
+
   .lb-signup-submit {
     margin-top: 4px;
     background: #7C3AED;
@@ -302,12 +332,31 @@
 
   <div class="lb-signup-wrap">
     <div class="lb-signup-card">
+      {% if invite %}
+      <h1 class="lb-signup-title">Join {{ invite.workspace.name }}</h1>
+      <p class="lb-signup-subtitle">Create your account to accept the invite sent to {{ invite.email }}.</p>
+      {% else %}
       <h1 class="lb-signup-title">Create your workspace</h1>
       <p class="lb-signup-subtitle">Hire AI Employees for your business.</p>
+      {% endif %}
 
-      <form method="post" class="lb-signup-form">
+      <form method="post" class="lb-signup-form" novalidate>
         {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="lb-signup-alert" role="alert">{{ form.non_field_errors|striptags }}</div>
+        {% endif %}
         {% for field in form %}
+          {% if field.name == 'accept_terms' %}
+          <div class="lb-signup-field lb-signup-consent">
+            <label for="{{ field.id_for_label }}">
+              {{ field }}
+              <span>I agree to the <a href="{% url 'terms' %}" target="_blank" rel="noopener">Terms of Service</a> and <a href="{% url 'privacy' %}" target="_blank" rel="noopener">Privacy Policy</a>.</span>
+            </label>
+            {% if field.errors %}
+              <div class="lb-signup-errors">{{ field.errors|striptags }}</div>
+            {% endif %}
+          </div>
+          {% else %}
           <div class="lb-signup-field">
             <label for="{{ field.id_for_label }}">{{ field.label }}</label>
             {{ field }}
@@ -315,8 +364,9 @@
               <div class="lb-signup-errors">{{ field.errors|striptags }}</div>
             {% endif %}
           </div>
+          {% endif %}
         {% endfor %}
-        <button type="submit" class="lb-signup-submit">Create account</button>
+        <button type="submit" class="lb-signup-submit">{% if invite %}Create account &amp; join{% else %}Create account{% endif %}</button>
       </form>
 
       <p class="lb-signup-footer">Already have an account? <a href="{% url 'login' %}">Log in</a></p>

@@ -113,3 +113,50 @@ class WorkspaceMembership(models.Model):
 
     def __str__(self):
         return f'{self.user} @ {self.workspace}'
+
+
+def _invite_token():
+    return secrets.token_urlsafe(32)
+
+
+def _invite_expiry():
+    days = getattr(settings, 'WORKSPACE_INVITE_EXPIRY_DAYS', 7)
+    return timezone.now() + timedelta(days=days)
+
+
+class WorkspaceInvite(models.Model):
+    workspace = models.ForeignKey(Workspace, on_delete=models.CASCADE, related_name='invites')
+    email = models.EmailField(max_length=150)
+    role = models.CharField(
+        max_length=20,
+        choices=[
+            (WorkspaceMembership.Role.ADMIN, 'Admin'),
+            (WorkspaceMembership.Role.MEMBER, 'Member'),
+        ],
+        default=WorkspaceMembership.Role.MEMBER,
+    )
+    token = models.CharField(max_length=64, unique=True, default=_invite_token, editable=False)
+    invited_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='sent_workspace_invites',
+    )
+    accepted_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField(default=_invite_expiry)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ('-created_at',)
+
+    def __str__(self):
+        return f'Invite {self.email} → {self.workspace}'
+
+    @property
+    def is_expired(self):
+        return timezone.now() >= self.expires_at
+
+    @property
+    def is_pending(self):
+        return self.accepted_at is None and not self.is_expired

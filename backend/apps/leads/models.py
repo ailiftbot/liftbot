@@ -7,6 +7,13 @@ class Lead(models.Model):
         FORM = 'form', 'Form'
         MANUAL = 'manual', 'Manual'
 
+    class Status(models.TextChoices):
+        NEW = 'new', 'New'
+        CONTACTED = 'contacted', 'Contacted'
+        QUALIFIED = 'qualified', 'Qualified'
+        WON = 'won', 'Won'
+        LOST = 'lost', 'Lost'
+
     workspace = models.ForeignKey('workspaces.Workspace', on_delete=models.CASCADE, related_name='leads')
     employee = models.ForeignKey('employees.AIEmployee', on_delete=models.SET_NULL, null=True, related_name='leads')
     session = models.ForeignKey('chat.ChatSession', on_delete=models.SET_NULL, null=True, blank=True, related_name='leads')
@@ -15,6 +22,8 @@ class Lead(models.Model):
     phone = models.CharField(max_length=40, blank=True)
     intent_summary = models.TextField(blank=True, help_text='What the visitor wanted')
     source = models.CharField(max_length=20, choices=Source.choices, default=Source.CONVERSATION)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW, db_index=True)
+    notes = models.TextField(blank=True, help_text='Internal team notes')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

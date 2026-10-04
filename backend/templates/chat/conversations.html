@@ -2,32 +2,115 @@
 {% block title %}Conversations — LiftBot{% endblock %}
 {% block page_title %}Conversations{% endblock %}
 {% block page_subtitle %}Live chats with visitors. Take over anytime to reply as a teammate.{% endblock %}
+{% block extra_css %}{% include 'chat/_list_styles.html' %}
+<style>
+  .conv-list { display:flex; flex-direction:column; }
+  .conv-row { display:flex; gap:14px; align-items:flex-start; padding:14px 18px; text-decoration:none; color:inherit; border-top:1px solid #EEEEF1; }
+  .conv-row:first-child { border-top:0; }
+  .conv-row:hover { background:#FAFAFB; }
+  .conv-row.attention { box-shadow: inset 3px 0 0 var(--lb-orange); }
+  .conv-avatar { width:36px; height:36px; border-radius:50%; background:var(--lb-purple-soft); color:var(--lb-purple-dark); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0; text-transform:uppercase; }
+  .conv-main { flex:1; min-width:0; }
+  .conv-top { display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; font-size:13px; }
+  .conv-who strong { margin-right:6px; }
+  .conv-who small { color:var(--lb-muted); }
+  .conv-meta { display:flex; gap:6px; align-items:center; flex-wrap:wrap; font-size:12px; color:var(--lb-muted); }
+  .conv-preview { margin-top:4px; font-size:13px; color:#3A3B42; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .conv-preview .role { color:var(--lb-muted); }
+  @media (max-width: 760px) {
+    .conv-row { padding:12px; gap:10px; }
+    .conv-avatar { width:30px; height:30px; font-size:11px; }
+    .conv-preview { white-space:normal; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+  }
+</style>
+{% endblock %}
 {% block content %}
-<div style="display:flex;flex-direction:column;gap:12px;">
-  {% for s in sessions %}
-  <a href="{% url 'conversation_detail' s.pk %}" class="lb-card" style="padding:16px 18px;text-decoration:none;color:inherit;display:block;">
-    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:10px;gap:12px;flex-wrap:wrap;">
-      <strong>{{ s.employee.name }}</strong>
-      <span>
-        {% if s.status == 'human' %}
-          <span class="lb-badge lb-badge-orange">Human takeover</span>
-        {% else %}
-          <span class="lb-badge lb-badge-green">AI Employee</span>
-        {% endif %}
-        <span style="color:var(--lb-muted);margin-left:8px;">{{ s.last_message_at }}</span>
-      </span>
-    </div>
-    <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;">
-      {% for m in s.messages.all|slice:':4' %}
-      <li style="font-size:13px;color:#374151;">
-        <span style="color:var(--lb-muted);">{{ m.get_role_display }}:</span>
-        {{ m.content|truncatechars:120 }}
-      </li>
+<form class="lb-card lb-filters" method="get" action="{% url 'conversations' %}" role="search">
+  <label class="grow">Search
+    <input type="search" name="q" value="{{ filters.q }}" placeholder="Visitor name, email, ID or message text" />
+  </label>
+  <label>AI Employee
+    <select name="employee">
+      <option value="">All</option>
+      {% for emp in employees %}
+      <option value="{{ emp.id }}" {% if filters.employee == emp.id|stringformat:'s' %}selected{% endif %}>{{ emp.name }}</option>
       {% endfor %}
-    </ul>
-  </a>
-  {% empty %}
-  <div class="lb-card" style="padding:28px;color:var(--lb-muted);">No conversations yet.</div>
-  {% endfor %}
+    </select>
+  </label>
+  <label>Mode
+    <select name="mode">
+      <option value="">All</option>
+      <option value="ai" {% if filters.mode == 'ai' %}selected{% endif %}>AI Employee</option>
+      <option value="human" {% if filters.mode == 'human' %}selected{% endif %}>Human takeover</option>
+    </select>
+  </label>
+  <label>Show
+    <select name="attention">
+      <option value="">All conversations</option>
+      <option value="1" {% if filters.attention == '1' %}selected{% endif %}>Needs attention</option>
+    </select>
+  </label>
+  <label>Active from
+    <input type="date" name="date_from" value="{{ filters.date_from }}" />
+  </label>
+  <label>To
+    <input type="date" name="date_to" value="{{ filters.date_to }}" />
+  </label>
+  <div class="actions">
+    <button class="lb-btn lb-btn-primary lb-btn-sm" type="submit">Apply</button>
+    {% if is_filtered %}<a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'conversations' %}">Reset</a>{% endif %}
+  </div>
+</form>
+
+<div class="lb-card" style="padding:0;overflow:hidden;">
+  {% if sessions %}
+  <div class="conv-list">
+    {% for s in sessions %}
+    {% with who=s.visitor_name|default:s.visitor_email %}
+    <a href="{% url 'conversation_detail' s.pk %}" class="conv-row{% if s.needs_attention %} attention{% endif %}">
+      <span class="conv-avatar" aria-hidden="true">{% if who %}{{ who|slice:':1' }}{% else %}?{% endif %}</span>
+      <div class="conv-main">
+        <div class="conv-top">
+          <span class="conv-who">
+            <strong>{% if who %}{{ who }}{% else %}Visitor {{ s.visitor_id|slice:':8' }}{% endif %}</strong>
+            {% if s.visitor_name and s.visitor_email %}<small>{{ s.visitor_email }}</small>{% endif %}
+          </span>
+          <span class="conv-meta">
+            {% if s.needs_attention %}<span class="lb-badge lb-badge-red">Needs attention</span>{% endif %}
+            {% if s.status == 'human' %}
+              <span class="lb-badge lb-badge-orange">Human takeover</span>
+            {% else %}
+              <span class="lb-badge lb-badge-green">AI Employee</span>
+            {% endif %}
+            <time datetime="{{ s.last_message_at|date:'c' }}" title="{{ s.last_message_at }}">{{ s.last_message_at|timesince }} ago</time>
+          </span>
+        </div>
+        <div class="conv-meta" style="margin-top:2px;">with {{ s.employee.name }}{% if s.taken_over_by %} · handled by {{ s.taken_over_by.first_name|default:s.taken_over_by.email }}{% endif %}</div>
+        <div class="conv-preview">
+          {% if s.last_content %}
+            <span class="role">{% if s.last_role == 'employee' %}{{ s.employee.name }}{% else %}{{ s.last_role_label }}{% endif %}:</span>
+            {{ s.last_content|truncatechars:160 }}
+          {% else %}
+            <span class="role">No messages yet</span>
+          {% endif %}
+        </div>
+      </div>
+    </a>
+    {% endwith %}
+    {% endfor %}
+  </div>
+  {% include 'chat/_pagination.html' with page_obj=page_obj querystring=querystring %}
+  {% elif is_filtered %}
+  <div class="lb-empty-state">
+    <strong>No conversations match these filters</strong>
+    Try another search term, mode or date range.
+    <div><a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'conversations' %}">Clear filters</a></div>
+  </div>
+  {% else %}
+  <div class="lb-empty-state">
+    <strong>No conversations yet</strong>
+    Once your AI Employee is live on your website, every visitor chat appears here in real time.
+  </div>
+  {% endif %}
 </div>
 {% endblock %}

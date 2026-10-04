@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>{% block title %}LiftBot{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -32,17 +32,13 @@
       <nav class="lb-nav">
         {% with u=request.resolver_match.url_name %}
         <a href="{% url 'dashboard' %}" class="{% if u == 'dashboard' %}active{% endif %}"><span class="ico">■</span> Dashboard</a>
+        <a href="{% url 'employee_list' %}" class="{% if u == 'employee_list' or u == 'employee_hire' %}active{% endif %}"><span class="ico">▦</span> All AI Employees</a>
         {% if primary_employee %}
-        <a href="{% url 'employee_hub' primary_employee.pk %}" class="{% if u == 'employee_list' or u == 'employee_hire' or u == 'employee_hub' %}active{% endif %}"><span class="ico">◉</span> AI Employee</a>
-        <a href="{% url 'employee_hub' primary_employee.pk %}?tab=knowledge" class="{% if u == 'employee_hub' and request.GET.tab in 'knowledge,add-material,qa,webpages,files' %}active{% endif %}"><span class="ico">☰</span> Knowledge Base</a>
-        <a href="{% url 'employee_hub' primary_employee.pk %}?tab=settings" class="{% if u == 'employee_hub' and request.GET.tab in 'settings,capabilities,status' %}active{% endif %}"><span class="ico">✦</span> Personality</a>
-        <a href="{% url 'employee_hub' primary_employee.pk %}?tab=widget-code" class="{% if u == 'employee_hub' and request.GET.tab in 'widget,widget-code' %}active{% endif %}"><span class="ico">⧉</span> Website Widget</a>
-        <a href="{% url 'employee_hub' primary_employee.pk %}?tab=playground" class="{% if u == 'employee_hub' and request.GET.tab == 'playground' %}active{% endif %}"><span class="ico">▶</span> Playground</a>
-        {% else %}
-        <a href="{% url 'employee_hire' %}" class="{% if u == 'employee_list' or u == 'employee_hire' or u == 'employee_hub' %}active{% endif %}"><span class="ico">◉</span> AI Employee</a>
-        <a href="{% url 'employee_hire' %}"><span class="ico">☰</span> Knowledge Base</a>
-        <a href="{% url 'employee_hire' %}"><span class="ico">✦</span> Personality</a>
-        <a href="{% url 'employee_hire' %}"><span class="ico">⧉</span> Website Widget</a>
+        <a href="{% url 'employee_hub' primary_employee.pk %}?tab=analytics" title="{{ primary_employee.name }}" class="{% if u == 'employee_hub' and hub_nav == 'employee' or u == 'employee_fire' %}active{% endif %}"><span class="ico">◉</span> AI Employee</a>
+        <a href="{% url 'employee_hub' primary_employee.pk %}?tab=knowledge" class="{% if u == 'employee_hub' and hub_nav == 'knowledge' or u == 'knowledge_list' %}active{% endif %}"><span class="ico">☰</span> Knowledge Base</a>
+        <a href="{% url 'employee_hub' primary_employee.pk %}?tab=settings" class="{% if u == 'employee_hub' and hub_nav == 'personality' %}active{% endif %}"><span class="ico">✦</span> Personality</a>
+        <a href="{% url 'employee_hub' primary_employee.pk %}?tab=widget-code" class="{% if u == 'employee_hub' and hub_nav == 'widget' %}active{% endif %}"><span class="ico">⧉</span> Website Widget</a>
+        <a href="{% url 'employee_hub' primary_employee.pk %}?tab=playground" class="{% if u == 'employee_hub' and hub_nav == 'playground' %}active{% endif %}"><span class="ico">▶</span> Playground</a>
         {% endif %}
         <a href="{% url 'leads' %}" class="{% if u == 'leads' %}active{% endif %}"><span class="ico">◎</span> Leads</a>
         <a href="{% url 'employee_tasks' %}" class="{% if u == 'employee_tasks' %}active{% endif %}"><span class="ico">✓</span> Employee Tasks</a>
@@ -82,20 +78,29 @@
         </div>
         <div class="lb-top-actions">
           {% block top_actions %}{% endblock %}
-          <div class="lb-userchip">
-            <div class="lb-avatar">{{ user.first_name|default:user.email|slice:":2"|upper }}</div>
-            <div class="meta">
-              <strong>{{ user.first_name|default:user.email }}</strong>
-              <span>{{ current_workspace.name|default:'Workspace' }}</span>
+          <details class="lb-usermenu" id="lbUserMenu">
+            <summary class="lb-userchip" aria-label="Account menu">
+              <div class="lb-avatar">{{ user.first_name|default:user.email|slice:":2"|upper }}</div>
+              <div class="meta">
+                <strong>{{ user.first_name|default:user.email }}</strong>
+                <span>{{ current_workspace.name|default:'Workspace' }}</span>
+              </div>
+            </summary>
+            <div class="lb-usermenu-panel" role="menu">
+              <a href="{% url 'settings' %}" role="menuitem">Settings</a>
+              <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" role="menuitem">Log out</button>
+              </form>
             </div>
-          </div>
+          </details>
         </div>
       </header>
 
       {% if messages %}
       <div class="lb-messages">
         {% for message in messages %}
-          <div class="lb-flash">{{ message }}</div>
+          <div class="lb-flash{% for tag in message.tags.split %} lb-flash-{{ tag }}{% endfor %}" role="{% if 'error' in message.tags %}alert{% else %}status{% endif %}">{{ message }}</div>
         {% endfor %}
       </div>
       {% endif %}
@@ -148,6 +153,17 @@
         } else {
           window.location.href = '{% url "dashboard" %}';
         }
+      });
+    }
+
+    // Account menu: close on outside click / Escape
+    var userMenu = document.getElementById('lbUserMenu');
+    if (userMenu) {
+      document.addEventListener('click', function (e) {
+        if (!userMenu.contains(e.target)) userMenu.removeAttribute('open');
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') userMenu.removeAttribute('open');
       });
     }
 

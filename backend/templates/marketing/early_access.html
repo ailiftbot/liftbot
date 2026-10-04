@@ -57,25 +57,36 @@
           <form method="post" action="{% url 'early_access' %}" class="ea-form" id="eaForm" novalidate>
             {% csrf_token %}
 
+            <div aria-hidden="true" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">
+              <label for="id_company_fax">Leave this field empty</label>
+              <input type="text" id="id_company_fax" name="company_fax" tabindex="-1" autocomplete="off" value="">
+            </div>
+            {% if form.errors %}
+            <div style="background:#FEF2F2;border:1px solid #FCA5A5;color:#B91C1C;font-size:14px;border-radius:10px;padding:10px 14px;margin:0 0 14px;">
+              {% if form.non_field_errors %}{{ form.non_field_errors|striptags }}{% else %}Please check the highlighted fields and try again.{% endif %}
+              {% for field in form %}{% if field.errors %}<br>{{ field.label }}: {{ field.errors|striptags }}{% endif %}{% endfor %}
+            </div>
+            {% endif %}
+
             <div class="ea-form__step" data-step="1">
               <div class="ea-form__row">
                 <label class="ea-form__label" for="id_full_name">Full Name</label>
-                <input class="ea-form__input" type="text" id="id_full_name" name="full_name" required>
+                <input class="ea-form__input" type="text" id="id_full_name" name="full_name" value="{{ form.full_name.value|default:'' }}" required>
               </div>
 
               <div class="ea-form__row">
                 <label class="ea-form__label" for="id_business_name">Business Name</label>
-                <input class="ea-form__input" type="text" id="id_business_name" name="business_name" required>
+                <input class="ea-form__input" type="text" id="id_business_name" name="business_name" value="{{ form.business_name.value|default:'' }}" required>
               </div>
 
               <div class="ea-form__grid">
                 <div class="ea-form__row">
                   <label class="ea-form__label" for="id_work_email">Work Email</label>
-                  <input class="ea-form__input" type="email" id="id_work_email" name="work_email" required>
+                  <input class="ea-form__input" type="email" id="id_work_email" name="work_email" value="{{ form.work_email.value|default:'' }}" required>
                 </div>
                 <div class="ea-form__row">
                   <label class="ea-form__label" for="id_phone">Phone</label>
-                  <input class="ea-form__input" type="tel" id="id_phone" name="phone">
+                  <input class="ea-form__input" type="tel" id="id_phone" name="phone" value="{{ form.phone.value|default:'' }}">
                 </div>
               </div>
 
@@ -85,7 +96,7 @@
             <div class="ea-form__step" data-step="2" hidden>
               <div class="ea-form__row">
                 <label class="ea-form__label" for="id_website">Website</label>
-                <input class="ea-form__input" type="url" id="id_website" name="website" placeholder="https://">
+                <input class="ea-form__input" type="url" id="id_website" name="website" value="{{ form.website.value|default:'' }}" placeholder="https://">
               </div>
 
               <div class="ea-form__grid">
@@ -117,7 +128,7 @@
 
               <div class="ea-form__row">
                 <label class="ea-form__label" for="id_help_with">What would you like your AI employee to help with?</label>
-                <textarea class="ea-form__input ea-form__textarea" id="id_help_with" name="help_with" rows="4"></textarea>
+                <textarea class="ea-form__input ea-form__textarea" id="id_help_with" name="help_with" rows="4">{{ form.help_with.value|default:'' }}</textarea>
               </div>
 
               <div class="ea-form__step-actions">

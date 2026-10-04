@@ -3,7 +3,25 @@
 {% block page_title %}Analytics{% endblock %}
 {% block page_subtitle %}Conversations, leads, tasks, and plan usage for {{ workspace.name }}.{% endblock %}
 
+{% block extra_css %}
+<style>
+  .lb-range { display:inline-flex; border:1px solid var(--lb-border); border-radius:10px; overflow:hidden; background:#fff; }
+  .lb-range a { padding:7px 12px; font-size:12.5px; font-weight:600; color:var(--lb-muted); text-decoration:none; }
+  .lb-range a + a { border-left:1px solid var(--lb-border); }
+  .lb-range a.active { background:var(--lb-purple-soft); color:var(--lb-purple-dark); }
+  .lb-chart.dense { gap:2px; }
+  .lb-chart.dense .bar { width:45%; }
+  .lb-chart .lbl { white-space:nowrap; min-height:1em; }
+  @media (max-width: 760px) { .lb-chart.dense .lbl { font-size:9px; } }
+</style>
+{% endblock %}
+
 {% block top_actions %}
+<nav class="lb-range" aria-label="Date range">
+  {% for d in range_options %}
+  <a href="?range={{ d }}" class="{% if d == range_days %}active{% endif %}" {% if d == range_days %}aria-current="true"{% endif %}>{{ d }}d</a>
+  {% endfor %}
+</nav>
 <a class="lb-btn lb-btn-ghost" href="{% url 'billing' %}">Billing</a>
 <a class="lb-btn lb-btn-primary" href="{% url 'conversations' %}">Conversations</a>
 {% endblock %}
@@ -13,12 +31,12 @@
   <div class="lb-card lb-stat">
     <span class="lb-stat-label">Conversations</span>
     <strong class="lb-stat-value">{{ stats.conv_total }}</strong>
-    <span class="lb-stat-meta">{{ stats.conv_today }} today · {{ stats.conv_7d }} this week</span>
+    <span class="lb-stat-meta">{{ stats.conv_period }} in last {{ range_days }} days · {{ stats.conv_today }} today</span>
   </div>
   <div class="lb-card lb-stat">
     <span class="lb-stat-label">Leads</span>
     <strong class="lb-stat-value">{{ stats.lead_total }}</strong>
-    <span class="lb-stat-meta">{{ stats.lead_7d }} this week · {{ stats.lead_30d }} this month</span>
+    <span class="lb-stat-meta">{{ stats.lead_period }} in last {{ range_days }} days · {{ stats.lead_7d }} this week</span>
   </div>
   <div class="lb-card lb-stat">
     <span class="lb-stat-label">Open tasks</span>
@@ -35,13 +53,13 @@
 <div class="lb-analytics-grid">
   <section class="lb-card lb-analytics-panel">
     <div class="lb-panel-head">
-      <h2>Last 14 days</h2>
+      <h2>Last {{ range_days }} days</h2>
       <div class="lb-legend">
         <span><i class="dot conv"></i> Conversations</span>
         <span><i class="dot lead"></i> Leads</span>
       </div>
     </div>
-    <div class="lb-chart">
+    <div class="lb-chart{% if range_days > 7 %} dense{% endif %}">
       {% for day in chart_days %}
       <div class="lb-chart-col" title="{{ day.date }}: {{ day.conversations }} conv, {{ day.leads }} leads">
         <div class="bars">
@@ -70,14 +88,14 @@
         <strong>{{ usage.tokens }} / {{ usage.token_limit }}</strong>
       </div>
       <div class="meter"><i style="width:{{ usage.tok_pct }}%"></i></div>
-      <p class="hint">Overall usage {{ usage.overall_pct|floatformat:0 }}% · {{ stats.tokens_period }} tokens in the last 30 days · {{ stats.visitors }} remembered visitors · {{ stats.employees }} active AI Employees</p>
+      <p class="hint">Overall usage {{ usage.overall_pct|floatformat:0 }}% · {{ stats.tokens_period }} tokens in the last {{ range_days }} days · {{ stats.visitors }} remembered visitors · {{ stats.employees }} active AI Employees</p>
     </div>
   </section>
 </div>
 
 <section class="lb-card" style="padding:0;overflow:hidden;margin-bottom:16px;">
   <div class="lb-panel-head" style="padding:16px 18px 0;">
-    <h2>By AI Employee</h2>
+    <h2>By AI Employee <span style="font-weight:500;font-size:12px;color:var(--lb-muted);">· last {{ range_days }} days</span></h2>
   </div>
   <div class="lb-table">
     <div class="lb-table-head">

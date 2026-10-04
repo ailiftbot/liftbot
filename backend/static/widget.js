@@ -510,9 +510,10 @@
   function employeeInnerScript() {
     return '(function(){' +
       'var D=window.__LB__,cfg=D.cfg,token=D.token,apiBase=D.apiBase,visitorId=D.visitorId,sessionKey=D.sessionKey;' +
-      'var sessionId=D.sessionId,humanMode=false,lastMsgId=0,pollTimer=null,sending=false,seenIds={};' +
+      'var sessionId=D.sessionId,humanMode=false,awaitingTeam=false,lastMsgId=0,pollPrimed=false,pollTimer=null,sending=false,seenIds={};' +
       'var messages=document.getElementById("lbMessages"),actions=document.getElementById("lbActions");' +
       'var statusEl=document.getElementById("lbStatus"),launcher=document.getElementById("lbLauncher"),preview=document.getElementById("lbPreview");' +
+      'var statusDefault=statusEl?statusEl.textContent:"";' +
       'var closeBtn=document.getElementById("lbClose"),form=document.getElementById("lbForm"),input=document.getElementById("lbInput");' +
       'var sendBtn=document.getElementById("lbSend"),moreBtn=document.getElementById("lbMore"),moreMenu=document.getElementById("lbMoreMenu");' +
       'var initial=((cfg.name||"AI").slice(0,1)||"A").toUpperCase();' +
@@ -604,7 +605,7 @@
       'window.frameElement.dispatchEvent(new CustomEvent("lb-expand"));}' +
       'function setOpen(v){document.body.classList.toggle("open",!!v);document.body.classList.toggle("closed",!v);document.body.classList.remove("expanded");syncChrome();' +
       'window.frameElement.dispatchEvent(new CustomEvent("lb-toggle",{detail:{open:!!v}}));' +
-      'if(v){if(!isMobile())input.focus();if(humanMode)startPolling();}}' +
+      'if(v){if(!isMobile())input.focus();startPolling();}else{stopPolling();}}' +
       'launcher.addEventListener("click",function(){setExpanded();});' +
       'preview.addEventListener("click",function(){setOpen(true);});' +
       'preview.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();setOpen(true);}});' +
@@ -650,7 +651,8 @@
       'fetchJson(apiBase+"/action/",{method:"POST",headers:{"Content-Type":"application/json"},' +
       'body:JSON.stringify({token:token,action:action,visitor_id:visitorId,session_id:sessionId,data:data||{}})})' +
       '.then(function(res){if(res.session_id){sessionId=res.session_id;localStorage.setItem(sessionKey,sessionId);}' +
-      'revealReply(node,res.message||"Done.");if(res.request_takeover){humanMode=true;' +
+      'if(res.message_id){lastMsgId=Math.max(lastMsgId,res.message_id);seenIds[res.message_id]=1;pollPrimed=true;}' +
+      'revealReply(node,res.message||"Done.");if(res.request_takeover){awaitingTeam=true;' +
       'statusEl.textContent="Connecting you to a teammate…";startPolling();}})' +
       '.catch(function(err){revealReply(node,err.message||"Could not complete that action.");});}' +
 
@@ -674,19 +676,25 @@
       'if(!(cfg.slots||[]).length){var e=document.createElement("div");e.style.cssText="font-size:12px;color:#6B7280";e.textContent="No slots available right now.";wrap.appendChild(e);}' +
       'messages.appendChild(wrap);messages.scrollTop=messages.scrollHeight;}' +
 
-      'function startPolling(){if(pollTimer)return;pollTimer=setInterval(function(){if(!sessionId)return;' +
-      'fetchJson(apiBase+"/poll/?token="+encodeURIComponent(token)+"&session_id="+sessionId+"&after_id="+lastMsgId)' +
-      '.then(function(data){humanMode=!!data.human_mode;if(humanMode)statusEl.textContent="Talking with a teammate";' +
+      'function stopPolling(){if(pollTimer){clearInterval(pollTimer);pollTimer=null;}}' +
+      'function pollOnce(){if(!sessionId||document.hidden)return;' +
+      'fetchJson(apiBase+"/poll/?token="+encodeURIComponent(token)+"&visitor_id="+encodeURIComponent(visitorId)+"&session_id="+sessionId+"&after_id="+lastMsgId)' +
+      '.then(function(data){var wasHuman=humanMode;humanMode=!!data.human_mode;' +
+      'if(humanMode){awaitingTeam=false;statusEl.textContent="Talking with a teammate";}' +
+      'else if(wasHuman&&!awaitingTeam){statusEl.textContent=statusDefault;}' +
+      /* First poll after load: history is already on screen, just remember where we are. */
+      'var first=!pollPrimed;pollPrimed=true;' +
       '(data.messages||[]).forEach(function(m){lastMsgId=Math.max(lastMsgId,m.id);if(seenIds[m.id])return;seenIds[m.id]=1;' +
-      'var kind=m.role==="human"?"human":(m.role==="system"?"system":"them");addMsg(kind,m.content);});})' +
-      '.catch(function(){});},2500);}' +
+      'if(first)return;var kind=m.role==="human"?"human":(m.role==="system"?"system":"them");addMsg(kind,m.content);});})' +
+      '.catch(function(err){if(/Not found/.test(err.message||"")){sessionId=null;localStorage.removeItem(sessionKey);}});}' +
+      'function startPolling(){if(pollTimer)return;pollOnce();pollTimer=setInterval(pollOnce,humanMode||awaitingTeam?2500:5000);}' +
 
       'function sendMessage(text,continueLast){if(!text||sending)return;sending=true;if(sendBtn)sendBtn.disabled=true;' +
       'addMsg("you",text);var node=addMsg("them","…");' +
       'fetchJson(apiBase+"/message/",{method:"POST",headers:{"Content-Type":"application/json"},' +
       'body:JSON.stringify({token:token,message:text,visitor_id:visitorId,session_id:sessionId,stream:false,continue_last:!!continueLast})})' +
       '.then(function(data){if(data.session_id){sessionId=data.session_id;localStorage.setItem(sessionKey,sessionId);}' +
-      'if(data.message_id){lastMsgId=Math.max(lastMsgId,data.message_id);seenIds[data.message_id]=1;}' +
+      'if(data.message_id){lastMsgId=Math.max(lastMsgId,data.message_id);seenIds[data.message_id]=1;pollPrimed=true;}' +
       'if(data.human_mode){humanMode=true;revealReply(node,data.message||"A teammate will reply shortly.");' +
       'statusEl.textContent="Talking with a teammate";startPolling();return;}' +
       'revealReply(node,data.reply||"No reply.");' +

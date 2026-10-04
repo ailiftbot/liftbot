@@ -11,6 +11,15 @@ class UserProfile(models.Model):
     email_verified = models.BooleanField(default=False)
     is_verified = models.BooleanField('Verified', default=False)
     email_verify_token = models.CharField(max_length=64, blank=True, db_index=True)
+    # Workspace the user is currently working in (users can belong to several
+    # via invites). user_workspace() falls back to the oldest membership.
+    active_workspace = models.ForeignKey(
+        'workspaces.Workspace',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -42,6 +51,7 @@ class OTP(models.Model):
     )
     code = models.CharField(max_length=6)
     is_used = models.BooleanField(default=False)
+    attempts = models.PositiveSmallIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
 
@@ -90,15 +100,51 @@ class OTP(models.Model):
         )
 
     @classmethod
+    def max_attempts(cls):
+        return getattr(settings, 'OTP_MAX_ATTEMPTS', 5)
+
+    @classmethod
     def match_for_user(cls, user, code):
+        """Return the matching OTP or None. Prefer ``verify_for_user`` (counts attempts)."""
+        otp, _ = cls.verify_for_user(user, code)
+        return otp
+
+    @classmethod
+    def verify_for_user(cls, user, code):
+        """
+        Check ``code`` against the user's current pending OTP.
+
+        Returns ``(otp, error)``: ``otp`` is the matched (not yet consumed) OTP or
+        None; ``error`` is one of None, 'invalid', 'expired', 'locked'. Every
+        wrong guess increments ``attempts`` on the active code and the code is
+        invalidated after ``OTP_MAX_ATTEMPTS`` (default 5) wrong guesses.
+        """
         cleaned = (code or '').strip()
-        if len(cleaned) != 6 or not cleaned.isdigit():
-            return None
-        otp = (
-            cls.objects.filter(user=user, is_used=False, code=cleaned)
+        active = (
+            cls.objects.filter(user=user, is_used=False)
             .order_by('-created_at')
             .first()
         )
-        if otp is None or otp.is_expired:
-            return None
-        return otp
+        if active is None:
+            return None, 'expired'
+        if active.is_expired:
+            return None, 'expired'
+        if active.attempts >= cls.max_attempts():
+            active.is_used = True
+            active.save(update_fields=['is_used'])
+            return None, 'locked'
+        if len(cleaned) == 6 and cleaned.isdigit() and secrets.compare_digest(active.code, cleaned):
+            return active, None
+
+        # Atomic increment so parallel guesses cannot exceed the limit.
+        cls.objects.filter(pk=active.pk).update(attempts=models.F('attempts') + 1)
+        active.refresh_from_db(fields=['attempts'])
+        if active.attempts >= cls.max_attempts():
+            active.is_used = True
+            active.save(update_fields=['is_used'])
+            return None, 'locked'
+        return None, 'invalid'
+
+    def consume(self):
+        self.is_used = True
+        self.save(update_fields=['is_used'])

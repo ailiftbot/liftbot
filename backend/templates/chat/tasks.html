@@ -2,42 +2,94 @@
 {% block title %}Employee Tasks — LiftBot{% endblock %}
 {% block page_title %}Employee Tasks{% endblock %}
 {% block page_subtitle %}Work your AI Employees created — handoffs, schedules, and qualified leads.{% endblock %}
+{% block extra_css %}{% include 'chat/_list_styles.html' %}{% endblock %}
 {% block content %}
-<div class="lb-card" style="overflow:hidden;">
-  <table style="width:100%;border-collapse:collapse;font-size:13px;">
+<form class="lb-card lb-filters" method="get" action="{% url 'employee_tasks' %}">
+  <label>Status
+    <select name="status">
+      <option value="">All</option>
+      {% for value, label in status_choices %}
+      <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Type
+    <select name="type">
+      <option value="">All</option>
+      {% for value, label in type_choices %}
+      <option value="{{ value }}" {% if filters.type == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <div class="actions">
+    <button class="lb-btn lb-btn-primary lb-btn-sm" type="submit">Apply</button>
+    {% if is_filtered %}<a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'employee_tasks' %}">Reset</a>{% endif %}
+  </div>
+</form>
+
+<div class="lb-card lb-resp-table-wrap">
+  {% if tasks %}
+  <table class="lb-resp-table">
     <thead>
-      <tr style="background:#F9FAFB;text-align:left;">
-        <th style="padding:12px 16px;">Task</th>
-        <th style="padding:12px 16px;">Type</th>
-        <th style="padding:12px 16px;">AI Employee</th>
-        <th style="padding:12px 16px;">Status</th>
-        <th style="padding:12px 16px;">When</th>
+      <tr>
+        <th>Task</th>
+        <th>Type</th>
+        <th>AI Employee</th>
+        <th>Related</th>
+        <th>Status</th>
+        <th>When</th>
       </tr>
     </thead>
     <tbody>
       {% for task in tasks %}
-      <tr style="border-top:1px solid #F3F4F6;">
-        <td style="padding:12px 16px;">
+      <tr>
+        <td data-label="Task">
           <strong>{{ task.title }}</strong>
           {% if task.details.message %}
           <div style="font-size:12px;color:var(--lb-muted);margin-top:4px;">{{ task.details.message|truncatechars:100 }}</div>
           {% endif %}
+          {% if task.scheduled_for %}
+          <div style="font-size:12px;color:var(--lb-muted);margin-top:4px;">Scheduled for {{ task.scheduled_for|date:'M j, H:i' }}</div>
+          {% endif %}
         </td>
-        <td style="padding:12px 16px;">{{ task.get_task_type_display }}</td>
-        <td style="padding:12px 16px;">{{ task.employee.name }}</td>
-        <td style="padding:12px 16px;">
-          <span class="lb-badge {% if task.status == 'done' %}lb-badge-green{% elif task.status == 'open' %}lb-badge-orange{% else %}lb-badge-purple{% endif %}">
-            {{ task.get_status_display }}
-          </span>
+        <td data-label="Type">{{ task.get_task_type_display }}</td>
+        <td data-label="AI Employee">{{ task.employee.name }}</td>
+        <td data-label="Related">
+          {% if task.lead_id %}<div><a class="lb-link" href="{% url 'lead_detail' task.lead_id %}">Lead: {{ task.lead|truncatechars:28 }}</a></div>{% endif %}
+          {% if task.session_id %}<div><a class="lb-link" href="{% url 'conversation_detail' task.session_id %}">View chat</a></div>{% endif %}
+          {% if not task.lead_id and not task.session_id %}<span class="lb-muted">—</span>{% endif %}
         </td>
-        <td style="padding:12px 16px;color:var(--lb-muted);">{{ task.created_at|date:'M j, H:i' }}</td>
+        <td data-label="Status">
+          <form class="lb-inline-form js-status-form" method="post" action="{% url 'task_update_status' task.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}" />
+            <select class="lb-inline-select" name="status" aria-label="Task status">
+              {% for value, label in status_choices %}
+              <option value="{{ value }}" {% if task.status == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+            <button class="lb-btn lb-btn-ghost lb-btn-sm js-hide" type="submit">Save</button>
+            <span class="lb-inline-status" aria-live="polite"></span>
+          </form>
+        </td>
+        <td data-label="When" style="color:var(--lb-muted);white-space:nowrap;">{{ task.created_at|date:'M j, H:i' }}</td>
       </tr>
-      {% empty %}
-      <tr><td colspan="5" style="padding:28px 16px;color:var(--lb-muted);">
-        No tasks yet. When visitors ask to schedule, connect with your team, or show interest, your AI Employees create tasks here.
-      </td></tr>
       {% endfor %}
     </tbody>
   </table>
+  {% include 'chat/_pagination.html' with page_obj=page_obj querystring=querystring %}
+  {% elif is_filtered %}
+  <div class="lb-empty-state">
+    <strong>No tasks match these filters</strong>
+    Try a different status or type.
+    <div><a class="lb-btn lb-btn-ghost lb-btn-sm" href="{% url 'employee_tasks' %}">Clear filters</a></div>
+  </div>
+  {% else %}
+  <div class="lb-empty-state">
+    <strong>No tasks yet</strong>
+    When visitors ask to schedule, connect with your team, or show interest, your AI Employees create tasks here.
+  </div>
+  {% endif %}
 </div>
 {% endblock %}
+{% block extra_js %}{% include 'chat/_status_form_js.html' %}{% endblock %}

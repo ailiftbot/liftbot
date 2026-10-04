@@ -21,6 +21,11 @@ class KnowledgeSource(models.Model):
     source_url = models.URLField(blank=True)
     file = models.FileField(upload_to='knowledge/%Y/%m/', blank=True, null=True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    is_public = models.BooleanField(
+        'Show as help article',
+        default=False,
+        help_text='Publish this material in the website widget Articles & Search tabs.',
+    )
     faiss_doc_id = models.CharField(max_length=64, blank=True)
     chunk_count = models.PositiveIntegerField(default=0)
     error_message = models.TextField(blank=True)

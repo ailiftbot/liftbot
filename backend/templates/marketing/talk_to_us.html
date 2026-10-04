@@ -97,6 +97,11 @@
 
             <form method="post" action="{% url 'contact' %}" class="cnt-form" novalidate>
               {% csrf_token %}
+
+              <div aria-hidden="true" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">
+                <label for="id_company_fax">Leave this field empty</label>
+                <input type="text" id="id_company_fax" name="company_fax" tabindex="-1" autocomplete="off" value="">
+              </div>
               {% if form.non_field_errors %}
               <p style="color:#DC2626;font-size:14px;margin:0 0 12px;">{{ form.non_field_errors|striptags }}</p>
               {% endif %}

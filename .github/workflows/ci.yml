@@ -1,0 +1,131 @@
+name: CI
+
+# master pushes run this via deploy.yml (CI gates the deploy), so skip them here.
+on:
+  pull_request:
+  push:
+    branches-ignore: [master]
+  workflow_call:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend tests (MySQL)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: liftbot
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s --health-timeout=5s --health-retries=30
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: --health-cmd="redis-cli ping" --health-interval=5s --health-timeout=3s --health-retries=10
+    env:
+      MYSQL_HOST: 127.0.0.1
+      MYSQL_PORT: '3306'
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_DATABASE: liftbot
+      REDIS_URL: redis://127.0.0.1:6379/0
+      CELERY_BROKER_URL: redis://127.0.0.1:6379/1
+      CELERY_RESULT_BACKEND: redis://127.0.0.1:6379/2
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install system packages
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends default-libmysqlclient-dev pkg-config
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Django system check
+        run: DJANGO_DEBUG=1 python manage.py check
+      - name: Migrations are up to date
+        run: DJANGO_DEBUG=1 python manage.py makemigrations --check --dry-run
+      - name: Production settings check
+        env:
+          DJANGO_DEBUG: '0'
+          DJANGO_SECRET_KEY: ci-only-${{ github.run_id }}-not-a-real-secret-key-0123456789abcdef
+          DJANGO_ALLOWED_HOSTS: liftbot.app
+        run: python manage.py check --deploy --fail-level ERROR
+      - name: Run tests
+        run: python manage.py test --noinput --parallel 1
+
+  rag:
+    name: RAG service tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: rag
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: rag/requirements*.txt
+      - run: pip install -r requirements-dev.txt
+      - name: Run tests (offline, no API keys)
+        env:
+          RAG_INTERNAL_TOKEN: ci-test-token
+        run: python -m pytest -q tests
+
+  frontend:
+    name: Static JS syntax
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check JS files parse
+        run: for f in backend/static/*.js; do node --check "$f" || exit 1; done
+      - name: Check widget iframe script parses
+        run: node .github/scripts/check-widget.js backend/static/widget.js
+
+  docker:
+    name: Docker images build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          push: false
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+      - name: Build RAG image
+        uses: docker/build-push-action@v6
+        with:
+          context: rag
+          push: false
+          cache-from: type=gha,scope=rag
+          cache-to: type=gha,mode=max,scope=rag
+      - name: Validate production compose file
+        env:
+          DJANGO_SECRET_KEY: x
+          RAG_INTERNAL_TOKEN: x
+        run: cp .env.example .env && docker compose -f docker-compose.prod.yml config --quiet

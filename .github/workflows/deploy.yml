@@ -1,0 +1,73 @@
+name: Deploy
+
+# Runs CI first; deploys to the VPS only if every CI job passes.
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  deploy:
+    name: Deploy to VPS
+    needs: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: production
+      url: ${{ vars.PUBLIC_APP_URL || 'https://liftbot.app' }}
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_PORT: ${{ secrets.VPS_PORT || '22' }}
+      APP_DIR: ${{ vars.APP_DIR || '/opt/liftbot' }}
+      COMPOSE_FILE: ${{ vars.COMPOSE_FILE || 'docker-compose.prod.yml' }}
+      HEALTH_URL: ${{ vars.HEALTH_URL || 'http://127.0.0.1:8001/' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check deploy secrets
+        id: gate
+        run: |
+          if [ -z "$VPS_HOST" ] || [ -z "$VPS_USER" ] || [ -z "${{ secrets.VPS_SSH_KEY }}" ]; then
+            echo "::warning::Deploy skipped — set VPS_HOST, VPS_USER and VPS_SSH_KEY repository secrets to enable it."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Configure SSH
+        if: steps.gate.outputs.enabled == 'true'
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          if [ -n "$VPS_KNOWN_HOSTS" ]; then
+            printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            echo "::warning::VPS_KNOWN_HOSTS not set — trusting the host key on first connect."
+            ssh-keyscan -p "$VPS_PORT" -H "$VPS_HOST" > ~/.ssh/known_hosts
+          fi
+
+      - name: Deploy
+        if: steps.gate.outputs.enabled == 'true'
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "$VPS_PORT" -o BatchMode=yes "$VPS_USER@$VPS_HOST" \
+            "APP_DIR='$APP_DIR' COMPOSE_FILE='$COMPOSE_FILE' HEALTH_URL='$HEALTH_URL' DEPLOY_SHA='$GITHUB_SHA' bash -s" \
+            < deploy/deploy.sh
+
+      - name: Clean up key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

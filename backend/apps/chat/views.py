@@ -25,6 +25,7 @@ from apps.workspaces.views import user_workspace
 
 from .actions import handle_widget_action, process_visitor_turn, turn_guidance
 from .formatting import reply_to_html
+from apps.employees.mailer import prefs as mailer_prefs
 from .memory import (
     build_visitor_context_for_prompt,
     get_or_create_profile,
@@ -164,6 +165,7 @@ def _employee_payload(employee: AIEmployee) -> dict:
         'capabilities': caps,
         'actions': actions,
         'slots': employee.workspace.next_available_slots(6) if 'schedule_handoff' in caps else [],
+        'email_transcript': mailer_prefs(employee)['transcript'],
     }
 
 

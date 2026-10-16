@@ -9,6 +9,7 @@ HUB_NAV_GROUPS = {
     'settings': 'personality',
     'capabilities': 'personality',
     'status': 'personality',
+    'email': 'personality',
     'widget-code': 'widget',
     'analytics': 'employee',
     'team': 'employee',

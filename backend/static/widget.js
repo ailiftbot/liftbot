@@ -464,7 +464,8 @@
       '<button type="button" class="lb-iconbtn" id="lbMore" aria-label="More">&#8942;</button>' +
       '<button type="button" class="lb-iconbtn" id="lbClose" aria-label="Close">&times;</button>' +
       '</div>' +
-      '<div class="lb-more-menu" id="lbMoreMenu"><button type="button" id="lbFresh">Start fresh</button></div>' +
+      '<div class="lb-more-menu" id="lbMoreMenu"><button type="button" id="lbFresh">Start fresh</button>' +
+      (cfg.email_transcript ? '<button type="button" id="lbTranscript">Email me this conversation</button>' : '') + '</div>' +
       '</div>' +
       '<div class="lb-tabbar">' +
       '<button type="button" class="lb-tabbar__home" id="lbHome" aria-label="Home">' +
@@ -710,6 +711,18 @@
       'if(!slots.length){var e=document.createElement("div");e.style.cssText="font-size:12.5px;color:#6B7280";' +
       'e.textContent="No open times right now \u2014 share your details and we\u2019ll arrange one with you.";wrap.appendChild(e);}' +
       'mountCard(wrap);}' +
+
+      'function showTranscriptForm(){clearCards();var wrap=document.createElement("div");wrap.className="lb-card";' +
+      'cardTitle(wrap,"Where should we send a copy of this chat?");' +
+      'var em=document.createElement("input");em.className="lb-field";em.type="email";em.placeholder="you@example.com";em.autocomplete="email";wrap.appendChild(em);' +
+      'var err=document.createElement("div");err.className="lb-card__err";err.style.display="none";wrap.appendChild(err);' +
+      'var go=document.createElement("button");go.type="button";go.className=pill(true);go.style.marginTop="4px";go.textContent="Send";' +
+      'go.addEventListener("click",function(){var v=em.value.trim();if(!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(v)){err.textContent="Enter a valid email address.";err.style.display="block";return;}' +
+      'wrap.remove();postAction("email_transcript",{email:v});});' +
+      'wrap.appendChild(go);mountCard(wrap);if(!isMobile())em.focus();}' +
+      'var transcriptBtn=document.getElementById("lbTranscript");' +
+      'if(transcriptBtn)transcriptBtn.addEventListener("click",function(){moreMenu.classList.remove("open");' +
+      'if(!sessionId){addMsg("system","Send a message first, then you can email yourself the conversation.");return;}showTranscriptForm();});' +
 
       'function showChips(options){clearCards();var row=document.createElement("div");row.className="lb-quick";' +
       'options.forEach(function(o){var b=document.createElement("button");b.type="button";b.className=pill(false);b.textContent=o.label;' +

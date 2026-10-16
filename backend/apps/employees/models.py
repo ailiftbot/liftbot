@@ -122,3 +122,59 @@ class AIEmployee(models.Model):
             f'data-api-base="{api}" '
             f'defer></script>'
         )
+
+
+class EmployeeMailbox(models.Model):
+    """
+    Outgoing email for one AI Employee: visitors receive booking confirmations,
+    contact acknowledgements and transcripts from the business's own address.
+    Without a (working) mailbox, mail goes out from the platform account instead.
+    """
+
+    class Security(models.TextChoices):
+        STARTTLS = 'starttls', 'STARTTLS (587)'
+        SSL = 'ssl', 'SSL/TLS (465)'
+        NONE = 'none', 'None (insecure)'
+
+    employee = models.OneToOneField(AIEmployee, on_delete=models.CASCADE, related_name='mailbox')
+    enabled = models.BooleanField(default=True)
+    from_name = models.CharField(max_length=100, blank=True, help_text='Defaults to the employee name')
+    from_email = models.EmailField(help_text='Address visitors receive email from')
+    reply_to = models.EmailField(blank=True, help_text='Where visitor replies go (optional)')
+    smtp_host = models.CharField(max_length=255)
+    smtp_port = models.PositiveIntegerField(default=587)
+    security = models.CharField(max_length=10, choices=Security.choices, default=Security.STARTTLS)
+    smtp_username = models.CharField(max_length=255, blank=True)
+    smtp_password_encrypted = models.TextField(blank=True)
+
+    send_booking_confirmations = models.BooleanField(default=True)
+    send_contact_confirmations = models.BooleanField(default=True)
+    send_transcripts = models.BooleanField(default=True)
+    use_for_team_alerts = models.BooleanField(default=True)
+
+    last_tested_at = models.DateTimeField(null=True, blank=True)
+    last_test_ok = models.BooleanField(null=True, blank=True)
+    last_error = models.CharField(max_length=500, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'{self.employee} <{self.from_email}>'
+
+    @property
+    def is_configured(self) -> bool:
+        return bool(self.enabled and self.smtp_host and self.from_email)
+
+    @property
+    def has_password(self) -> bool:
+        return bool(self.smtp_password_encrypted)
+
+    def set_password(self, raw: str):
+        from .crypto import encrypt
+
+        self.smtp_password_encrypted = encrypt(raw)
+
+    def get_password(self) -> str:
+        from .crypto import decrypt
+
+        return decrypt(self.smtp_password_encrypted)

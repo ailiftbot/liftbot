@@ -4,7 +4,6 @@ import logging
 import requests
 from celery import shared_task
 from django.conf import settings
-from django.core.mail import send_mail
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
@@ -51,16 +50,14 @@ def _send_email(workspace, employee, event_type: str, payload: dict):
     if payload.get('scheduled_for'):
         lines.append(f'Requested time: {payload["scheduled_for"]}')
     lines += ['', f'Open your dashboard: {settings.PUBLIC_APP_URL}/chat/tasks/']
-    try:
-        send_mail(
-            subject=f'[LiftBot] {event_type.replace("_", " ").title()} — {employee.name}',
-            message='\n'.join(lines),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-            fail_silently=False,
-        )
-    except Exception:  # noqa: BLE001
-        logger.exception('Email notify failed')
+    from apps.employees.mailer import deliver
+
+    # Uses the employee's own SMTP mailbox when set up (and allowed for team alerts).
+    deliver(
+        employee.id, email,
+        f'[LiftBot] {event_type.replace("_", " ").title()} — {employee.name}',
+        '\n'.join(lines), team=True,
+    )
 
 
 def _send_webhook(workspace, event_type: str, payload: dict):

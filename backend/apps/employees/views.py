@@ -24,14 +24,15 @@ from apps.workspaces.context_processors import HUB_NAV_GROUPS
 from apps.workspaces.public_urls import widget_urls
 from apps.workspaces.views import user_workspace
 
-from .forms import AIEmployeeForm
+from . import mailer
+from .forms import AIEmployeeForm, EmployeeMailboxForm
 from .models import AIEmployee
 
 logger = logging.getLogger(__name__)
 
 # Hub tabs that have a nav item + panel in templates/employees/hub.html.
 HUB_TABS = (
-    'playground', 'analytics', 'settings', 'capabilities', 'status',
+    'playground', 'analytics', 'settings', 'capabilities', 'status', 'email',
     'knowledge', 'add-material', 'widget-code', 'team',
 )
 # Legacy / shorthand tab names still linked from elsewhere.
@@ -292,7 +293,9 @@ def employee_hub(request, pk):
     employee = get_object_or_404(AIEmployee, pk=pk, workspace=workspace)
 
     settings_form = None
+    mailbox_form = None
     active_tab = resolve_hub_tab(request.GET.get('tab'))
+    mailbox = mailer.get_mailbox(employee)
 
     if request.method == 'POST':
         action = request.POST.get('action', 'update_settings')
@@ -310,6 +313,31 @@ def employee_hub(request, pk):
             active_tab = 'settings'
             # The failed save may have mutated the in-memory instance; reload for display.
             employee.refresh_from_db()
+
+        elif action in ('update_email', 'test_email'):
+            form = EmployeeMailboxForm(request.POST, instance=mailbox, employee=employee)
+            if form.is_valid():
+                mailbox = form.save()
+                if action == 'test_email':
+                    to = request.user.email
+                    ok, error = mailer.send_test(mailbox, to)
+                    if ok:
+                        messages.success(request, f'Saved. Test email sent to {to} from {mailbox.from_email}.')
+                    else:
+                        messages.error(request, f'Saved, but the test email failed: {error}')
+                else:
+                    messages.success(request, 'Email settings saved.')
+                return redirect(_hub_url(employee, 'email'))
+            messages.error(request, 'Please check the email settings for errors.')
+            mailbox_form = form
+            active_tab = 'email'
+
+        elif action == 'remove_email':
+            if mailbox is not None:
+                mailbox.delete()
+                mailbox = None
+            messages.success(request, 'Email settings removed. Emails will be sent from LiftBot.')
+            return redirect(_hub_url(employee, 'email'))
 
         elif action == 'toggle_active':
             employee.is_active = not employee.is_active
@@ -343,6 +371,8 @@ def employee_hub(request, pk):
 
     if settings_form is None:
         settings_form = _hub_settings_form(instance=employee)
+    if mailbox_form is None:
+        mailbox_form = EmployeeMailboxForm(instance=mailbox, employee=employee)
     knowledge_form = KnowledgeSourceForm()
     urls = widget_urls(request)
 
@@ -391,6 +421,9 @@ def employee_hub(request, pk):
         'active_employee_count': active_employee_count,
         'employee_limit': employee_limit,
         'form': settings_form,
+        'mailbox': mailbox,
+        'mailbox_form': mailbox_form,
+        'platform_sender': settings.DEFAULT_FROM_EMAIL,
         'knowledge_form': knowledge_form,
         'public_widget_api': urls['api'],
         'widget_url': urls['widget'],

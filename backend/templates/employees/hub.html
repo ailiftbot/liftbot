@@ -108,6 +108,19 @@
         <span class="crisp-badge crisp-badge-req">Offline</span>
         {% endif %}
       </button>
+      <button type="button" class="crisp-nav-item" data-tab="email">
+        <span class="crisp-nav-left">
+          <span class="crisp-nav-ico">📧</span>
+          <span class="crisp-nav-label">Email (SMTP)</span>
+        </span>
+        {% if mailbox and mailbox.is_configured and mailbox.last_test_ok %}
+        <span class="crisp-badge crisp-badge-active">On</span>
+        {% elif mailbox and mailbox.last_test_ok == False %}
+        <span class="crisp-badge crisp-badge-req">Error</span>
+        {% else %}
+        <span class="crisp-badge crisp-badge-req">Set up</span>
+        {% endif %}
+      </button>
     </div>
 
     <!-- Training Group -->
@@ -523,6 +536,128 @@
             </div>
           </div>
         </form>
+      </section>
+
+      <!-- TAB: EMAIL (SMTP) -->
+      <section class="crisp-tab-panel" id="tab-email">
+        <h1 class="crisp-canvas-title">Email (SMTP)</h1>
+        <p style="color:#6B7280;font-size:13.5px;margin-top:-8px;margin-bottom:20px;">
+          Send booking confirmations, contact acknowledgements and chat transcripts to your visitors from your own email address.
+        </p>
+
+        {% if mailbox and mailbox.is_configured and mailbox.last_test_ok %}
+        <div class="crisp-card" style="border-color:#BBF7D0;background:#F0FDF4;">
+          <strong style="color:#166534;">✓ Connected</strong>
+          <span style="color:#166534;font-size:13px;"> — visitors receive email from <strong>{{ mailbox.from_email }}</strong>{% if mailbox.last_tested_at %} · last checked {{ mailbox.last_tested_at|timesince }} ago{% endif %}.</span>
+        </div>
+        {% elif mailbox and mailbox.last_test_ok == False %}
+        <div class="crisp-card" style="border-color:#FECACA;background:#FEF2F2;">
+          <strong style="color:#991B1B;">Sending from this account failed</strong>
+          <p style="color:#991B1B;font-size:13px;margin:6px 0 0;">{{ mailbox.last_error }}</p>
+          <p style="color:#7F1D1D;font-size:12.5px;margin:6px 0 0;">Until this is fixed, emails go out from LiftBot ({{ platform_sender }}) with replies to {{ mailbox.reply_to|default:mailbox.from_email }}.</p>
+        </div>
+        {% elif mailbox and mailbox.is_configured %}
+        <div class="crisp-card" style="border-color:#FDE68A;background:#FFFBEB;">
+          <strong style="color:#92400E;">Not tested yet</strong>
+          <span style="color:#92400E;font-size:13px;"> — click “Save &amp; send test email” to confirm these settings work.</span>
+        </div>
+        {% else %}
+        <div class="crisp-card" style="border-color:#E5E7EB;background:#F9FAFB;">
+          <strong>Not set up</strong>
+          <span style="color:#6B7280;font-size:13px;"> — emails to visitors currently come from LiftBot ({{ platform_sender }}), with replies going to {{ employee.handoff_email|default:workspace.owner.email }}.</span>
+        </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'employee_hub' employee.pk %}" id="hub-email-form" autocomplete="off">
+          {% csrf_token %}
+          {% if mailbox_form.errors %}
+          <div class="crisp-alert-warning" role="alert" style="flex-direction:column;align-items:flex-start;">
+            <strong>Please fix the following:</strong>
+            <ul style="margin:4px 0 0;padding-left:18px;font-size:13px;">
+              {% for field in mailbox_form %}{% for err in field.errors %}<li>{{ field.label }}: {{ err }}</li>{% endfor %}{% endfor %}
+              {% for err in mailbox_form.non_field_errors %}<li>{{ err }}</li>{% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+
+          <div class="crisp-card">
+            <div class="crisp-card-head"><h3 class="crisp-card-title">✉️ Sender</h3></div>
+            <div class="crisp-grid-2">
+              <div class="crisp-form-field">
+                <label for="{{ mailbox_form.from_name.id_for_label }}">{{ mailbox_form.from_name.label }}</label>
+                {{ mailbox_form.from_name }}
+              </div>
+              <div class="crisp-form-field">
+                <label for="{{ mailbox_form.from_email.id_for_label }}">{{ mailbox_form.from_email.label }}</label>
+                {{ mailbox_form.from_email }}
+              </div>
+              <div class="crisp-form-field crisp-grid-full">
+                <label for="{{ mailbox_form.reply_to.id_for_label }}">{{ mailbox_form.reply_to.label }} <span style="color:#9CA3AF;font-weight:400;">(optional)</span></label>
+                {{ mailbox_form.reply_to }}
+              </div>
+            </div>
+          </div>
+
+          <div class="crisp-card">
+            <div class="crisp-card-head"><h3 class="crisp-card-title">🔌 SMTP server</h3></div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;" id="smtp-presets">
+              <span style="font-size:12.5px;color:#6B7280;align-self:center;">Quick fill:</span>
+              <button type="button" class="lb-btn lb-btn-ghost lb-btn-sm" data-host="smtp.gmail.com" data-port="587" data-sec="starttls" data-note="Gmail / Google Workspace: turn on 2-Step Verification, then create an App Password at myaccount.google.com/apppasswords and paste it below.">Gmail</button>
+              <button type="button" class="lb-btn lb-btn-ghost lb-btn-sm" data-host="smtp.office365.com" data-port="587" data-sec="starttls" data-note="Outlook / Microsoft 365: SMTP AUTH must be enabled for the mailbox by your admin.">Outlook / 365</button>
+              <button type="button" class="lb-btn lb-btn-ghost lb-btn-sm" data-host="smtp.zoho.in" data-port="465" data-sec="ssl" data-note="Zoho: use smtp.zoho.com for accounts outside India. An app-specific password is needed if 2FA is on.">Zoho</button>
+              <button type="button" class="lb-btn lb-btn-ghost lb-btn-sm" data-host="smtp.mail.yahoo.com" data-port="465" data-sec="ssl" data-note="Yahoo: generate an app password in Account Security.">Yahoo</button>
+              <button type="button" class="lb-btn lb-btn-ghost lb-btn-sm" data-host="smtpout.secureserver.net" data-port="465" data-sec="ssl" data-note="GoDaddy Workspace email.">GoDaddy</button>
+            </div>
+            <p id="smtp-preset-note" class="crisp-field-help" style="display:none;margin:-4px 0 12px;background:#F5F3FF;color:#4C1D95;padding:8px 10px;border-radius:8px;"></p>
+            <div class="crisp-grid-2">
+              <div class="crisp-form-field crisp-grid-full">
+                <label for="{{ mailbox_form.smtp_host.id_for_label }}">{{ mailbox_form.smtp_host.label }}</label>
+                {{ mailbox_form.smtp_host }}
+              </div>
+              <div class="crisp-form-field">
+                <label for="{{ mailbox_form.smtp_port.id_for_label }}">{{ mailbox_form.smtp_port.label }}</label>
+                {{ mailbox_form.smtp_port }}
+              </div>
+              <div class="crisp-form-field">
+                <label for="{{ mailbox_form.security.id_for_label }}">{{ mailbox_form.security.label }}</label>
+                {{ mailbox_form.security }}
+              </div>
+              <div class="crisp-form-field">
+                <label for="{{ mailbox_form.smtp_username.id_for_label }}">{{ mailbox_form.smtp_username.label }}</label>
+                {{ mailbox_form.smtp_username }}
+              </div>
+              <div class="crisp-form-field">
+                <label for="{{ mailbox_form.smtp_password.id_for_label }}">{{ mailbox_form.smtp_password.label }}</label>
+                {{ mailbox_form.smtp_password }}
+                <p class="crisp-field-help">{% if mailbox and mailbox.has_password %}A password is saved — leave blank to keep it.{% else %}{{ mailbox_form.smtp_password.help_text }}{% endif %}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="crisp-card">
+            <div class="crisp-card-head"><h3 class="crisp-card-title">📬 What to send</h3></div>
+            <div style="display:grid;gap:10px;font-size:13.5px;">
+              <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">{{ mailbox_form.send_booking_confirmations }} <span>{{ mailbox_form.send_booking_confirmations.label }}</span></label>
+              <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">{{ mailbox_form.send_contact_confirmations }} <span>{{ mailbox_form.send_contact_confirmations.label }}</span></label>
+              <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">{{ mailbox_form.send_transcripts }} <span>{{ mailbox_form.send_transcripts.label }}</span></label>
+              <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">{{ mailbox_form.use_for_team_alerts }} <span>{{ mailbox_form.use_for_team_alerts.label }}</span></label>
+              <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">{{ mailbox_form.enabled }} <span>{{ mailbox_form.enabled.label }}</span></label>
+            </div>
+            <div class="crisp-submit-row" style="gap:10px;flex-wrap:wrap;">
+              <button type="submit" name="action" value="update_email" class="lb-btn lb-btn-ghost">Save</button>
+              <button type="submit" name="action" value="test_email" class="lb-btn lb-btn-primary">Save &amp; send test email</button>
+            </div>
+            <p class="crisp-field-help" style="margin-top:8px;">The test email goes to {{ request.user.email }}.</p>
+          </div>
+        </form>
+
+        {% if mailbox %}
+        <form method="post" action="{% url 'employee_hub' employee.pk %}" onsubmit="return confirm('Remove these email settings? Emails will be sent from LiftBot instead.');" style="margin-top:6px;">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="remove_email" />
+          <button type="submit" class="lb-btn lb-btn-ghost lb-btn-sm" style="color:#B91C1C;">Remove email settings</button>
+        </form>
+        {% endif %}
       </section>
 
       <!-- TAB 6A: CAPABILITIES -->
@@ -1003,6 +1138,33 @@
   }
 
   loadHistory();
+
+  // SMTP provider quick-fill
+  document.querySelectorAll('#smtp-presets [data-host]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const f = document.getElementById('hub-email-form');
+      f.querySelector('[name="smtp_host"]').value = btn.dataset.host;
+      f.querySelector('[name="smtp_port"]').value = btn.dataset.port;
+      f.querySelector('[name="security"]').value = btn.dataset.sec;
+      const user = f.querySelector('[name="smtp_username"]');
+      const from = f.querySelector('[name="from_email"]');
+      if (!user.value && from.value) user.value = from.value;
+      const note = document.getElementById('smtp-preset-note');
+      note.textContent = btn.dataset.note;
+      note.style.display = 'block';
+    });
+  });
+  (() => {
+    // Keep the port in step with the security choice unless the user typed a custom port.
+    const f = document.getElementById('hub-email-form');
+    if (!f) return;
+    const sec = f.querySelector('[name="security"]');
+    const port = f.querySelector('[name="smtp_port"]');
+    sec.addEventListener('change', () => {
+      if (sec.value === 'ssl' && (port.value === '587' || !port.value)) port.value = '465';
+      if (sec.value === 'starttls' && (port.value === '465' || !port.value)) port.value = '587';
+    });
+  })();
 
   // Tab switching logic
   const navItems = document.querySelectorAll('.crisp-nav-item');

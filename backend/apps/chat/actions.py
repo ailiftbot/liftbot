@@ -279,6 +279,23 @@ def process_visitor_turn(workspace, employee, session, profile, message: str) ->
     }
 
 
+MAX_TRANSCRIPTS_PER_SESSION = 3
+
+
+def _confirm_booking_by_email(employee, task, profile) -> bool:
+    """Email the visitor their booking confirmation once, if we know their email."""
+    from apps.employees import mailer
+
+    details = task.details or {}
+    if not profile.email or details.get('confirmation_sent_to') == profile.email:
+        return False
+    if not mailer.send_booking_confirmation(employee, task, profile.email, profile.name):
+        return False
+    task.details = {**details, 'confirmation_sent_to': profile.email}
+    task.save(update_fields=['details', 'updated_at'])
+    return True
+
+
 def handle_widget_action(workspace, employee, session, profile, action: str, data: dict) -> dict:
     """Structured widget actions: collect_contact, schedule, handoff, request_human."""
     from apps.chat.constants import (
@@ -318,6 +335,20 @@ def handle_widget_action(workspace, employee, session, profile, action: str, dat
             {'name': name, 'email': email, 'phone': phone, 'visitor_id': profile.visitor_id},
             lead=lead,
         )
+        if email:
+            # Booked a slot before sharing an email? Send that booking's confirmation now.
+            booking = EmployeeTask.objects.filter(
+                session=session, task_type=EmployeeTask.TaskType.SCHEDULE, scheduled_for__isnull=False,
+            ).order_by('-updated_at').first()
+            if booking is not None and _confirm_booking_by_email(employee, booking, profile):
+                return {
+                    'ok': True,
+                    'message': f'Thanks{f", {name}" if name else ""}! Your confirmation is on its way to {email}.',
+                    'lead_id': lead.id if lead else None,
+                    'task_id': task.id,
+                }
+            from apps.employees import mailer
+            mailer.send_contact_confirmation(employee, email, name)
         return {
             'ok': True,
             'message': f'Thanks{f", {name}" if name else ""}! Got your details — someone from the team will be in touch soon.',
@@ -381,8 +412,11 @@ def handle_widget_action(workspace, employee, session, profile, action: str, dat
             'task_id': task.id,
             'lead_id': lead.id if lead else None,
         }
+        emailed = _confirm_booking_by_email(employee, task, profile)
         reach = profile.email or profile.phone
-        if reach:
+        if emailed:
+            result['message'] = f'Done! Your {kind} is booked for **{label}**. A confirmation is on its way to {profile.email}.'
+        elif reach:
             result['message'] = f"Done! Your {kind} is booked for **{label}**. We'll send the confirmation to {reach}."
         elif CAPABILITY_COLLECT in caps:
             result['message'] = (
@@ -393,6 +427,26 @@ def handle_widget_action(workspace, employee, session, profile, action: str, dat
         else:
             result['message'] = f'Done! Your {kind} is booked for **{label}**. The team will confirm shortly.'
         return result
+
+    if action == 'email_transcript':
+        from apps.employees import mailer
+
+        if not mailer.prefs(employee)['transcript']:
+            return {'ok': False, 'error': 'Email transcripts are turned off for this chat.'}
+        email = _text(data.get('email'), 254) or profile.email
+        if not email or not EMAIL_RE.fullmatch(email):
+            return {'ok': False, 'error': 'Please enter a valid email address.'}
+        meta = session.metadata or {}
+        if meta.get('transcripts_sent', 0) >= MAX_TRANSCRIPTS_PER_SESSION:
+            return {'ok': False, 'error': 'We have already sent this conversation a few times.'}
+        if not mailer.send_transcript(employee, session, email):
+            return {'ok': False, 'error': 'There is nothing to send yet — say hello first!'}
+        session.metadata = {**meta, 'transcripts_sent': meta.get('transcripts_sent', 0) + 1}
+        session.save(update_fields=['metadata'])
+        if not profile.email:
+            profile.email = email
+            profile.save(update_fields=['email', 'updated_at'])
+        return {'ok': True, 'message': f'Sent! A copy of this conversation is on its way to {email}.'}
 
     if action in ('handoff', 'request_human'):
         if CAPABILITY_NOTIFY not in caps and action == 'handoff':

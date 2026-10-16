@@ -94,3 +94,80 @@ class AIEmployeeForm(forms.ModelForm):
         if commit:
             employee.save()
         return employee
+
+
+class EmployeeMailboxForm(forms.ModelForm):
+    smtp_password = forms.CharField(
+        label='Password / App password',
+        required=False,
+        strip=False,
+        widget=forms.PasswordInput(render_value=False, attrs={'autocomplete': 'new-password'}),
+        help_text='Leave blank to keep the saved password. Gmail needs an App Password.',
+    )
+
+    class Meta:
+        from .models import EmployeeMailbox
+
+        model = EmployeeMailbox
+        fields = (
+            'enabled', 'from_name', 'from_email', 'reply_to',
+            'smtp_host', 'smtp_port', 'security', 'smtp_username',
+            'send_booking_confirmations', 'send_contact_confirmations', 'send_transcripts',
+            'use_for_team_alerts',
+        )
+        labels = {
+            'enabled': 'Send email from this address',
+            'from_name': 'Sender name',
+            'from_email': 'Sender email',
+            'reply_to': 'Reply-to email',
+            'smtp_host': 'SMTP server',
+            'smtp_port': 'Port',
+            'security': 'Security',
+            'smtp_username': 'Username',
+            'send_booking_confirmations': 'Booking confirmations (with calendar invite)',
+            'send_contact_confirmations': '"We got your details" acknowledgements',
+            'send_transcripts': 'Let visitors email themselves the conversation',
+            'use_for_team_alerts': 'Also send team alerts (new leads, bookings, handoffs) from this account',
+        }
+        widgets = {
+            'from_name': forms.TextInput(attrs={'placeholder': 'e.g. Maya from Acme'}),
+            'from_email': forms.EmailInput(attrs={'placeholder': 'hello@yourcompany.com'}),
+            'reply_to': forms.EmailInput(attrs={'placeholder': 'sales@yourcompany.com'}),
+            'smtp_host': forms.TextInput(attrs={'placeholder': 'smtp.gmail.com', 'spellcheck': 'false'}),
+            'smtp_username': forms.TextInput(attrs={'placeholder': 'Usually your full email address', 'autocomplete': 'off'}),
+        }
+
+    def __init__(self, *args, employee=None, **kwargs):
+        self.employee = employee
+        super().__init__(*args, **kwargs)
+        if not self.instance.pk and employee is not None:
+            self.fields['from_name'].initial = employee.name
+
+    def clean(self):
+        from .mailer import validate_smtp_host
+
+        cleaned = super().clean()
+        host = (cleaned.get('smtp_host') or '').strip()
+        port = cleaned.get('smtp_port')
+        if host and port:
+            try:
+                validate_smtp_host(host, port)
+            except forms.ValidationError as exc:
+                self.add_error('smtp_host', exc)
+        cleaned['smtp_host'] = host
+        if cleaned.get('smtp_username') and not (cleaned.get('smtp_password') or self.instance.has_password):
+            self.add_error('smtp_password', 'Enter the password for this account.')
+        return cleaned
+
+    def save(self, commit=True):
+        mailbox = super().save(commit=False)
+        if self.employee is not None:
+            mailbox.employee = self.employee
+        if self.cleaned_data.get('smtp_password'):
+            mailbox.set_password(self.cleaned_data['smtp_password'])
+        if self.changed_data:
+            mailbox.last_test_ok = None  # settings changed: previous test result no longer applies
+            mailbox.last_error = ''
+        if commit:
+            mailbox.save()
+        return mailbox

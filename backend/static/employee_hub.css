@@ -1079,6 +1079,7 @@ body.lb-app:has(.crisp-hub) {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  min-width: 0;
 }
 
 .crisp-form-field label {
@@ -1089,10 +1090,15 @@ body.lb-app:has(.crisp-hub) {
 
 .crisp-form-field input[type="text"],
 .crisp-form-field input[type="email"],
+.crisp-form-field input[type="number"],
+.crisp-form-field input[type="password"],
+.crisp-form-field input[type="tel"],
+.crisp-form-field input[type="url"],
 .crisp-form-field input[type="color"],
 .crisp-form-field select,
 .crisp-form-field textarea {
   width: 100%;
+  box-sizing: border-box;
   border: 1px solid #CBD5E1;
   border-radius: 10px;
   padding: 9px 12px;

@@ -911,10 +911,16 @@
   let busy = false;
 
   // Add message bubble
-  function addMessage(who, text, isThinking = false) {
+  // html is server-escaped (apps/chat/formatting.py), so innerHTML is safe here.
+  function setBubble(el, text, html) {
+    if (html) { el.innerHTML = html; el.classList.add('crisp-bubble-rich'); }
+    else { el.textContent = text; el.classList.remove('crisp-bubble-rich'); }
+  }
+
+  function addMessage(who, text, isThinking = false, html = '') {
     const el = document.createElement('div');
     el.className = 'crisp-bubble ' + (who === 'you' ? 'crisp-bubble-visitor' : (isThinking ? 'crisp-bubble-thinking' : 'crisp-bubble-agent'));
-    el.textContent = text;
+    setBubble(el, text, who === 'you' ? '' : html);
     msgBox.appendChild(el);
     msgBox.scrollTop = msgBox.scrollHeight;
     return el;
@@ -941,7 +947,7 @@
       if (data.messages && data.messages.length) {
         msgBox.innerHTML = '';
         data.messages.forEach(m => {
-          addMessage(m.role === 'visitor' ? 'you' : 'agent', m.content);
+          addMessage(m.role === 'visitor' ? 'you' : 'agent', m.content, false, m.html);
         });
       } else {
         resetChat();
@@ -978,7 +984,8 @@
         });
         const data = await res.json().catch(() => ({}));
         thinking.className = 'crisp-bubble crisp-bubble-agent';
-        thinking.textContent = res.ok ? (data.reply || 'No reply.') : (data.error || 'Could not connect.');
+        if (res.ok) setBubble(thinking, data.reply || 'No reply.', data.reply_html);
+        else thinking.textContent = data.error || 'Could not connect.';
 
         if (data.session_id) {
           sessionId = data.session_id;

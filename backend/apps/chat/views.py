@@ -23,7 +23,8 @@ from apps.knowledge.models import KnowledgeSource
 from apps.workspaces.models import Workspace
 from apps.workspaces.views import user_workspace
 
-from .actions import handle_widget_action, process_visitor_turn
+from .actions import handle_widget_action, process_visitor_turn, turn_guidance
+from .formatting import reply_to_html
 from .memory import (
     build_visitor_context_for_prompt,
     get_or_create_profile,
@@ -35,7 +36,7 @@ from .notify import notify_team_event
 
 logger = logging.getLogger(__name__)
 
-FALLBACK_REPLY = 'I am not sure based on my training materials yet.'
+FALLBACK_REPLY = "I don't have that detail handy right now — want me to get someone from the team to follow up?"
 
 
 def _redis():
@@ -171,6 +172,7 @@ def _serialize_message(m: Message) -> dict:
         'id': m.id,
         'role': m.role,
         'content': m.content,
+        'html': reply_to_html(m.content),
         'created_at': m.created_at.isoformat(),
         'author': m.author.get_full_name() or m.author.email if m.author_id else '',
     }
@@ -302,6 +304,7 @@ def widget_action(request):
 
     return JsonResponse({
         **result,
+        'message_html': reply_to_html(reply),
         'session_id': session.id,
         'message_id': message_id,
     })
@@ -370,10 +373,13 @@ def widget_chat(request):
         logger.exception('Redis memory unavailable; continuing without cache')
         history = [{'role': 'visitor', 'content': message}]
 
+    guidance = turn_guidance(employee, message)
     system_prompt = employee.build_system_prompt()
     visitor_ctx = build_visitor_context_for_prompt(profile)
     if visitor_ctx:
         system_prompt = f'{system_prompt}\n\n{visitor_ctx}'
+    if guidance['prompt']:
+        system_prompt = f'{system_prompt}\n\n{guidance["prompt"]}'
 
     payload = {
         'employee_id': str(employee.id),
@@ -382,6 +388,7 @@ def widget_chat(request):
         'history': history,
         'top_k': 4,
         'capabilities': employee.capabilities if employee.capabilities is not None else employee.default_capabilities(),
+        'search_query': guidance['search_query'],
     }
 
     try:
@@ -438,6 +445,8 @@ def widget_chat(request):
         msg = persist_reply(reply)
         return JsonResponse({
             'reply': reply,
+            'reply_html': reply_to_html(reply),
+            'suggest': guidance['suggest'],
             'session_id': session.id,
             'message_id': msg.id,
             'human_mode': False,
@@ -455,6 +464,8 @@ def widget_chat(request):
             'session_id': session.id,
             'message_id': msg.id,
             'done': True,
+            'reply_html': reply_to_html(reply),
+            'suggest': guidance['suggest'],
             'actions': action_result,
         }
         yield f'data: {json.dumps(meta)}\n\n'

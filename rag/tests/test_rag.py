@@ -47,7 +47,7 @@ def ingest(client, source_id, text, title='', employee_id=EMP):
     return r.json()
 
 
-def capture_chat(client, message, monkeypatch, tokens=('ok',), employee_id=EMP, top_k=1):
+def capture_chat(client, message, monkeypatch, tokens=('ok',), employee_id=EMP, top_k=1, **extra):
     """Run /chat with a fake LLM; return (system_prompt, raw_body)."""
     captured = {}
 
@@ -59,7 +59,7 @@ def capture_chat(client, message, monkeypatch, tokens=('ok',), employee_id=EMP, 
     monkeypatch.setattr(client.main.llm, 'stream', fake_stream)
     r = client.post('/chat', headers=AUTH, json={
         'employee_id': employee_id, 'system_prompt': 'You are Ava, the clinic assistant.',
-        'message': message, 'history': [], 'top_k': top_k,
+        'message': message, 'history': [], 'top_k': top_k, **extra,
     })
     assert r.status_code == 200, r.text
     return captured['system'], r.text
@@ -94,6 +94,23 @@ def test_ingest_then_chat_retrieves_right_chunk(client, monkeypatch):
 
     system, _ = capture_chat(client, 'where can I park?', monkeypatch)
     assert 'basement garage' in context_of(system)
+
+
+def test_search_query_overrides_retrieval_but_not_message(client, monkeypatch):
+    ingest(client, 'pricing', PRICING)
+    ingest(client, 'parking', PARKING)
+    system, _ = capture_chat(
+        client, 'what do you offer?', monkeypatch,
+        search_query='what do you offer? packages pricing plans price cost',
+    )
+    assert 'Starter plan' in context_of(system)
+
+
+def test_reply_rules_ask_for_chat_style_not_essays(client, monkeypatch):
+    system, _ = capture_chat(client, 'hi', monkeypatch)
+    rules = system.split('### STRICT INSTRUCTIONS ###', 1)[1]
+    assert 'Package name' in rules
+    assert 'bullet points' not in rules  # no blanket "answer in bullets" rule
 
 
 def test_top_k_is_used_and_clamped(client, monkeypatch):

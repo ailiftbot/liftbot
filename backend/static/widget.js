@@ -399,6 +399,18 @@
       '.lb-bubble--you{background:' + color + ';color:#fff;border-radius:16px 16px 4px 16px;padding:10px 14px}' +
       '.lb-bubble--sys{background:#FEF3C7;color:#92400E;font-size:12.5px;border-radius:12px}' +
       '.lb-bubble--human{background:#DBEAFE;color:#1E3A8A}' +
+      /* Rich replies: server-escaped HTML (p, ul/ol, strong, a) from apps/chat/formatting.py */
+      '.lb-bubble p{margin:0}' +
+      '.lb-bubble p+p,.lb-bubble p+ul,.lb-bubble p+ol,.lb-bubble ul+p,.lb-bubble ol+p{margin-top:8px}' +
+      '.lb-bubble ul,.lb-bubble ol{margin:6px 0 0;padding-left:18px}' +
+      '.lb-bubble li{margin:5px 0;padding-left:2px}' +
+      '.lb-bubble li::marker{color:' + color + '}' +
+      '.lb-bubble strong{font-weight:650;color:#111827}' +
+      '.lb-bubble--you strong,.lb-bubble--sys strong,.lb-bubble--human strong{color:inherit}' +
+      '.lb-bubble a{color:' + color + ';text-decoration:underline;text-underline-offset:2px;word-break:break-word}' +
+      '.lb-bubble--you a{color:#fff}' +
+      '.lb-plain{white-space:pre-line}' +
+      '.lb-quick{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 14px 36px}' +
       '.lb-bubble--typing{display:flex;align-items:center;gap:5px;min-width:52px;min-height:36px;padding:12px 16px}' +
       '.lb-bubble--typing span{width:7px;height:7px;border-radius:50%;background:#9ca3af;animation:lbDot 1.2s infinite ease-in-out}' +
       '.lb-bubble--typing span:nth-child(2){animation-delay:.15s}' +
@@ -419,9 +431,16 @@
       '.lb-pill-solid{border:0;background:' + color + ';color:#fff}' +
       '.lb-pill-outline{border:1px solid #ddd6fe;background:#fff;color:#5B21B6}' +
       '.lb-field{display:block;width:100%;margin-bottom:6px;border:1px solid #D1D5DB;border-radius:10px;padding:10px 12px;font-size:14px}' +
-      '.lb-card{margin:0 0 10px;padding:12px;background:#fff;border:1px solid #E5E7EB;border-radius:14px;width:100%}' +
-      '.lb-slot{display:block;width:100%;text-align:left;margin-bottom:6px;border:1px solid #DDD6FE;border-radius:10px;' +
-      'padding:10px 12px;background:#F5F3FF;cursor:pointer;font-size:13px;font-family:inherit}' +
+      '.lb-card{margin:0 0 14px 36px;padding:14px;background:#fff;border:1px solid #E5E7EB;border-radius:14px;' +
+      'width:calc(100% - 36px);box-sizing:border-box;box-shadow:0 1px 2px rgba(15,23,42,.05)}' +
+      '.lb-card__title{font-size:13.5px;font-weight:650;color:#111827;margin-bottom:10px}' +
+      '.lb-card__day{font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;margin:10px 0 6px}' +
+      '.lb-card__day:first-of-type{margin-top:0}' +
+      '.lb-card__err{font-size:12px;color:#B91C1C;margin:2px 0 6px}' +
+      '.lb-slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:6px}' +
+      '.lb-slot{display:block;width:100%;text-align:center;border:1px solid #DDD6FE;border-radius:10px;' +
+      'padding:9px 6px;background:#F5F3FF;color:#4C1D95;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit}' +
+      '.lb-slot:hover{background:' + color + ';border-color:' + color + ';color:#fff}' +
       '</style></head><body class="closed">' +
       '<button type="button" class="lb-launcher" id="lbLauncher" aria-label="Open conversation">' +
       '<span class="lb-launcher__pulse" aria-hidden="true"></span>' +
@@ -617,7 +636,8 @@
       'messages.innerHTML="";var day=document.createElement("div");day.className="lb-day";day.innerHTML="<span>Today</span>";messages.appendChild(day);' +
       'addMsg("them",cfg.greeting||("Hi, I am "+cfg.name+"."));});' +
 
-      'function addMsg(kind,text){var mine=kind==="you",sys=kind==="system",human=kind==="human",typing=text==="…";' +
+      'function setBody(b,text,html){if(html){b.innerHTML=html;b.classList.remove("lb-plain");}else{b.textContent=text||"";b.classList.add("lb-plain");}}' +
+      'function addMsg(kind,text,html){var mine=kind==="you",sys=kind==="system",human=kind==="human",typing=text==="…";' +
       'var last=messages.lastElementChild&&messages.lastElementChild.querySelector(".lb-bubble");' +
       'if(!mine&&!typing&&last&&last.textContent===text)return last;' +
       'var row=document.createElement("div");row.className="lb-row "+(mine?"lb-row--you":"lb-row--them");' +
@@ -626,7 +646,7 @@
       'var b=document.createElement("div");' +
       'b.className="lb-bubble "+(mine?"lb-bubble--you":sys?"lb-bubble--sys":human?"lb-bubble--human":"lb-bubble--them");' +
       'if(typing){b.className="lb-bubble lb-bubble--them lb-bubble--typing";b.innerHTML="<span></span><span></span><span></span>";}' +
-      'else{b.textContent=text;}' +
+      'else{setBody(b,text,html);}' +
       'wrap.appendChild(b);' +
       'if(!typing){var meta=document.createElement("div");meta.className="lb-meta"+(mine?" lb-meta--you":"");' +
       'if(mine){meta.textContent=fmtTime()+" ";var ticks=document.createElement("span");ticks.className="lb-ticks";ticks.textContent="✓✓";meta.appendChild(ticks);}' +
@@ -634,7 +654,7 @@
       'wrap.appendChild(meta);}' +
       'row.appendChild(wrap);messages.appendChild(row);messages.scrollTop=messages.scrollHeight;return b;}' +
 
-      'function revealReply(node,text){if(!node)return;node.classList.remove("lb-bubble--typing");node.textContent=text||"";' +
+      'function revealReply(node,text,html){if(!node)return;node.classList.remove("lb-bubble--typing");setBody(node,text,html);' +
       'var wrap=node.parentNode;if(wrap&&!wrap.querySelector(".lb-meta")){var meta=document.createElement("div");meta.className="lb-meta";meta.textContent=fmtTime();wrap.appendChild(meta);}}' +
 
       'function pill(solid){return "lb-pill "+(solid?"lb-pill-solid":"lb-pill-outline");}' +
@@ -644,7 +664,7 @@
       'b.addEventListener("click",function(){runAction(a.id);});actions.appendChild(b);});}' +
 
       'function runAction(id){if(id==="collect_contact")return showContactForm();' +
-      'if(id==="schedule")return showSchedulePicker();' +
+      'if(id==="schedule")return showSchedulePicker(lastKind);' +
       'if(id==="handoff")postAction("handoff",{note:"Visitor requested to talk to the team"});}' +
 
       'function postAction(action,data){var node=addMsg("them","…");' +
@@ -652,29 +672,55 @@
       'body:JSON.stringify({token:token,action:action,visitor_id:visitorId,session_id:sessionId,data:data||{}})})' +
       '.then(function(res){if(res.session_id){sessionId=res.session_id;localStorage.setItem(sessionKey,sessionId);}' +
       'if(res.message_id){lastMsgId=Math.max(lastMsgId,res.message_id);seenIds[res.message_id]=1;pollPrimed=true;}' +
-      'revealReply(node,res.message||"Done.");if(res.request_takeover){awaitingTeam=true;' +
+      'revealReply(node,res.message||"Done.",res.message_html);applySuggest(res.suggest);if(res.request_takeover){awaitingTeam=true;' +
       'statusEl.textContent="Connecting you to a teammate…";startPolling();}})' +
       '.catch(function(err){revealReply(node,err.message||"Could not complete that action.");});}' +
 
-      'function showContactForm(){var wrap=document.createElement("div");wrap.className="lb-card";' +
-      'var title=document.createElement("div");title.style.cssText="font-size:12px;font-weight:650;margin-bottom:8px";' +
-      'title.textContent="Share your details";wrap.appendChild(title);' +
-      'var nameI=document.createElement("input");nameI.className="lb-field";nameI.placeholder="Name";' +
-      'var emailI=document.createElement("input");emailI.className="lb-field";emailI.placeholder="Email";' +
-      'var phoneI=document.createElement("input");phoneI.className="lb-field";phoneI.placeholder="Phone";' +
-      'var go=document.createElement("button");go.type="button";go.className=pill(true);go.style.marginTop="6px";go.textContent="Send to team";' +
-      'go.addEventListener("click",function(){wrap.remove();postAction("collect_contact",{name:nameI.value,email:emailI.value,phone:phoneI.value});});' +
-      'wrap.appendChild(nameI);wrap.appendChild(emailI);wrap.appendChild(phoneI);wrap.appendChild(go);' +
-      'messages.appendChild(wrap);messages.scrollTop=messages.scrollHeight;}' +
+      'function scrollDown(){messages.scrollTop=messages.scrollHeight;}' +
+      /* While an inline card / chips are showing, hide the fixed action bar so options are not shown twice. */
+      'function clearCards(){Array.prototype.forEach.call(messages.querySelectorAll(".lb-card,.lb-quick"),function(n){n.remove();});actions.style.display="";}' +
+      'function mountCard(node){actions.style.display="none";messages.appendChild(node);scrollDown();}' +
+      'new MutationObserver(function(){if(!messages.querySelector(".lb-card,.lb-quick"))actions.style.display="";}).observe(messages,{childList:true});' +
+      'function cardTitle(wrap,text){var t=document.createElement("div");t.className="lb-card__title";t.textContent=text;wrap.appendChild(t);}' +
 
-      'function showSchedulePicker(){var wrap=document.createElement("div");wrap.className="lb-card";' +
-      'var title=document.createElement("div");title.style.cssText="font-size:12px;font-weight:650;margin-bottom:8px";' +
-      'title.textContent="Pick a time";wrap.appendChild(title);' +
-      '(cfg.slots||[]).forEach(function(slot){var b=document.createElement("button");b.type="button";b.className="lb-slot";b.textContent=slot.label;' +
-      'b.addEventListener("click",function(){wrap.remove();postAction("schedule",{slot_id:slot.id,label:slot.label,starts_at:slot.starts_at});});' +
-      'wrap.appendChild(b);});' +
-      'if(!(cfg.slots||[]).length){var e=document.createElement("div");e.style.cssText="font-size:12px;color:#6B7280";e.textContent="No slots available right now.";wrap.appendChild(e);}' +
-      'messages.appendChild(wrap);messages.scrollTop=messages.scrollHeight;}' +
+      'function showContactForm(title){clearCards();var wrap=document.createElement("div");wrap.className="lb-card";' +
+      'cardTitle(wrap,title||"Share your details and we\u2019ll get back to you");' +
+      'function field(ph,type,ac){var i=document.createElement("input");i.className="lb-field";i.placeholder=ph;i.type=type;i.autocomplete=ac;wrap.appendChild(i);return i;}' +
+      'var nameI=field("Your name","text","name"),phoneI=field("Phone","tel","tel"),emailI=field("Email","email","email");' +
+      'if(cfg.visitor_name)nameI.value=cfg.visitor_name;' +
+      'var err=document.createElement("div");err.className="lb-card__err";err.style.display="none";wrap.appendChild(err);' +
+      'var go=document.createElement("button");go.type="button";go.className=pill(true);go.style.marginTop="4px";go.textContent="Send";' +
+      'go.addEventListener("click",function(){var e=emailI.value.trim(),ph=phoneI.value.trim();' +
+      'if(!e&&!ph){err.textContent="Add a phone number or email so we can reach you.";err.style.display="block";return;}' +
+      'if(nameI.value.trim())cfg.visitor_name=nameI.value.trim();' +
+      'wrap.remove();postAction("collect_contact",{name:nameI.value,email:e,phone:ph});});' +
+      'wrap.appendChild(go);mountCard(wrap);if(!isMobile())nameI.focus();}' +
+
+      /* Slots arrive as "Tue Oct 14 · 10:00 AM": group them under one heading per day. */
+      'function showSchedulePicker(kind){clearCards();kind=kind||"appointment";var wrap=document.createElement("div");wrap.className="lb-card";' +
+      'cardTitle(wrap,"Pick a time for your "+kind);' +
+      'var slots=cfg.slots||[],grid=null,lastDay=null;' +
+      'slots.forEach(function(slot){var parts=String(slot.label).split(" \\u00b7 "),day=parts[0],time=parts[1]||slot.label;' +
+      'if(day!==lastDay){lastDay=day;var h=document.createElement("div");h.className="lb-card__day";h.textContent=day;wrap.appendChild(h);' +
+      'grid=document.createElement("div");grid.className="lb-slots";wrap.appendChild(grid);}' +
+      'var b=document.createElement("button");b.type="button";b.className="lb-slot";b.textContent=time;' +
+      'b.addEventListener("click",function(){wrap.remove();addMsg("you",slot.label);' +
+      'postAction("schedule",{slot_id:slot.id,label:slot.label,starts_at:slot.starts_at,kind:kind});});' +
+      'grid.appendChild(b);});' +
+      'if(!slots.length){var e=document.createElement("div");e.style.cssText="font-size:12.5px;color:#6B7280";' +
+      'e.textContent="No open times right now \u2014 share your details and we\u2019ll arrange one with you.";wrap.appendChild(e);}' +
+      'mountCard(wrap);}' +
+
+      'function showChips(options){clearCards();var row=document.createElement("div");row.className="lb-quick";' +
+      'options.forEach(function(o){var b=document.createElement("button");b.type="button";b.className=pill(false);b.textContent=o.label;' +
+      'b.addEventListener("click",function(){row.remove();runAction(o.id);});row.appendChild(b);});' +
+      'mountCard(row);}' +
+
+      'var lastKind="appointment";' +
+      'function applySuggest(sg){if(!sg||!sg.type)return;' +
+      'if(sg.type==="schedule"){lastKind=sg.kind||lastKind;showSchedulePicker(lastKind);}' +
+      'else if(sg.type==="collect_contact")showContactForm(sg.title);' +
+      'else if(sg.type==="chips"&&sg.options&&sg.options.length)showChips(sg.options);}' +
 
       'function stopPolling(){if(pollTimer){clearInterval(pollTimer);pollTimer=null;}}' +
       'function pollOnce(){if(!sessionId||document.hidden)return;' +
@@ -685,20 +731,19 @@
       /* First poll after load: history is already on screen, just remember where we are. */
       'var first=!pollPrimed;pollPrimed=true;' +
       '(data.messages||[]).forEach(function(m){lastMsgId=Math.max(lastMsgId,m.id);if(seenIds[m.id])return;seenIds[m.id]=1;' +
-      'if(first)return;var kind=m.role==="human"?"human":(m.role==="system"?"system":"them");addMsg(kind,m.content);});})' +
+      'if(first)return;var kind=m.role==="human"?"human":(m.role==="system"?"system":"them");addMsg(kind,m.content,m.html);});})' +
       '.catch(function(err){if(/Not found/.test(err.message||"")){sessionId=null;localStorage.removeItem(sessionKey);}});}' +
       'function startPolling(){if(pollTimer)return;pollOnce();pollTimer=setInterval(pollOnce,humanMode||awaitingTeam?2500:5000);}' +
 
       'function sendMessage(text,continueLast){if(!text||sending)return;sending=true;if(sendBtn)sendBtn.disabled=true;' +
-      'addMsg("you",text);var node=addMsg("them","…");' +
+      'clearCards();addMsg("you",text);var node=addMsg("them","…");' +
       'fetchJson(apiBase+"/message/",{method:"POST",headers:{"Content-Type":"application/json"},' +
       'body:JSON.stringify({token:token,message:text,visitor_id:visitorId,session_id:sessionId,stream:false,continue_last:!!continueLast})})' +
       '.then(function(data){if(data.session_id){sessionId=data.session_id;localStorage.setItem(sessionKey,sessionId);}' +
       'if(data.message_id){lastMsgId=Math.max(lastMsgId,data.message_id);seenIds[data.message_id]=1;pollPrimed=true;}' +
       'if(data.human_mode){humanMode=true;revealReply(node,data.message||"A teammate will reply shortly.");' +
       'statusEl.textContent="Talking with a teammate";startPolling();return;}' +
-      'revealReply(node,data.reply||"No reply.");' +
-      'if(data.actions&&data.actions.tasks_created&&data.actions.tasks_created.length)addMsg("system","✓ "+data.actions.tasks_created[0].title);})' +
+      'revealReply(node,data.reply||"No reply.",data.reply_html);applySuggest(data.suggest);})' +
       '.catch(function(){revealReply(node,"Sorry, I could not reply right now.");})' +
       '.then(function(){sending=false;if(sendBtn)sendBtn.disabled=false;});}' +
 

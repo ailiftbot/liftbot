@@ -12,7 +12,9 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from apps.chat.actions import turn_guidance
 from apps.chat.constants import CAPABILITY_LABELS
+from apps.chat.formatting import reply_to_html
 from apps.chat.models import ChatSession, EmployeeTask, Message
 from apps.knowledge.forms import KnowledgeSourceForm
 from apps.knowledge.models import KnowledgeSource
@@ -175,8 +177,11 @@ def playground_history(request, pk):
         session = ChatSession.objects.filter(pk=session_id, employee=employee, is_test=True).first()
     if not session:
         return JsonResponse({'messages': []})
-    msgs = session.messages.order_by('id').values('role', 'content')
-    return JsonResponse({'session_id': session.id, 'messages': list(msgs)})
+    msgs = [
+        {**m, 'html': reply_to_html(m['content'])}
+        for m in session.messages.order_by('id').values('role', 'content')
+    ]
+    return JsonResponse({'session_id': session.id, 'messages': msgs})
 
 
 def _rag_reply(employee, message, history):
@@ -184,9 +189,14 @@ def _rag_reply(employee, message, history):
 
     Raises requests.RequestException if the service is unreachable or errors.
     """
+    guidance = turn_guidance(employee, message)
+    system_prompt = employee.build_system_prompt()
+    if guidance['prompt']:
+        system_prompt = f'{system_prompt}\n\n{guidance["prompt"]}'
     payload = {
         'employee_id': str(employee.id),
-        'system_prompt': employee.build_system_prompt(),
+        'system_prompt': system_prompt,
+        'search_query': guidance['search_query'],
         'message': message,
         'history': history,
         'top_k': 4,
@@ -271,7 +281,7 @@ def playground_message(request, pk):
     Message.objects.create(session=session, role=Message.Role.EMPLOYEE, content=reply)
     session.last_message_at = timezone.now()
     session.save(update_fields=['last_message_at'])
-    return JsonResponse({'reply': reply, 'session_id': session.id})
+    return JsonResponse({'reply': reply, 'reply_html': reply_to_html(reply), 'session_id': session.id})
 
 
 @login_required

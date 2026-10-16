@@ -206,3 +206,137 @@ class IntentAndContactTests(TestCase):
         self.assertEqual(extract_contact('order 2024 2025 please')['phone'], '')
         self.assertEqual(extract_contact('call +1 415 555 0123')['phone'], '+1 415 555 0123')
         self.assertEqual(extract_contact('mail me at a@b.co')['email'], 'a@b.co')
+
+
+class ReplyFormattingTests(TestCase):
+    def test_bullets_bold_and_paragraphs(self):
+        from .formatting import reply_to_html
+        html = reply_to_html('Here are our packages:\n- **Basic** — ₹999: 1 visit\n- **Pro** — ₹1,999: 3 visits\n\nWant to book?')
+        self.assertEqual(
+            html,
+            '<p>Here are our packages:</p>'
+            '<ul><li><strong>Basic</strong> — ₹999: 1 visit</li><li><strong>Pro</strong> — ₹1,999: 3 visits</li></ul>'
+            '<p>Want to book?</p>',
+        )
+
+    def test_numbered_list_headings_and_line_breaks(self):
+        from .formatting import reply_to_html
+        self.assertEqual(reply_to_html('1. One\n2. Two'), '<ol><li>One</li><li>Two</li></ol>')
+        self.assertEqual(reply_to_html('### Hours\nMon-Fri\nSat'), '<p><strong>Hours</strong><br>Mon-Fri<br>Sat</p>')
+
+    def test_html_is_escaped_and_only_http_links_allowed(self):
+        from .formatting import reply_to_html
+        html = reply_to_html('<script>alert(1)</script> **<b>x</b>** [click](javascript:alert(1)) [ok](https://a.co/x?y=1&z=2)')
+        self.assertNotIn('<script>', html)
+        self.assertNotIn('<b>', html)
+        self.assertNotIn('href="javascript', html)
+        self.assertIn('&lt;script&gt;', html)
+        self.assertIn('<a href="https://a.co/x?y=1&amp;z=2" target="_blank" rel="noopener noreferrer nofollow">ok</a>', html)
+
+    def test_bare_urls_and_emails_are_linked(self):
+        from .formatting import reply_to_html
+        html = reply_to_html('See https://acme.com/pricing. Or mail sales@acme.com')
+        self.assertIn('<a href="https://acme.com/pricing"', html)
+        self.assertIn('pricing</a>.', html)
+        self.assertIn('href="mailto:sales@acme.com"', html)
+
+
+class BookingAndPackagesIntentTests(TestCase):
+    def test_booking_kinds(self):
+        from .actions import booking_kind
+        self.assertEqual(booking_kind('Can I schedule a site visit this weekend?'), 'site visit')
+        self.assertEqual(booking_kind('I want to visit the property'), 'site visit')
+        self.assertEqual(booking_kind('can we set up a meeting?'), 'meeting')
+        self.assertEqual(booking_kind('Please schedule a call tomorrow'), 'call')
+        self.assertEqual(booking_kind('call me back at 5'), 'call')
+        self.assertEqual(booking_kind('can I book a demo'), 'demo')
+        self.assertEqual(booking_kind('I want to book an appointment'), 'appointment')
+        self.assertEqual(booking_kind('Can I visit your blog?'), '')
+        self.assertEqual(booking_kind('what are your opening hours'), '')
+
+    def test_packages(self):
+        from .actions import wants_packages
+        for text in ('show me your packages', 'What is the pricing?', 'how much does it cost', 'price list please'):
+            self.assertTrue(wants_packages(text), text)
+        self.assertFalse(wants_packages('where is your office?'))
+
+    def test_guidance_respects_capabilities(self):
+        from .actions import turn_guidance
+        _, _, employee = make_workspace()
+        g = turn_guidance(employee, 'can I book a site visit?')
+        self.assertEqual(g['suggest'], {'type': 'schedule', 'kind': 'site visit'})
+        self.assertIn('site visit', g['prompt'])
+
+        employee.capabilities = ['collect_contact']
+        g = turn_guidance(employee, 'can I book a site visit?')
+        self.assertEqual(g['suggest']['type'], 'collect_contact')
+
+        employee.capabilities = []
+        g = turn_guidance(employee, 'can I book a site visit?')
+        self.assertIsNone(g['suggest'])
+        self.assertEqual(g['prompt'], '')
+
+    def test_packages_guidance_widens_search_and_offers_chips(self):
+        from .actions import turn_guidance
+        _, _, employee = make_workspace()
+        g = turn_guidance(employee, 'show me the packages for product X')
+        self.assertIn('pricing', g['search_query'])
+        self.assertIn('- **Name** — price', g['prompt'])
+        self.assertEqual(g['suggest']['type'], 'chips')
+        self.assertEqual([o['id'] for o in g['suggest']['options']], ['schedule', 'collect_contact', 'handoff'])
+
+
+class BookingFlowTests(TestCase):
+    """Visit / meeting / call requests open the slot picker and end in one scheduled task."""
+
+    setUp = WidgetApiTests.setUp
+    post = WidgetApiTests.post
+    chat = WidgetApiTests.chat
+
+    def test_site_visit_request_suggests_picker_and_booking_completes_task(self):
+        captured = {}
+
+        def fake_post(url, json=None, **kw):
+            captured['payload'] = json
+            return FakeRag(['Sure! Pick a time below.'])
+
+        with mock.patch('apps.chat.views.requests.post', side_effect=fake_post):
+            r = self.post('message', {
+                'token': self.token, 'message': 'Can I schedule a site visit?', 'visitor_id': 'v1', 'stream': False,
+            })
+        data = r.json()
+        self.assertEqual(data['suggest'], {'type': 'schedule', 'kind': 'site visit'})
+        self.assertEqual(data['reply_html'], '<p>Sure! Pick a time below.</p>')
+        self.assertIn('### THIS TURN ###', captured['payload']['system_prompt'])
+        self.assertEqual(captured['payload']['search_query'], '')
+
+        slot = self.ws.next_available_slots(1)[0]
+        r = self.post('action', {
+            'token': self.token, 'action': 'schedule', 'visitor_id': 'v1', 'session_id': data['session_id'],
+            'data': {'slot_id': slot['id'], 'label': slot['label'], 'kind': 'site visit'},
+        })
+        res = r.json()
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('site visit is booked', res['message'])
+        self.assertIn('<strong>', res['message_html'])
+        # No contact yet: ask where to send the confirmation.
+        self.assertEqual(res['suggest']['type'], 'collect_contact')
+        tasks = EmployeeTask.objects.filter(session_id=data['session_id'], task_type=EmployeeTask.TaskType.SCHEDULE)
+        self.assertEqual(tasks.count(), 1)
+        self.assertIsNotNone(tasks[0].scheduled_for)
+        self.assertEqual(tasks[0].details['kind'], 'site visit')
+
+    def test_packages_question_sends_search_query(self):
+        captured = {}
+
+        def fake_post(url, json=None, **kw):
+            captured['payload'] = json
+            return FakeRag(['- **Basic** — $10'])
+
+        with mock.patch('apps.chat.views.requests.post', side_effect=fake_post):
+            data = self.post('message', {
+                'token': self.token, 'message': 'what packages do you have?', 'visitor_id': 'v1', 'stream': False,
+            }).json()
+        self.assertIn('pricing', captured['payload']['search_query'])
+        self.assertEqual(data['reply_html'], '<ul><li><strong>Basic</strong> — $10</li></ul>')
+        self.assertEqual(data['suggest']['type'], 'chips')

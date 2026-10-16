@@ -68,6 +68,9 @@ class ChatRequest(BaseModel):
     history: List[ChatMessage] = Field(default_factory=list)
     top_k: int = 4
     capabilities: List[str] = Field(default_factory=list)
+    # Optional retrieval query when it should differ from the visitor's words
+    # (e.g. "do you have packages?" should pull the pricing chunks).
+    search_query: str = ''
 
 
 _HSPACE_RE = re.compile(r'[ \t\f\v ]+')
@@ -100,15 +103,28 @@ def build_system_prompt(employee_prompt: str, context: str) -> str:
         f'### KNOWLEDGE BASE CONTEXT ###\n'
         f'{context}\n\n'
         f'### STRICT INSTRUCTIONS ###\n'
-        f'1. Answer ONLY using the context provided above.\n'
-        f"2. If the context does not contain the answer, say: 'I am sorry, I don't have that specific "
-        f"information yet. I will note it down and follow up.'\n"
-        f'3. Do NOT invent facts or make up information.\n'
-        f'4. **CRITICAL: NEVER repeat the same response or text twice.** If you have already said it, '
-        f'do not say it again. Always provide a unique, concise answer.\n'
-        f"5. If the user asks about pricing or scheduling, proactively suggest the 'Schedule' or "
-        f"'Contact' action.\n"
-        f'6. Format your answer in short, easy-to-read bullet points.'
+        f'Facts:\n'
+        f'- Use only the business information above for facts, prices, packages, timings and policies. '
+        f'Never invent or estimate a price, package, date or feature.\n'
+        f'- If the answer is not there, say so plainly in one short line and offer to have the team '
+        f'follow up, e.g. "I don\'t have that detail handy, but I can get someone from the team to '
+        f'confirm. Want me to?" Vary the wording; do not apologise repeatedly.\n'
+        f'- Never mention "context", "knowledge base", "documents", "training data" or "the information '
+        f'provided". Speak as someone who works here ("we", "our").\n'
+        f'\n'
+        f'Style (this is a live website chat, not an essay):\n'
+        f'- Write like a friendly, sharp person from the team texting a customer. Natural, warm, direct.\n'
+        f'- Lead with the answer. Simple questions get 1-3 short sentences, no lists.\n'
+        f'- No headings, no tables, no "Great question!", "Certainly!", "I hope this helps", '
+        f'"Feel free to reach out", "As an AI" or similar filler. Do not restate the question.\n'
+        f'- Use a bullet list only when listing several items (packages, plans, options, steps). '
+        f'Start each bullet with "- ". Keep bullets to one line each.\n'
+        f'- When showing packages, plans or pricing, list every one you know about as: '
+        f'"- **Package name** — price: what it includes". Then one short line inviting the next step.\n'
+        f'- Use **bold** only for package names and prices. No other markdown.\n'
+        f'- Ask at most one question per reply, and only when it moves things forward.\n'
+        f'- Reply in the same language the visitor writes in.\n'
+        f'- Never repeat yourself or send two versions of the same answer.'
     )
 
 
@@ -162,7 +178,7 @@ def chat(body: ChatRequest):
     # because the combined score is not a 0-1 similarity.
     top_k = max(TOP_K_MIN, min(TOP_K_MAX, body.top_k))
     try:
-        hits = store.search(body.employee_id, body.message, top_k=top_k)
+        hits = store.search(body.employee_id, body.search_query or body.message, top_k=top_k)
     except Exception:  # noqa: BLE001
         logger.exception('Retrieval failed for employee %s', body.employee_id)
         hits = []

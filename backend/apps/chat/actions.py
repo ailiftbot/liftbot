@@ -18,18 +18,61 @@ MIN_PHONE_DIGITS = 10
 
 # Phrase-level patterns: single words like "need" or "price" match almost every
 # message and used to flood the team with tasks.
-SCHEDULE_RE = re.compile(
-    r'\b(schedule (a|an)|book (a|an|me)|appointment|set up a (call|meeting)|'
-    r'call ?back|(request|book|schedule) a demo|site visit|viewing)\b'
+_PLACES = (
+    r'site|office|store|showroom|property|project|flat|apartment|villa|house|plot|clinic|'
+    r'place|location|centre|center|shop|outlet|school|campus|studio|salon|hotel|factory|warehouse'
+)
+# Order matters: the first kind that matches names the booking.
+BOOKING_KINDS = (
+    ('site visit', re.compile(
+        r'\b(site visit|site tour|viewing|property tour|'
+        rf'(visit|see|tour|view|check out) (your|the|this|that) ({_PLACES})|'
+        r'(schedule|book|plan|arrange|fix|set up|organi[sz]e) (a |an |my |the )?(site |property )?(visit|tour|viewing)|'
+        r'(come|drop) (by|over|in|and see|to see|to visit)|come (and )?visit)\b'
+    )),
+    ('demo', re.compile(
+        r'\b((request|book|schedule|see|get|want|need|arrange|set up) (a |an |the )?(free |quick |live |product )?demo)\b'
+    )),
+    ('call', re.compile(
+        r'\b(call ?back|call me|give me a call|ring me|'
+        r'(schedule|book|set up|arrange|fix|have|get on|hop on|jump on) (a |an )?(quick |short |phone |video |zoom |discovery )?call|'
+        r'(phone|video|zoom|discovery|quick) call)\b'
+    )),
+    ('meeting', re.compile(
+        r'\b(meeting|meet (you|your team|in person|someone|face to face)|can we meet|'
+        r'(book|schedule|get|want|need) (a |an )?consultation)\b'
+    )),
+    ('appointment', re.compile(
+        r'\b(appointment|schedule (a|an)|book (a|an|me)|reserve (a|an) (slot|time))\b'
+    )),
 )
 HANDOFF_RE = re.compile(
     r'\b(speak to|talk to) (a |an |the |your )?(human|person|someone|agent|team|sales)|'
-    r'\b(real|actual) (person|human)\b|\bconnect me\b|\bcall me\b|\breach out to me\b'
+    r'\b(real|actual) (person|human)\b|\bconnect me\b|\breach out to me\b'
 )
 QUALIFY_RE = re.compile(
     r'\b(interested in (buying|purchasing|your)|want to (buy|purchase|order)|my budget|'
     r'budget (is|of)|ready to (buy|start|sign)|get a quote|pricing for)\b'
 )
+PACKAGES_RE = re.compile(
+    r'\b(packages?|pricing|price list|prices|rates?|tariffs?|plans and|your plans|'
+    r'what plans|which plan|subscription|how much|cost(s|ing)?|fees?|charges|'
+    r'quotation|offers?|combos?|bundles?|price (of|for)|rate card|menu)\b'
+)
+PACKAGES_SEARCH_HINT = 'packages plans pricing price cost rates what is included'
+
+
+def booking_kind(text: str) -> str:
+    """'site visit' / 'demo' / 'call' / 'meeting' / 'appointment', or '' if not a booking request."""
+    lower = text.lower()
+    for kind, pattern in BOOKING_KINDS:
+        if pattern.search(lower):
+            return kind
+    return ''
+
+
+def wants_packages(text: str) -> bool:
+    return bool(PACKAGES_RE.search(text.lower()))
 
 
 def _text(value, limit: int) -> str:
@@ -59,7 +102,7 @@ def extract_contact(text: str) -> dict:
 def detect_intents(text: str) -> list[str]:
     lower = text.lower()
     intents = []
-    if SCHEDULE_RE.search(lower):
+    if booking_kind(lower):
         intents.append(EmployeeTask.TaskType.SCHEDULE)
     if HANDOFF_RE.search(lower):
         intents.append(EmployeeTask.TaskType.HANDOFF)
@@ -167,6 +210,66 @@ def create_tasks_for_intents(workspace, employee, session, message: str, profile
     return created
 
 
+def _caps(employee) -> set:
+    return set(employee.capabilities) if employee.capabilities is not None else set(employee.default_capabilities())
+
+
+def turn_guidance(employee, message: str) -> dict:
+    """
+    Per-turn steering for the reply, based on what the visitor is asking for.
+
+    Returns {'prompt': extra system-prompt text, 'search_query': retrieval query
+    override ('' = use the message), 'suggest': UI hint for the widget or None}.
+    ``suggest`` is {'type': 'schedule', 'kind': ...}, {'type': 'collect_contact',
+    'title': ...} or {'type': 'chips', 'options': [{'id', 'label'}]}.
+    """
+    from apps.chat.constants import CAPABILITY_COLLECT, CAPABILITY_NOTIFY, CAPABILITY_SCHEDULE
+
+    caps = _caps(employee)
+    notes, search_query, suggest = [], '', None
+
+    kind = booking_kind(message)
+    if kind and CAPABILITY_SCHEDULE in caps:
+        notes.append(
+            f'The visitor wants to book a {kind}. A time picker appears right under your reply. '
+            f'In one or two short sentences, happily confirm you can set up the {kind} and ask them to '
+            f'pick a time that suits them below. If they mentioned a day or time, acknowledge it. '
+            f'Do not list times and do not ask for contact details yet.'
+        )
+        suggest = {'type': 'schedule', 'kind': kind}
+    elif kind and CAPABILITY_COLLECT in caps:
+        notes.append(
+            f'The visitor wants to book a {kind}. The team arranges these directly. In one or two short '
+            f'sentences, say you will get it set up and ask them to share their name and phone or email '
+            f'in the form below so the team can confirm a time.'
+        )
+        suggest = {'type': 'collect_contact', 'title': f'Where can we reach you to set up the {kind}?'}
+
+    if wants_packages(message):
+        notes.append(
+            'The visitor wants to see packages, plans or pricing. List every package or plan you know '
+            'about, one bullet each, as "- **Name** — price: key inclusions". If prices or packages are '
+            'not in the business information, say the team will share the latest pricing rather than '
+            'guessing. End with one short line offering the next step.'
+        )
+        search_query = f'{message} {PACKAGES_SEARCH_HINT}'
+        if suggest is None:
+            options = []
+            if CAPABILITY_SCHEDULE in caps:
+                options.append({'id': 'schedule', 'label': 'Book a time'})
+            if CAPABILITY_COLLECT in caps:
+                options.append({'id': 'collect_contact', 'label': 'Get a quote'})
+            if CAPABILITY_NOTIFY in caps:
+                options.append({'id': 'handoff', 'label': 'Talk to the team'})
+            if options:
+                suggest = {'type': 'chips', 'options': options}
+
+    prompt = ''
+    if notes:
+        prompt = '### THIS TURN ###\n' + '\n'.join(f'- {n}' for n in notes)
+    return {'prompt': prompt, 'search_query': search_query, 'suggest': suggest}
+
+
 def process_visitor_turn(workspace, employee, session, profile, message: str) -> dict:
     lead = upsert_lead_from_profile(workspace, employee, session, profile, message)
     tasks = create_tasks_for_intents(workspace, employee, session, message, profile, lead=lead)
@@ -217,7 +320,7 @@ def handle_widget_action(workspace, employee, session, profile, action: str, dat
         )
         return {
             'ok': True,
-            'message': f'Thanks{f", {name}" if name else ""}! I have your details and will connect you with the team.',
+            'message': f'Thanks{f", {name}" if name else ""}! Got your details — someone from the team will be in touch soon.',
             'lead_id': lead.id if lead else None,
             'task_id': task.id,
         }
@@ -227,6 +330,9 @@ def handle_widget_action(workspace, employee, session, profile, action: str, dat
             return {'ok': False, 'error': 'This employee cannot schedule.'}
         slot_id = _text(data.get('slot_id') or data.get('starts_at'), 64)
         label = _text(data.get('label'), 120) or slot_id
+        kind = _text(data.get('kind'), 40).lower()
+        if kind not in {k for k, _ in BOOKING_KINDS}:
+            kind = 'appointment'
         try:
             starts = parse_datetime(slot_id) if slot_id else None
         except ValueError:
@@ -237,29 +343,56 @@ def handle_widget_action(workspace, employee, session, profile, action: str, dat
             starts = timezone.make_aware(starts)
         lead = upsert_lead_from_profile(
             workspace, employee, session, profile,
-            f'Requested schedule: {label}',
+            f'Requested {kind}: {label}',
         )
-        task = create_task(
-            workspace, employee, session,
-            EmployeeTask.TaskType.SCHEDULE,
-            f'Scheduled: {label}',
-            {
-                'slot_id': slot_id,
-                'label': label,
-                'visitor_id': profile.visitor_id,
-                'visitor_name': profile.name,
-                'visitor_email': profile.email,
-                'visitor_phone': profile.phone,
-            },
-            lead=lead,
-            scheduled_for=starts,
-        )
-        return {
+        details = {
+            'kind': kind,
+            'slot_id': slot_id,
+            'label': label,
+            'visitor_id': profile.visitor_id,
+            'visitor_name': profile.name,
+            'visitor_email': profile.email,
+            'visitor_phone': profile.phone,
+        }
+        title = f'{kind.capitalize()}: {label}'
+        # A chat message like "can I book a site visit?" already opened a
+        # schedule task without a time — complete that one instead of adding a duplicate.
+        task = EmployeeTask.objects.filter(
+            session=session, task_type=EmployeeTask.TaskType.SCHEDULE,
+            status=EmployeeTask.Status.OPEN, scheduled_for__isnull=True,
+        ).first()
+        if task:
+            task.title = title
+            task.details = {**(task.details or {}), **details}
+            task.scheduled_for = starts
+            task.lead = lead or task.lead
+            task.save(update_fields=['title', 'details', 'scheduled_for', 'lead', 'updated_at'])
+            notify_team_event(workspace, employee, EmployeeTask.TaskType.SCHEDULE, {
+                'task_id': task.id, 'title': title, 'details': details, 'scheduled_for': starts.isoformat(),
+            })
+        else:
+            task = create_task(
+                workspace, employee, session,
+                EmployeeTask.TaskType.SCHEDULE, title, details,
+                lead=lead, scheduled_for=starts,
+            )
+        result = {
             'ok': True,
-            'message': f"You're booked for {label}. The team will confirm shortly.",
             'task_id': task.id,
             'lead_id': lead.id if lead else None,
         }
+        reach = profile.email or profile.phone
+        if reach:
+            result['message'] = f"Done! Your {kind} is booked for **{label}**. We'll send the confirmation to {reach}."
+        elif CAPABILITY_COLLECT in caps:
+            result['message'] = (
+                f"Done! Your {kind} is booked for **{label}**. "
+                f"What's the best phone number or email to send the confirmation to?"
+            )
+            result['suggest'] = {'type': 'collect_contact', 'title': 'Where should we send the confirmation?'}
+        else:
+            result['message'] = f'Done! Your {kind} is booked for **{label}**. The team will confirm shortly.'
+        return result
 
     if action in ('handoff', 'request_human'):
         if CAPABILITY_NOTIFY not in caps and action == 'handoff':
@@ -283,7 +416,7 @@ def handle_widget_action(workspace, employee, session, profile, action: str, dat
         )
         return {
             'ok': True,
-            'message': 'I am connecting you with a teammate now. Please stay here — someone will join shortly.',
+            'message': "Sure — I'm bringing in a teammate now. Stay right here, they'll join this chat shortly.",
             'task_id': task.id,
             'request_takeover': True,
         }

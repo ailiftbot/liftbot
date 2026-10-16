@@ -842,3 +842,11 @@ a.conv-item { color: inherit; text-decoration: none; }
   .codebox button { padding: 1px 4px; font-size: 8px; }
   .employee-switch select { font-size: 10px; }
 }
+/* Rich AI Employee replies (server-escaped HTML from apps/chat/formatting.py) */
+.bubble-rich p { margin: 0; }
+.bubble-rich p + p, .bubble-rich p + ul, .bubble-rich p + ol, .bubble-rich ul + p, .bubble-rich ol + p { margin-top: 8px; }
+.bubble-rich ul, .bubble-rich ol { margin: 6px 0 0; padding-left: 18px; }
+.bubble-rich li { margin: 4px 0; }
+.bubble-rich li::marker { color: var(--lb-purple, #7C3AED); }
+.bubble-rich strong { font-weight: 650; }
+.bubble-rich a { color: var(--lb-purple, #7C3AED); text-decoration: underline; text-underline-offset: 2px; }

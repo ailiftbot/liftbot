@@ -275,6 +275,7 @@
       const el = document.createElement('div');
       el.className = who === 'you' ? 'bubble-user' : 'bubble-bot';
       el.textContent = text;
+      el.style.whiteSpace = 'pre-line';
       const quick = document.getElementById('dash-quick');
       if (quick) quick.remove();
       msgs.appendChild(el);
@@ -300,7 +301,14 @@
           thinking.textContent = data.error || 'Could not reply right now.';
         } else {
           if (data.session_id) sessionId = data.session_id;
-          thinking.textContent = data.reply || 'No reply.';
+          if (data.reply_html) {
+            // Server-escaped HTML from apps/chat/formatting.py.
+            thinking.innerHTML = data.reply_html;
+            thinking.classList.add('bubble-rich');
+            thinking.style.whiteSpace = '';
+          } else {
+            thinking.textContent = data.reply || 'No reply.';
+          }
         }
       } catch (e) {
         thinking.textContent = 'Network error.';

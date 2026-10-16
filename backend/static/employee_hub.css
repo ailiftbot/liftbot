@@ -1519,3 +1519,13 @@ body.lb-app:has(.crisp-hub) {
     align-items: flex-start;
   }
 }
+
+/* Rich AI Employee replies (server-escaped HTML from apps/chat/formatting.py) */
+.crisp-bubble-rich { white-space: normal; }
+.crisp-bubble-rich p { margin: 0; }
+.crisp-bubble-rich p + p, .crisp-bubble-rich p + ul, .crisp-bubble-rich p + ol, .crisp-bubble-rich ul + p, .crisp-bubble-rich ol + p { margin-top: 8px; }
+.crisp-bubble-rich ul, .crisp-bubble-rich ol { margin: 6px 0 0; padding-left: 18px; }
+.crisp-bubble-rich li { margin: 4px 0; }
+.crisp-bubble-rich li::marker { color: var(--lb-purple, #7C3AED); }
+.crisp-bubble-rich strong { font-weight: 650; }
+.crisp-bubble-rich a { color: var(--lb-purple, #7C3AED); text-decoration: underline; text-underline-offset: 2px; }

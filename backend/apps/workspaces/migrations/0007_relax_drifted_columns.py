@@ -38,6 +38,10 @@ def relax(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
+    # MySQL cannot roll back DDL, and Django refuses ALTER TABLE inside the
+    # transaction a migration normally runs in.
+    atomic = False
+
     # Depend on every app's latest migration so the model state lists all
     # columns this codebase knows about.
     dependencies = [

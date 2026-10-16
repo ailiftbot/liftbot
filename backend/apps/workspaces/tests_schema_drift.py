@@ -27,6 +27,19 @@ class RelaxDriftedColumnsTests(TransactionTestCase):
         with connection.cursor() as c:
             c.execute('ALTER TABLE workspaces_workspace DROP COLUMN away_message, DROP COLUMN `timezone`')
 
+    def test_migration_is_not_atomic(self):
+        # DDL inside the migration transaction raises TransactionManagementError on MySQL.
+        self.assertFalse(migration.Migration.atomic)
+
+    def test_migrate_command_applies_repair(self):
+        from django.core.management import call_command
+        from django.db.migrations.recorder import MigrationRecorder
+
+        MigrationRecorder.Migration.objects.filter(app='workspaces', name='0007_relax_drifted_columns').delete()
+        call_command('migrate', 'workspaces', '0007', verbosity=0)
+        owner = User.objects.create_user('m@example.com', 'm@example.com', 'pw-123456!')
+        Workspace.objects.create(name='Acme', owner=owner)
+
     def test_workspace_insert_works_after_repair(self):
         owner = User.objects.create_user('o@example.com', 'o@example.com', 'pw-123456!')
         plan = BillingPlan.objects.create(

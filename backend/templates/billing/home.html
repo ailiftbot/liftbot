@@ -41,8 +41,13 @@
       <li>{{ plan.token_limit }} tokens</li>
     </ul>
     {% if workspace.plan_id != plan.id %}
-    <form method="post" action="{% url 'billing_checkout' plan.slug %}">{% csrf_token %}
+    <form method="post" action="{% url 'billing_checkout' plan.slug %}" style="display:flex;flex-wrap:wrap;gap:8px;">{% csrf_token %}
+      {% if stripe_enabled or not dummy_payments %}
       <button class="lb-btn lb-btn-primary lb-btn-sm" type="submit">{% if stripe_enabled %}{% if workspace.stripe_subscription_id %}Switch plan{% else %}Subscribe{% endif %}{% else %}Select plan{% endif %}</button>
+      {% endif %}
+      {% if dummy_payments %}
+      <button class="lb-btn {% if stripe_enabled %}lb-btn-ghost{% else %}lb-btn-primary{% endif %} lb-btn-sm" type="submit" name="simulate" value="success">Pay now (test mode)</button>
+      {% endif %}
     </form>
     {% else %}
     <span class="lb-badge lb-badge-purple">Current</span>
@@ -50,6 +55,10 @@
   </div>
   {% endfor %}
 </div>
+
+{% if dummy_payments %}
+<p style="margin:-6px 0 18px;font-size:12px;color:var(--lb-muted);">Test mode: “Pay now” switches your plan instantly without charging a card.</p>
+{% endif %}
 
 <h3 style="font-size:15px;margin:0 0 10px;">Invoices</h3>
 <div class="lb-card" style="overflow:hidden;">

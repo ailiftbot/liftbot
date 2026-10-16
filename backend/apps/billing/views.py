@@ -10,6 +10,7 @@ from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
@@ -58,6 +59,7 @@ def billing_home(request):
         'plans': plans,
         'invoices': invoices,
         'stripe_enabled': stripe_enabled(),
+        'dummy_payments': dummy_payments_enabled(),
         'can_manage_billing': stripe_enabled() and bool(workspace and workspace.stripe_customer_id),
     })
 
@@ -165,6 +167,27 @@ def apply_checkout_session(session):
     return workspace
 
 
+def _apply_dummy_payment(workspace, plan):
+    """Test-mode payment: switch plan and record a paid transaction + invoice. No money moves."""
+    today = timezone.localdate()
+    with transaction.atomic():
+        txn = Transaction.objects.create(
+            workspace=workspace, plan=plan, amount=plan.price_monthly,
+            status=Transaction.Status.PENDING, gateway='dummy',
+        )
+        txn.mark_success(gateway_reference=f'DUMMY-{txn.reference}')
+        Invoice.objects.create(
+            workspace=workspace, plan=plan, amount=plan.price_monthly, status=Invoice.Status.PAID,
+            period_start=today, period_end=today + timedelta(days=30),
+            notes=f'Test-mode payment {txn.reference} (no charge).',
+        )
+        workspace.plan = plan
+        workspace.is_active = True
+        workspace.save(update_fields=['plan', 'is_active', 'updated_at'])
+    logger.warning('Dummy payment: workspace %s switched to %s (txn %s)', workspace.pk, plan.slug, txn.reference)
+    return txn
+
+
 @login_required
 @require_POST
 def create_checkout(request, plan_slug):
@@ -173,6 +196,10 @@ def create_checkout(request, plan_slug):
         return redirect('dashboard')
     require_workspace_admin(request, workspace)
     plan = get_object_or_404(BillingPlan, slug=plan_slug, is_active=True)
+    if request.POST.get('simulate') and dummy_payments_enabled():
+        _apply_dummy_payment(workspace, plan)
+        messages.success(request, f'Payment successful (test mode) — you are now on {plan.name}.')
+        return redirect('billing')
     if not stripe_enabled():
         if not (settings.DEBUG or request.user.is_staff):
             messages.error(request, 'Online payments are not configured yet. Please contact support to change plans.')

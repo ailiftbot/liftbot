@@ -223,3 +223,33 @@ class DummyPaymentTests(BillingTestCase):
             r = self.client.post(reverse('billing_onboarding_pay'), {'simulate': 'success'})
         self.assertRedirects(r, reverse('dashboard'), fetch_redirect_response=False)
         fake.checkout.Session.create.assert_not_called()
+
+
+class BillingPageDummyPaymentTests(BillingTestCase):
+    def setUp(self):
+        super().setUp()
+        self.ws.is_active = True
+        self.ws.save(update_fields=['is_active'])
+        self.client.force_login(self.user)
+
+    @override_settings(DEBUG=False, BILLING_DUMMY_PAYMENTS=True, STRIPE_SECRET_KEY='', STRIPE_PUBLISHABLE_KEY='')
+    def test_pay_now_switches_plan_and_records_paid_invoice(self):
+        page = self.client.get(reverse('billing'))
+        self.assertContains(page, 'Pay now (test mode)')
+        r = self.client.post(reverse('billing_checkout', args=['pro']), {'simulate': 'success'})
+        self.assertRedirects(r, reverse('billing'), fetch_redirect_response=False)
+        self.ws.refresh_from_db()
+        self.assertEqual(self.ws.plan, self.pro)
+        self.assertTrue(self.ws.is_active)
+        invoice = self.ws.invoices.get()
+        self.assertEqual(invoice.status, 'paid')
+        self.assertEqual(self.ws.transactions.order_by('-created_at').first().gateway, 'dummy')
+
+    @override_settings(DEBUG=False, BILLING_DUMMY_PAYMENTS=False, STRIPE_SECRET_KEY='', STRIPE_PUBLISHABLE_KEY='')
+    def test_disabled_flag_hides_button_and_ignores_simulate(self):
+        page = self.client.get(reverse('billing'))
+        self.assertNotContains(page, 'Pay now (test mode)')
+        self.client.post(reverse('billing_checkout', args=['pro']), {'simulate': 'success'})
+        self.ws.refresh_from_db()
+        self.assertNotEqual(self.ws.plan, self.pro)
+        self.assertFalse(self.ws.invoices.exists())

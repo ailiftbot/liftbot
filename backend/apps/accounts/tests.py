@@ -129,6 +129,34 @@ class SignupFlowTests(TestCase):
         self.assertContains(resp, 'already exists')
         self.assertEqual(User.objects.count(), 1)
 
+    def _assert_signup_replaces_old_user(self, old):
+        resp = self.client.post(reverse('signup'), SIGNUP_DATA)
+        self.assertRedirects(resp, reverse('signup_verify_otp'), fetch_redirect_response=False)
+        self.assertFalse(User.objects.filter(pk=old.pk).exists())
+        self.assertEqual(User.objects.filter(email='ada@example.com').count(), 1)
+
+    def test_unverified_user_who_logged_in_can_sign_up_again(self):
+        # Logging in before verifying sets last_login; that used to lock the address.
+        old = make_user('ada@example.com', verified=False)
+        self.client.post(reverse('login'), {'username': 'ada@example.com', 'password': 'S3cure-pass-123'})
+        self.client.logout()
+        self._assert_signup_replaces_old_user(old)
+
+    def test_user_without_profile_can_sign_up_again(self):
+        # Half-created signups from older code left users with no profile row.
+        old = make_user('ada@example.com', verified=False)
+        old.profile.delete()
+        self._assert_signup_replaces_old_user(old)
+
+    def test_unverified_member_of_active_workspace_is_kept(self):
+        user = make_user('ada@example.com', verified=False)
+        owner = make_user('boss@example.com')
+        ws = Workspace.objects.create(name='Paid', owner=owner, plan=self.plan, is_active=True)
+        WorkspaceMembership.objects.create(workspace=ws, user=user)
+        resp = self.client.post(reverse('signup'), SIGNUP_DATA)
+        self.assertContains(resp, 'already exists')
+        self.assertTrue(User.objects.filter(pk=user.pk).exists())
+
     def test_start_over_clears_pending_signup(self):
         self.client.post(reverse('signup'), SIGNUP_DATA)
         resp = self.client.get(reverse('signup') + '?restart=1')
@@ -243,3 +271,27 @@ class PasswordChangeTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.user.refresh_from_db()
         self.assertTrue(self.user.check_password('S3cure-pass-123'))
+
+
+class UnverifyBackfilledAccountsMigrationTests(TestCase):
+    def test_only_unused_backfilled_profiles_are_unverified(self):
+        import importlib
+        from datetime import timedelta
+
+        from django.apps import apps as global_apps
+        from django.utils import timezone
+
+        migration = importlib.import_module('apps.accounts.migrations.0007_unverify_backfilled_unused_accounts')
+        long_ago = timezone.now() - timedelta(days=30)
+
+        backfilled = make_user('ghost@example.com')  # verified, never logged in
+        User.objects.filter(pk=backfilled.pk).update(date_joined=long_ago)
+        used = make_user('used@example.com')
+        User.objects.filter(pk=used.pk).update(date_joined=long_ago, last_login=timezone.now())
+        fresh = make_user('fresh@example.com')  # verified at signup, profile created with the user
+
+        migration.unverify(global_apps, None)
+
+        for user, expected in ((backfilled, False), (used, True), (fresh, True)):
+            user.profile.refresh_from_db()
+            self.assertEqual(user.profile.is_verified, expected, user.email)

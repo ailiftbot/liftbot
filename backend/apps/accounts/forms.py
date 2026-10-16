@@ -8,17 +8,22 @@ from .models import UserProfile
 
 def stale_unverified_users(email):
     """
-    Users with this email who never verified it and never logged in. A new
-    signup with the same address replaces them (typo'd / abandoned signups
-    would otherwise lock the address forever).
+    Users with this email who never proved they own it. A new signup with the
+    same address replaces them (typo'd / abandoned signups would otherwise lock
+    the address forever).
+
+    "Never verified" covers users with no profile row at all (legacy / half-
+    created signups) and users who logged in but stopped at the OTP step —
+    the onboarding gate keeps those out of the app, so they own nothing worth
+    keeping. Anyone in an active (paid) workspace is never treated as stale.
     """
+    unverified = Q(profile__isnull=True) | Q(profile__is_verified=False, profile__email_verified=False)
     return User.objects.filter(
         Q(email__iexact=email) | Q(username__iexact=email),
-        last_login__isnull=True,
+        unverified,
         is_staff=False,
-        profile__is_verified=False,
-        profile__email_verified=False,
-    )
+        is_superuser=False,
+    ).exclude(memberships__workspace__is_active=True).exclude(owned_workspaces__is_active=True)
 
 
 class SignUpForm(UserCreationForm):

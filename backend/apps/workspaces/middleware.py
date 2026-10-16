@@ -2,6 +2,8 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.urls import resolve, Resolver404
 
+from apps.accounts.views import is_email_verified
+
 from .views import user_workspace
 
 # URL names jo bina verified email / bina active workspace ke bhi accessible rehne chahiye
@@ -42,10 +44,9 @@ class OnboardingGateMiddleware:
                     url_name = None
 
                 if url_name not in EXEMPT_URL_NAMES:
-                    profile = getattr(request.user, 'profile', None)
-
-                    # Gate 1: email verify pehle
-                    if profile and not (profile.is_verified or profile.email_verified):
+                    # Gate 1: email verify pehle (legacy users without a profile
+                    # row get one created, unverified, so they are gated too)
+                    if not is_email_verified(request.user):
                         request.session['onboarding_user_id'] = request.user.id
                         messages.warning(request, 'Please verify your email to continue.')
                         return redirect('signup_verify_otp')

@@ -191,3 +191,35 @@ class PlanChangeTests(BillingTestCase):
         with override_settings(DEBUG=True, STRIPE_SECRET_KEY='', STRIPE_PUBLISHABLE_KEY=''):
             r = self.client.post(reverse('billing_checkout', args=['pro']))
         self.assertEqual(r.status_code, 403)
+
+
+class DummyPaymentTests(BillingTestCase):
+    @override_settings(DEBUG=False, BILLING_DUMMY_PAYMENTS=True, STRIPE_SECRET_KEY='', STRIPE_PUBLISHABLE_KEY='')
+    def test_dummy_payment_activates_workspace_in_production_when_enabled(self):
+        self.start_onboarding()
+        page = self.client.get(reverse('billing_onboarding'))
+        self.assertContains(page, 'Pay now (test mode)')
+        r = self.client.post(reverse('billing_onboarding_pay'), {'plan': 'pro', 'simulate': 'success'})
+        self.assertRedirects(r, reverse('dashboard'), fetch_redirect_response=False)
+        self.ws.refresh_from_db()
+        self.assertTrue(self.ws.is_active)
+        self.assertEqual(self.ws.plan, self.pro)
+        txn = self.ws.transactions.order_by('-created_at').first()
+        self.assertEqual(txn.gateway, 'dummy')
+        self.assertEqual(int(self.client.session['_auth_user_id']), self.user.id)
+
+    @override_settings(DEBUG=False, BILLING_DUMMY_PAYMENTS=False, STRIPE_SECRET_KEY='', STRIPE_PUBLISHABLE_KEY='')
+    def test_no_dummy_button_when_disabled(self):
+        self.start_onboarding()
+        page = self.client.get(reverse('billing_onboarding'))
+        self.assertNotContains(page, 'Pay now (test mode)')
+        self.assertContains(page, 'temporarily unavailable')
+
+    @override_settings(DEBUG=False, BILLING_DUMMY_PAYMENTS=True, **STRIPE_KEYS)
+    def test_dummy_button_alongside_stripe_skips_checkout(self):
+        self.start_onboarding()
+        fake = mock.MagicMock()
+        with mock.patch('apps.billing.views._stripe', return_value=fake):
+            r = self.client.post(reverse('billing_onboarding_pay'), {'simulate': 'success'})
+        self.assertRedirects(r, reverse('dashboard'), fetch_redirect_response=False)
+        fake.checkout.Session.create.assert_not_called()

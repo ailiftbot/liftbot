@@ -195,6 +195,10 @@ WORKSPACE_INVITE_EXPIRY_DAYS = 7
 STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY', default='')
 STRIPE_PUBLISHABLE_KEY = env('STRIPE_PUBLISHABLE_KEY', default='')
 STRIPE_WEBHOOK_SECRET = env('STRIPE_WEBHOOK_SECRET', default='')
+# Show a "Pay now (test mode)" button on onboarding billing that activates the
+# workspace without charging. Always on in DEBUG; enable in production only
+# while real payments are not live (BILLING_DUMMY_PAYMENTS=1).
+BILLING_DUMMY_PAYMENTS = env.bool('BILLING_DUMMY_PAYMENTS', default=False)
 
 REDIS_URL = env('REDIS_URL', default='redis://127.0.0.1:6379/0')
 

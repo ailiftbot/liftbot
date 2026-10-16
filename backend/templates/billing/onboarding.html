@@ -38,15 +38,17 @@
     <p style="font-size:12px;color:#9CA3AF;margin-top:14px;text-align:center;">
       Payments are processed by Stripe. Cancel anytime from Billing.
     </p>
-    {% elif simulated %}
+    {% endif %}
+    {% if simulated %}
     <button type="submit" name="simulate" value="success"
-      style="width:100%;background:#7C3AED;color:#fff;border:0;border-radius:999px;padding:13px;font-weight:700;cursor:pointer;">
-      Simulate payment &amp; activate (dev mode)
+      style="width:100%;margin-top:{% if stripe_enabled %}10px{% else %}0{% endif %};background:{% if stripe_enabled %}#fff{% else %}#7C3AED{% endif %};color:{% if stripe_enabled %}#7C3AED{% else %}#fff{% endif %};border:{% if stripe_enabled %}1px solid #DDD6FE{% else %}0{% endif %};border-radius:999px;padding:13px;font-weight:700;cursor:pointer;">
+      Pay now (test mode)
     </button>
     <p style="font-size:12px;color:#9CA3AF;margin-top:14px;text-align:center;">
-      Stripe keys are not set — DEBUG mode simulates the payment.
+      Test mode: no card needed and nothing is charged. Your workspace activates right away.
     </p>
-    {% else %}
+    {% endif %}
+    {% if not stripe_enabled and not simulated %}
     <p style="font-size:13px;color:#DC2626;text-align:center;">
       Online payments are temporarily unavailable. Please contact support.
     </p>

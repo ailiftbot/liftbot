@@ -28,6 +28,11 @@ def _stripe():
     return stripe
 
 
+def dummy_payments_enabled():
+    """Test-mode "Pay now" button: always in DEBUG, in production only with BILLING_DUMMY_PAYMENTS=1."""
+    return bool(settings.DEBUG or getattr(settings, 'BILLING_DUMMY_PAYMENTS', False))
+
+
 def stripe_enabled():
     return bool(settings.STRIPE_SECRET_KEY and settings.STRIPE_PUBLISHABLE_KEY)
 
@@ -323,7 +328,7 @@ def onboarding_billing_view(request):
         'plans': BillingPlan.objects.filter(is_active=True),
         'transaction': txn,
         'stripe_enabled': stripe_enabled(),
-        'simulated': not stripe_enabled() and settings.DEBUG,
+        'simulated': dummy_payments_enabled(),
     })
 
 
@@ -343,7 +348,8 @@ def onboarding_initiate_payment(request):
             txn.amount = plan.price_monthly
             txn.save(update_fields=['plan', 'amount', 'updated_at'])
 
-    if stripe_enabled():
+    simulate = request.POST.get('simulate')
+    if stripe_enabled() and not (simulate and dummy_payments_enabled()):
         status_url = request.build_absolute_uri(reverse('billing_onboarding_status'))
         try:
             session = _create_checkout_session(
@@ -361,19 +367,20 @@ def onboarding_initiate_payment(request):
         txn.save(update_fields=['gateway', 'gateway_reference', 'updated_at'])
         return redirect(session.url)
 
-    if not settings.DEBUG:
+    if not dummy_payments_enabled():
         logger.error('Onboarding payment attempted but Stripe is not configured')
         messages.error(request, 'Online payments are temporarily unavailable. Please contact support.')
         return redirect('billing_onboarding')
 
-    # Local development without Stripe keys: simulate the gateway.
-    if request.POST.get('simulate') == 'failed':
-        txn.mark_failed(reason='Simulated failure (development mode).')
+    # Dummy payments (DEBUG, or BILLING_DUMMY_PAYMENTS=1): no money moves.
+    if simulate == 'failed':
+        txn.mark_failed(reason='Simulated failure (test mode).')
         messages.error(request, 'Payment failed. Please try again.')
         return redirect('billing_onboarding')
-    txn.gateway = 'simulated'
+    logger.warning('Dummy payment activated workspace %s (txn %s)', workspace.pk, txn.reference)
+    txn.gateway = 'dummy' if not settings.DEBUG else 'simulated'
     txn.save(update_fields=['gateway', 'updated_at'])
-    txn.mark_success(gateway_reference=f'SIMULATED-{txn.reference}')
+    txn.mark_success(gateway_reference=f'DUMMY-{txn.reference}')
     workspace.plan = txn.plan
     workspace.is_active = True
     workspace.save(update_fields=['plan', 'is_active', 'updated_at'])

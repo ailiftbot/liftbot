@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 from django.conf import settings
 from django.contrib import messages
@@ -11,6 +12,7 @@ from django.contrib.auth.views import (
 )
 from django.core.mail import send_mail
 from django.db import IntegrityError, transaction
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views import View
@@ -145,10 +147,21 @@ class SignUpView(View):
                 if invite is None:
                     create_workspace_for(user, form.cleaned_data['company_name'], plan)
         except IntegrityError:
-            # Double submit / race: the account was created by a parallel request.
-            logger.warning('Signup IntegrityError for %s (double submit?)', email)
-            form.add_error('email', 'An account with this email already exists. Log in instead.')
-            return self._render(request, form, invite)
+            if get_user_model().objects.filter(Q(email__iexact=email) | Q(username__iexact=email)).exists():
+                # Double submit / race: the account was created by a parallel request.
+                logger.warning('Signup IntegrityError for %s (double submit?)', email)
+                form.add_error('email', 'An account with this email already exists. Log in instead.')
+                return self._render(request, form, invite)
+            # Anything else (schema drift, bad FK, ...) is a server bug — don't
+            # blame the email. Log it with a reference the user can quote.
+            ref = uuid.uuid4().hex[:8]
+            logger.exception('Signup failed [ref %s] for %s', ref, email)
+            form.add_error(
+                None,
+                f'We could not create your account right now. Please try again in a moment '
+                f'or contact support (reference {ref}).',
+            )
+            return self._render(request, form, invite, status=500)
 
         request.session['onboarding_user_id'] = user.id
 

@@ -123,6 +123,20 @@ class SignupFlowTests(TestCase):
         self.assertEqual(User.objects.filter(email='ada@example.com').count(), 1)
         self.assertEqual(Workspace.objects.count(), 1)
 
+    def test_unrelated_db_error_is_not_reported_as_existing_email(self):
+        from unittest import mock
+
+        from django.db import IntegrityError
+
+        with mock.patch('apps.accounts.views.create_workspace_for', side_effect=IntegrityError('1048 null')), \
+                self.assertLogs('apps.accounts.views', level='ERROR') as logs:
+            resp = self.client.post(reverse('signup'), SIGNUP_DATA)
+        self.assertEqual(resp.status_code, 500)
+        self.assertNotContains(resp, 'already exists', status_code=500)
+        self.assertContains(resp, 'could not create your account', status_code=500)
+        self.assertIn('1048 null', '\n'.join(logs.output))
+        self.assertFalse(User.objects.filter(email='ada@example.com').exists())
+
     def test_verified_email_cannot_sign_up_again(self):
         make_user('ada@example.com')
         resp = self.client.post(reverse('signup'), SIGNUP_DATA)

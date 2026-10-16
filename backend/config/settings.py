@@ -27,6 +27,8 @@ if not DEBUG and not RUNNING_TESTS and (not SECRET_KEY or SECRET_KEY == DEV_SECR
     )
 ALLOWED_HOSTS = env.list('DJANGO_ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 CSRF_TRUSTED_ORIGINS = env.list('DJANGO_CSRF_TRUSTED_ORIGINS', default=[])
+# Stale forms bounce back to a fresh page instead of a bare 403 (config/csrf.py).
+CSRF_FAILURE_VIEW = 'config.csrf.csrf_failure'
 
 # Trust reverse proxy (Apache/nginx on :80 → gunicorn :8001)
 USE_X_FORWARDED_HOST = True

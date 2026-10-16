@@ -309,3 +309,25 @@ class UnverifyBackfilledAccountsMigrationTests(TestCase):
         for user, expected in ((backfilled, False), (used, True), (fresh, True)):
             user.profile.refresh_from_db()
             self.assertEqual(user.profile.is_verified, expected, user.email)
+
+
+class CsrfFailureTests(TestCase):
+    def setUp(self):
+        from django.test import Client
+        self.client = Client(enforce_csrf_checks=True)
+        make_plan()
+
+    def test_stale_form_redirects_back_with_message(self):
+        resp = self.client.post(reverse('signup'), SIGNUP_DATA)  # no token
+        self.assertRedirects(resp, reverse('signup'), fetch_redirect_response=False)
+        page = self.client.get(reverse('signup'))
+        self.assertContains(page, 'Your form expired')
+        self.assertFalse(User.objects.exists())
+
+    def test_json_requests_get_403(self):
+        resp = self.client.post(reverse('signup'), '{}', content_type='application/json')
+        self.assertEqual(resp.status_code, 403)
+
+    def test_signup_pages_are_not_cached(self):
+        resp = self.client.get(reverse('signup'))
+        self.assertIn('no-store', resp['Cache-Control'])

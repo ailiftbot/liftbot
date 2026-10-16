@@ -15,7 +15,9 @@ from django.db import IntegrityError, transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
+from django.utils.decorators import method_decorator
 from django.views import View
+from django.views.decorators.cache import never_cache
 
 from apps.workspaces.invites import accept_session_invite, session_invite
 from apps.workspaces.onboarding import create_workspace_for, default_plan, prepare_onboarding_session
@@ -102,6 +104,7 @@ def _post_auth_redirect(request, user):
     return None
 
 
+@method_decorator(never_cache, name='dispatch')
 class SignUpView(View):
     template_name = 'accounts/signup.html'
 
@@ -181,6 +184,7 @@ class SignUpView(View):
         return redirect('signup_verify_otp')
 
 
+@method_decorator(never_cache, name='dispatch')
 class SignupVerifyOtpView(View):
     """Pre-login email verification, right after signup (session-based, no auth required)."""
     template_name = 'accounts/signup_verify_otp.html'
@@ -252,6 +256,7 @@ class SignupVerifyOtpView(View):
         return redirect(next_url)
 
 
+@method_decorator(never_cache, name='dispatch')
 class SignupResendOtpView(View):
     """Resend code during the pre-login signup verification step."""
 

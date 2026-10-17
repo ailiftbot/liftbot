@@ -69,7 +69,7 @@ class AIEmployeeForm(forms.ModelForm):
             'language': forms.TextInput(attrs={'placeholder': 'en'}),
             'greeting_message': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Hi! How can I help you today?'}),
             'handoff_email': forms.EmailInput(attrs={'placeholder': 'team@yourcompany.com'}),
-            'brand_color': forms.TextInput(attrs={'placeholder': '#7C3AED', 'spellcheck': 'false'}),
+            'brand_color': forms.TextInput(attrs={'placeholder': '#7444E4', 'spellcheck': 'false'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -79,7 +79,7 @@ class AIEmployeeForm(forms.ModelForm):
         self.fields['capability_choices'].help_text = 'Choose the work this teammate can take on for visitors.'
         self.fields['greeting_message'].help_text = 'First message visitors see when the widget opens.'
         self.fields['handoff_email'].help_text = 'Used when a visitor asks to speak with your team.'
-        self.fields['brand_color'].help_text = 'Widget header color. Use a hex value like #7C3AED.'
+        self.fields['brand_color'].help_text = 'Widget header color. Use a hex value like #7444E4.'
 
     def save(self, commit=True):
         employee = super().save(commit=False)

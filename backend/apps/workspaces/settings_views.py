@@ -78,7 +78,7 @@ def workspace_settings(request):
             if brand and HEX_COLOR_RE.match(brand):
                 workspace.brand_color = brand
             elif brand:
-                messages.error(request, 'Brand color must be a hex value like #0F766E.')
+                messages.error(request, 'Brand color must be a hex value like #7444E4.')
                 return redirect('settings')
             workspace.save(update_fields=['name', 'brand_color', 'updated_at'])
             messages.success(request, 'Workspace settings saved.')

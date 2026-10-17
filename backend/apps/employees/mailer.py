@@ -231,7 +231,7 @@ def _friendly_error(exc) -> str:
 # ---------------------------------------------------------------- visitor emails
 
 def _html(paragraphs_text: str, employee) -> str:
-    color = employee.brand_color or getattr(employee.workspace, 'brand_color', '') or '#7C3AED'
+    color = employee.brand_color or getattr(employee.workspace, 'brand_color', '') or '#7444E4'
     return (
         '<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:15px;'
         'line-height:1.55;color:#1f2937;max-width:560px">'

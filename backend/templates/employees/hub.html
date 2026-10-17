@@ -40,7 +40,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="crisp-hub" style="--agent-brand: {{ employee.brand_color|default:'#6366F1' }}; --widget-brand: {{ employee.brand_color|default:'#6366F1' }};">
+<div class="crisp-hub" style="--agent-brand: {{ employee.brand_color|default:'#7444E4' }}; --widget-brand: {{ employee.brand_color|default:'#7444E4' }};">
 
   <!-- ======================================================= -->
   <!-- LAYER 2: Middle Sub-Navigation (Crisp AI Employee Sidebar) -->
@@ -503,7 +503,7 @@
               <div class="crisp-form-field">
                 <label for="id_brand_color">Brand Color</label>
                 <div style="display:flex;align-items:center;gap:10px;">
-                  <input type="color" id="hub-color-picker" value="{{ employee.brand_color|default:'#0066FF' }}" style="width:44px;height:38px;padding:2px;border:1px solid #D1D5DB;border-radius:6px;cursor:pointer;" />
+                  <input type="color" id="hub-color-picker" value="{{ employee.brand_color|default:'#7444E4' }}" style="width:44px;height:38px;padding:2px;border:1px solid #D1D5DB;border-radius:6px;cursor:pointer;" />
                   {{ form.brand_color }}
                 </div>
               </div>
@@ -905,7 +905,7 @@
           {% for emp in all_employees %}
           <div class="crisp-teammate-card {% if emp.pk == employee.pk %}is-current{% endif %}" data-search="{{ emp.name|lower }} {{ emp.get_role_display|lower }} {{ emp.department|lower }} {{ emp.get_personality_display|lower }}">
             <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;">
-              <div style="width:40px;height:40px;border-radius:12px;background:{{ emp.brand_color|default:'#6366F1' }};color:#fff;display:grid;place-items:center;font-size:16px;font-weight:800;flex-shrink:0;box-shadow:0 3px 10px rgba(0,0,0,0.12);">
+              <div style="width:40px;height:40px;border-radius:12px;background:{{ emp.brand_color|default:'#7444E4' }};color:#fff;display:grid;place-items:center;font-size:16px;font-weight:800;flex-shrink:0;box-shadow:0 3px 10px rgba(0,0,0,0.12);">
                 {{ emp.name|slice:":1"|upper }}
               </div>
               <div style="flex:1;min-width:0;">

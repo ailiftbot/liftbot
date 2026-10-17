@@ -20,7 +20,7 @@ class Workspace(models.Model):
         default=False,
         help_text='True once the onboarding payment has succeeded. Dashboard access is gated on this.',
     )
-    brand_color = models.CharField(max_length=7, default='#0F766E')
+    brand_color = models.CharField(max_length=7, default='#7444E4')
     widget_token = models.CharField(max_length=64, unique=True, editable=False)
     webhook_url = models.URLField(blank=True, help_text='POST JSON when leads/tasks are created')
     stripe_customer_id = models.CharField(max_length=100, blank=True)

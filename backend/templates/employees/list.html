@@ -38,7 +38,7 @@
   {% for e in employees %}
   <article class="pg-emp-card" data-search="{{ e.name }} {{ e.get_role_display }} {{ e.get_personality_display }} {{ e.department }}">
     <a class="pg-emp-main" href="{% url 'employee_hub' e.pk %}">
-      <div class="pg-av" style="background:{{ e.brand_color|default:'#7C3AED' }}">{{ e.name|slice:":1"|upper }}</div>
+      <div class="pg-av" style="background:{{ e.brand_color|default:'#7444E4' }}">{{ e.name|slice:":1"|upper }}</div>
       <div class="pg-emp-meta">
         <h3>{{ e.name }}</h3>
         <p>{{ e.get_role_display }}{% if e.department %} · {{ e.department }}{% endif %} · {{ e.get_personality_display }}</p>

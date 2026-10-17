@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}" />
   <link rel="stylesheet" href="{% static 'app.css' %}" />
   <style>
     @media (max-width: 1100px) {
@@ -21,7 +22,7 @@
     <div class="lb-sidebar-overlay" id="lbOverlay"></div>
     <aside class="lb-sidebar" id="lbSidebar">
       <a class="lb-brand" href="{% url 'dashboard' %}">
-        <div class="lb-brand-mark">L</div>
+        <img class="lb-brand-mark" src="{% static 'img/logo.png' %}" alt="LiftBot" />
         <div>
           <strong>LiftBot</strong>
           <span>by Brandinglift</span>

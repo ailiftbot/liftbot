@@ -190,7 +190,7 @@
      ============================================================ */
   function mountEmployee(cfg) {
     var token = cfg._token;
-    var color = cfg.brand_color || '#7C3AED';
+    var color = cfg.brand_color || '#7444E4';
     var sessionId = localStorage.getItem('liftbot_session_' + sessionKeyPrefix + '_' + token) || null;
     if (document.getElementById('liftbot-shell-' + token)) return;
     var shell = createShell('liftbot-shell-' + token);
@@ -441,6 +441,20 @@
       '.lb-slot{display:block;width:100%;text-align:center;border:1px solid #DDD6FE;border-radius:10px;' +
       'padding:9px 6px;background:#F5F3FF;color:#4C1D95;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit}' +
       '.lb-slot:hover{background:' + color + ';border-color:' + color + ';color:#fff}' +
+      '.lb-cal{margin-bottom:4px}' +
+      '.lb-cal__head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}' +
+      '.lb-cal__title{font-size:13px;font-weight:700;color:#111827}' +
+      '.lb-cal__nav{border:0;background:transparent;width:28px;height:28px;border-radius:8px;cursor:pointer;' +
+      'font-size:18px;line-height:1;color:#374151;font-family:inherit;padding:0}' +
+      '.lb-cal__nav:hover:not(:disabled){background:#F3F4F6}' +
+      '.lb-cal__nav:disabled{opacity:.3;cursor:default}' +
+      '.lb-cal__grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}' +
+      '.lb-cal__wd{font-size:10.5px;font-weight:700;color:#9CA3AF;padding:4px 0}' +
+      '.lb-cal__d{aspect-ratio:1;width:100%;border:0;border-radius:50%;background:transparent;font-size:12.5px;' +
+      'font-family:inherit;color:#C4C7CE;cursor:default;padding:0}' +
+      '.lb-cal__d.is-open{color:#111827;font-weight:650;cursor:pointer;background:#F5F3FF}' +
+      '.lb-cal__d.is-open:hover{background:#EDE9FE}' +
+      '.lb-cal__d.is-sel,.lb-cal__d.is-sel:hover{background:' + color + ';color:#fff}' +
       '</style></head><body class="closed">' +
       '<button type="button" class="lb-launcher" id="lbLauncher" aria-label="Open conversation">' +
       '<span class="lb-launcher__pulse" aria-hidden="true"></span>' +
@@ -697,20 +711,42 @@
       'wrap.remove();postAction("collect_contact",{name:nameI.value,email:e,phone:ph});});' +
       'wrap.appendChild(go);mountCard(wrap);if(!isMobile())nameI.focus();}' +
 
-      /* Slots arrive as "Tue Oct 14 · 10:00 AM": group them under one heading per day. */
+      /* Booking calendar: days with open slots are clickable; picking a day lists its times below. */
       'function showSchedulePicker(kind){clearCards();kind=kind||"appointment";var wrap=document.createElement("div");wrap.className="lb-card";' +
       'cardTitle(wrap,"Pick a time for your "+kind);' +
-      'var slots=cfg.slots||[],grid=null,lastDay=null;' +
-      'slots.forEach(function(slot){var parts=String(slot.label).split(" \\u00b7 "),day=parts[0],time=parts[1]||slot.label;' +
-      'if(day!==lastDay){lastDay=day;var h=document.createElement("div");h.className="lb-card__day";h.textContent=day;wrap.appendChild(h);' +
-      'grid=document.createElement("div");grid.className="lb-slots";wrap.appendChild(grid);}' +
-      'var b=document.createElement("button");b.type="button";b.className="lb-slot";b.textContent=time;' +
+      'var slots=cfg.slots||[];' +
+      'if(!slots.length){var e=document.createElement("div");e.style.cssText="font-size:12.5px;color:#6B7280";' +
+      'e.textContent="No open times right now — share your details and we’ll arrange one with you.";wrap.appendChild(e);mountCard(wrap);return;}' +
+      'function toDate(k){var p=k.split("-");return new Date(+p[0],p[1]-1,+p[2]);}' +
+      'function toKey(d){return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2);}' +
+      'var byDay={};slots.forEach(function(s){var k=s.date||String(s.starts_at).slice(0,10);(byDay[k]=byDay[k]||[]).push(s);});' +
+      'var days=Object.keys(byDay).sort(),sel=days[0],first=toDate(days[0]),last=toDate(days[days.length-1]);' +
+      'var minView=new Date(first.getFullYear(),first.getMonth(),1),maxView=new Date(last.getFullYear(),last.getMonth(),1),view=minView;' +
+      'var cal=document.createElement("div");cal.className="lb-cal";wrap.appendChild(cal);' +
+      'var dayHead=document.createElement("div");dayHead.className="lb-card__day";wrap.appendChild(dayHead);' +
+      'var grid=document.createElement("div");grid.className="lb-slots";wrap.appendChild(grid);' +
+      'function renderTimes(){grid.innerHTML="";dayHead.textContent=toDate(sel).toLocaleDateString(undefined,{weekday:"long",month:"short",day:"numeric"});' +
+      'byDay[sel].forEach(function(slot){var b=document.createElement("button");b.type="button";b.className="lb-slot";' +
+      'b.textContent=slot.time||String(slot.label).split(" \\u00b7 ")[1]||slot.label;' +
       'b.addEventListener("click",function(){wrap.remove();addMsg("you",slot.label);' +
       'postAction("schedule",{slot_id:slot.id,label:slot.label,starts_at:slot.starts_at,kind:kind});});' +
-      'grid.appendChild(b);});' +
-      'if(!slots.length){var e=document.createElement("div");e.style.cssText="font-size:12.5px;color:#6B7280";' +
-      'e.textContent="No open times right now \u2014 share your details and we\u2019ll arrange one with you.";wrap.appendChild(e);}' +
-      'mountCard(wrap);}' +
+      'grid.appendChild(b);});}' +
+      'function nav(label,aria,disabled,step){var b=document.createElement("button");b.type="button";b.className="lb-cal__nav";' +
+      'b.textContent=label;b.setAttribute("aria-label",aria);b.disabled=disabled;' +
+      'b.addEventListener("click",function(){view=new Date(view.getFullYear(),view.getMonth()+step,1);renderCal();});return b;}' +
+      'function renderCal(){cal.innerHTML="";var head=document.createElement("div");head.className="lb-cal__head";' +
+      'var title=document.createElement("div");title.className="lb-cal__title";title.textContent=view.toLocaleDateString(undefined,{month:"long",year:"numeric"});' +
+      'head.appendChild(nav("‹","Previous month",view<=minView,-1));head.appendChild(title);head.appendChild(nav("›","Next month",view>=maxView,1));cal.appendChild(head);' +
+      'var g=document.createElement("div");g.className="lb-cal__grid";' +
+      '["S","M","T","W","T","F","S"].forEach(function(w){var c=document.createElement("div");c.className="lb-cal__wd";c.textContent=w;g.appendChild(c);});' +
+      'for(var i=0;i<view.getDay();i++)g.appendChild(document.createElement("div"));' +
+      'var n=new Date(view.getFullYear(),view.getMonth()+1,0).getDate();' +
+      'for(var d=1;d<=n;d++){(function(k,d){var c=document.createElement("button");c.type="button";c.className="lb-cal__d";c.textContent=d;' +
+      'if(byDay[k]){c.className+=" is-open"+(k===sel?" is-sel":"");c.setAttribute("aria-label",toDate(k).toDateString());' +
+      'c.addEventListener("click",function(){sel=k;renderCal();renderTimes();});}else{c.disabled=true;}' +
+      'g.appendChild(c);})(toKey(new Date(view.getFullYear(),view.getMonth(),d)),d);}' +
+      'cal.appendChild(g);}' +
+      'renderCal();renderTimes();mountCard(wrap);}' +
 
       'function showTranscriptForm(){clearCards();var wrap=document.createElement("div");wrap.className="lb-card";' +
       'cardTitle(wrap,"Where should we send a copy of this chat?");' +
@@ -780,7 +816,7 @@
      4. ROSTER PICKER  (multi-employee workspace)
      ============================================================ */
   function mountRoster(roster) {
-    var color = roster.brand_color || '#7C3AED';
+    var color = roster.brand_color || '#7444E4';
     var shell = createShell('liftbot-roster-shell');
 
     function reposition() {

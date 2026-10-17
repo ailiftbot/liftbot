@@ -92,6 +92,8 @@ class Workspace(models.Model):
                         'id': slot_dt.isoformat(),
                         'label': slot_dt.strftime('%a %b %d · %I:%M %p'),
                         'starts_at': slot_dt.isoformat(),
+                        'date': slot_dt.strftime('%Y-%m-%d'),
+                        'time': slot_dt.strftime('%I:%M %p'),
                     })
             day += timedelta(days=1)
         return slots

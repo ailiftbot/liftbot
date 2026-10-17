@@ -164,7 +164,8 @@ def _employee_payload(employee: AIEmployee) -> dict:
         'language': employee.language,
         'capabilities': caps,
         'actions': actions,
-        'slots': employee.workspace.next_available_slots(6) if 'schedule_handoff' in caps else [],
+        # Two weeks of weekday slots fill the widget's booking calendar.
+        'slots': employee.workspace.next_available_slots(40) if 'schedule_handoff' in caps else [],
         'email_transcript': mailer_prefs(employee)['transcript'],
     }
 

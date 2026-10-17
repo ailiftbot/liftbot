@@ -66,6 +66,25 @@ python manage.py runserver
 Emails (signup codes, invites) print to the console unless you configure SMTP.
 Run the tests with `python manage.py test apps.accounts apps.workspaces`.
 
+### Local login (SQLite, port 8002)
+
+To run this checkout in Docker with SQLite, without a local venv, reuse the backend image:
+
+```bash
+docker run -d --name liftbot-local-8002 -p 8002:8000 \
+  -v "$PWD/backend:/app" -e DJANGO_DEBUG=1 -e MYSQL_HOST= \
+  -e PUBLIC_APP_URL=http://localhost:8002 \
+  liftbot-backend sh -c "pip install -q -r requirements.txt && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+docker exec liftbot-local-8002 python manage.py seed_plans
+```
+
+Then sign in at http://localhost:8002/login/:
+
+- Email: `crawl@x.com`
+- Password: `liftbot-local`
+
+This account lives only in the local `backend/db.sqlite3`, which is gitignored. On a fresh database it won't exist: sign up instead, or create a user with `createsuperuser`. Stop the container with `docker rm -f liftbot-local-8002`.
+
 ### Local flow
 
 1. Sign up (terms consent required) → verify the 6-digit email code → onboarding payment (Stripe Checkout; simulated only when `DJANGO_DEBUG=1` and no Stripe keys)

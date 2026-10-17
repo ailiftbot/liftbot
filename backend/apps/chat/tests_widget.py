@@ -326,6 +326,14 @@ class BookingFlowTests(TestCase):
         self.assertIsNotNone(tasks[0].scheduled_for)
         self.assertEqual(tasks[0].details['kind'], 'site visit')
 
+    def test_slots_cover_two_weeks_of_weekdays_for_the_calendar(self):
+        slots = self.ws.next_available_slots(40)
+        days = {s['date'] for s in slots}
+        self.assertEqual(len(days), 10)
+        for s in slots:
+            self.assertTrue(s['starts_at'].startswith(s['date']))
+            self.assertIn(s['time'], s['label'])
+
     def test_packages_question_sends_search_query(self):
         captured = {}
 

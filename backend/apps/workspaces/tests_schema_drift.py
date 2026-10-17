@@ -35,8 +35,9 @@ class RelaxDriftedColumnsTests(TransactionTestCase):
         from django.core.management import call_command
         from django.db.migrations.recorder import MigrationRecorder
 
-        MigrationRecorder.Migration.objects.filter(app='workspaces', name='0007_relax_drifted_columns').delete()
-        call_command('migrate', 'workspaces', '0007', verbosity=0)
+        # Forget 0007 and everything after it, or Django flags the history as inconsistent.
+        MigrationRecorder.Migration.objects.filter(app='workspaces', name__gte='0007').delete()
+        call_command('migrate', 'workspaces', verbosity=0)
         owner = User.objects.create_user('m@example.com', 'm@example.com', 'pw-123456!')
         Workspace.objects.create(name='Acme', owner=owner)
 
